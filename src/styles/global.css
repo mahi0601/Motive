@@ -1,0 +1,229 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-gray-300;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background-color: #0d0d0d;
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: 0.1px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: #cfcfcf;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+a {
+  color: #818cf8;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+}
+
+a:hover {
+  color: #a5b4fc;
+  text-decoration: underline;
+}
+
+button {
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1a1a;
+  color: #f4f4f4;
+  border: 1px solid #2a2a2a;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+}
+
+button.primary {
+  background-color: #6366f1;
+  color: white;
+}
+
+button.primary:hover {
+  background-color: #4f46e5;
+}
+
+button.secondary {
+  background-color: #262626;
+  color: #a5b4fc;
+}
+
+button.secondary:hover {
+  background-color: #333333;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
+}
+
+.card {
+  background-color: #111111;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid #2a2a2a;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.015);
+  box-shadow: 0 12px 28px rgba(255, 255, 255, 0.05);
+}
+
+.card-section {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.page-wrapper {
+  background-color: #111111;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid #2a2a2a;
+  margin-top: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+input, select, textarea {
+  font-family: inherit;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #3a3a3a;
+  background-color: #111111;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #f1f1f1;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+::placeholder {
+  color: #9ca3af;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #333333;
+  border-radius: 8px;
+}
+
+.text-title {
+  color: #f4f4f4;
+  font-weight: 600;
+}
+
+.text-muted {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scaleIn {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+@keyframes iconPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.icon-animate:hover {
+  animation: iconPulse 0.4s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+.link-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: #818cf8;
+  transition: width 0.3s ease-in-out;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
+.sidebar-item {
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  background-color: #111111;
+  color: #e4e4e4;
+}
+
+.sidebar-item:hover {
+  background-color: #222222;
+  transform: translateX(4px);
+  color: #ffffff;
+}
