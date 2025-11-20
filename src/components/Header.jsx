@@ -35,7 +35,7 @@ const Header = () => {
         transition={{ delay: 0.2, duration: 0.5 }}
         className="text-2xl font-extrabold tracking-tight flex items-center gap-2 group"
       >
-        <span className="text-pink-500 group-hover:scale-110 transition-transform duration-300">📋</span>
+        <span className="text-indigo-500 group-hover:scale-110 transition-transform duration-300">📋</span>
         <span className="text-gray-900 dark:text-gray-100 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300">
           Motive
         </span>

@@ -35,7 +35,7 @@ const Profile = () => {
           <motion.h2
             whileHover={{ scale: 1.02, color: '#6366f1' }}
             transition={{ duration: 0.3 }}
-            className="text-3xl font-extrabold tracking-tight flex items-center gap-3 text-gray-800 dark:text-gray-100 transition-colors"
+            className="text-3xl font-extrabold tracking-tight flex items-center gap-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
           >
             <FiUser className="text-indigo-500" />
             Profile
@@ -55,10 +55,10 @@ const Profile = () => {
         {/* Profile Info Card */}
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="p-6 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-md"
+          className="p-6 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-md hover:shadow-lg hover:ring-1 hover:ring-indigo-500 transition-all duration-300"
         >
           <div className="flex items-center gap-5 mb-3">
-            <div className="w-16 h-16 rounded-full bg-indigo-600 text-white text-2xl font-bold flex items-center justify-center shadow-md">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-2xl font-bold flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div>

@@ -36,7 +36,7 @@ const Sidebar = () => {
           </h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 bg-gray-200 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:bg-indigo-100 dark:hover:bg-indigo-700 rounded-md transition duration-300 shadow-sm"
+            className="p-2 bg-gray-200 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-700 dark:hover:to-purple-700 rounded-md transition duration-300 shadow-sm hover:shadow-md"
             title="Close Sidebar"
           >
             <X className="w-5 h-5" />
@@ -50,10 +50,10 @@ const Sidebar = () => {
                 to={item.path}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300
-                  hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400
+                  hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-600 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 dark:hover:bg-gray-700 dark:hover:text-indigo-400
                   ${
                     isActive
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-white'
+                      ? 'bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 dark:from-indigo-700 dark:to-purple-700 dark:text-white shadow-md'
                       : 'text-gray-700 dark:text-gray-300'
                   }`
                 }
@@ -70,7 +70,7 @@ const Sidebar = () => {
         <div className="fixed top-4 left-4 z-50">
           <button
             onClick={() => setIsOpen(true)}
-            className="bg-indigo-100 dark:bg-gray-900 text-indigo-700 dark:text-white border border-indigo-300 dark:border-gray-700 p-2 rounded-lg shadow hover:bg-indigo-200 dark:hover:bg-gray-700 transition"
+            className="bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 text-indigo-700 dark:text-white border border-indigo-300 dark:border-indigo-700 p-2 rounded-lg shadow-md hover:shadow-lg hover:from-indigo-200 hover:to-purple-200 dark:hover:from-indigo-800 dark:hover:to-purple-800 transition-all duration-300"
             title="Open Sidebar"
           >
             <Menu className="w-5 h-5" />
