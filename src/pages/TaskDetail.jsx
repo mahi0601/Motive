@@ -14,8 +14,8 @@ const TaskDetail = () => {
 
   return (
     <DashboardLayout>
-      <div className="bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-md max-w-4xl mx-auto mt-6">
-        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
+      <div className="bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-xl hover:ring-1 hover:ring-indigo-500 transition-all duration-300 max-w-4xl mx-auto mt-6">
+        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white flex items-center gap-2 mb-4 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
           <FiFileText className="text-indigo-500" /> {task.title}
         </h2>
 

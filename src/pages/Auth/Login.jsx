@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../../layout/AuthLayout';
 import { login } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import { gapi } from 'gapi-script';
 import {
@@ -27,6 +28,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login: setAuthUser } = useAuth();
 
   useEffect(() => {
     function start() {
@@ -58,8 +60,9 @@ const Login = () => {
       const { token, user } = res.data;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      setAuthUser(user);
       alert('✅ Login Successful!');
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       console.error('❌ Login error:', error);
       const msg = error?.response?.data?.message || 'Server error';

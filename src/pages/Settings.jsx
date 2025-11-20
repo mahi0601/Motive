@@ -42,7 +42,7 @@ const Settings = () => {
     <DashboardLayout>
       <div className="flex justify-end px-4">
         <Menu as="div" className="relative inline-block text-left z-50">
-          <Menu.Button className="rounded-full w-10 h-10 bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 transition duration-300 shadow-md">
+          <Menu.Button className="rounded-full w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center hover:from-indigo-700 hover:to-purple-700 transition duration-300 shadow-md hover:shadow-lg">
             {user ? (
               <div className="w-full h-full rounded-full bg-indigo-500 flex items-center justify-center text-sm font-bold">
                 {user.name.charAt(0).toUpperCase()}
@@ -89,9 +89,9 @@ const Settings = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#f9f9f9] dark:bg-[#1a1a1a] text-gray-900 dark:text-gray-100 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 font-inter"
+        className="bg-[#f9f9f9] dark:bg-[#0d0d0d] text-gray-900 dark:text-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-xl hover:ring-1 hover:ring-indigo-500 transition-all duration-300 border border-gray-200 dark:border-gray-700 font-inter"
       >
-        <h2 className="text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3 text-gray-800 dark:text-gray-100 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors duration-300">
+        <h2 className="text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
           <FiSettings className="text-indigo-500 animate-spin-slow" />
           Settings
         </h2>
@@ -103,7 +103,7 @@ const Settings = () => {
         <div className="space-y-6">
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-500 transition-all"
+            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-lg hover:ring-1 hover:ring-indigo-500 hover:border-indigo-500 transition-all duration-300"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -127,7 +127,7 @@ const Settings = () => {
           {/* Notifications */}
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-500 transition-all"
+            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-lg hover:ring-1 hover:ring-indigo-500 hover:border-indigo-500 transition-all duration-300"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ const Settings = () => {
               </div>
               <button
                 onClick={handleEmailAlert}
-                className="px-4 py-2 text-sm rounded-lg font-medium bg-white dark:bg-transparent text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition dark:text-white dark:border-white"
+                className="px-4 py-2 text-sm rounded-lg font-medium bg-white dark:bg-transparent text-indigo-600 border border-indigo-600 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white hover:border-transparent transition-all duration-300 shadow-sm hover:shadow-md dark:text-white dark:border-white"
               >
                 <FiMail className="inline-block mr-1" /> Enable Alerts
               </button>

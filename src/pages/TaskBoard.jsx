@@ -23,9 +23,9 @@ const TaskBoard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f6] dark:bg-[#1e1e1e] transition-all p-6 font-[Inter]">
+    <div className="min-h-screen bg-[#f9f9f9] dark:bg-[#0d0d0d] transition-all p-6 font-[Inter]">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-extrabold mb-8 text-gray-800 dark:text-white tracking-tight flex items-center gap-3 animate-fadeIn">
+        <h1 className="text-4xl font-extrabold mb-8 text-gray-800 dark:text-white tracking-tight flex items-center gap-3 animate-fadeIn hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
           <FiList className="text-indigo-500" /> Task Board
         </h1>
 
