@@ -22,7 +22,7 @@ const DashboardLayout = ({ children }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.05 }}
-          className="flex-grow overflow-y-auto p-4 sm:p-6"
+          className="flex-grow overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
           {children}
         </motion.main>
