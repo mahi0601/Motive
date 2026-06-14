@@ -161,6 +161,16 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(124, 92, 246, 0.3);
 }
 
+/* iOS Safari auto-zooms when a focused field is below 16px. Force 16px on
+   phones so the page never zooms on tap. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 ::placeholder {
   color: #9ca3af;
 }
