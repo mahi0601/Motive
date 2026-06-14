@@ -2,7 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiCheckSquare, FiArrowRight, FiSearch, FiFolderPlus } from 'react-icons/fi';
+import { FiArrowRight, FiSearch, FiFolderPlus } from 'react-icons/fi';
+import { LogoMark } from '../components/Logo';
 
 const templates = [
   {
@@ -42,12 +43,15 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="flex justify-center items-center gap-3"
+            className="flex flex-col justify-center items-center gap-4"
           >
-            <FiCheckSquare className="text-6xl text-indigo-500 animate-bounce" />
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-600 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
-              Motive<span className="text-gray-300">.</span>
+            <LogoMark size={72} />
+            <h1 className="font-display text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+              Motive
             </h1>
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 dark:border-brand-800 bg-brand-soft px-4 py-1 text-xs font-medium uppercase tracking-wider text-brand-600 dark:text-brand-300">
+              Think · Plan · Move
+            </span>
           </motion.div>
 
           <motion.p
@@ -56,7 +60,8 @@ const Home = () => {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
           >
-            A calm space to think, plan, and get things done — beautifully.
+            A calm, fast workspace to capture ideas, organize pages, and turn intent into
+            momentum — beautifully.
           </motion.p>
 
           {/* CTA Buttons */}

@@ -4,15 +4,18 @@ import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { WorkspaceProvider } from './context/WorkspaceContext';
 
 const App = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
         <TaskProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
+          <WorkspaceProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </WorkspaceProvider>
         </TaskProvider>
       </AuthProvider>
     </ThemeProvider>

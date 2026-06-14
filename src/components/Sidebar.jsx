@@ -8,9 +8,11 @@ import {
   FiSettings,
   FiGrid, // ✅ Make sure this is imported
 } from 'react-icons/fi';
+import PageTree from './PageTree';
+import Logo from './Logo';
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <FiHome /> },
@@ -28,12 +30,9 @@ const Sidebar = () => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex justify-between items-center mb-10">
-          <h2 className="text-2xl font-extrabold text-gray-800 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors flex items-center gap-2">
-            <span className="text-indigo-500 animate-pulse">
-              <FiHome className="text-2xl" />
-            </span>
-            <span>Motive</span>
-          </h2>
+          <NavLink to="/" className="transition-transform hover:scale-[1.02]">
+            <Logo size={30} />
+          </NavLink>
           <button
             onClick={() => setIsOpen(false)}
             className="p-2 bg-gray-200 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-700 dark:hover:to-purple-700 rounded-md transition duration-300 shadow-sm hover:shadow-md"
@@ -64,6 +63,9 @@ const Sidebar = () => {
             </li>
           ))}
         </ul>
+
+        {/* Notion-style nested page tree */}
+        <PageTree />
       </aside>
 
       {!isOpen && (

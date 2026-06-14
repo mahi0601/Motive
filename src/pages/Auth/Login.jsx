@@ -1,72 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import AuthLayout from '../../layout/AuthLayout';
-import { login } from '../../services/authService';
+import AuthField from '../../components/AuthField';
+import { login as loginRequest } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
-import { motion } from 'framer-motion';
-import { gapi } from 'gapi-script';
-import {
-  FiCheckCircle, FiCalendar, FiBarChart2, FiClipboard, FiList, FiBell, FiBookOpen,
-  FiClock, FiEdit, FiFolder, FiHeart, FiInbox, FiLayers, FiMail, FiMessageCircle,
-  FiPieChart, FiSearch, FiSettings, FiStar, FiTag, FiTrendingUp, FiUser, FiUsers,
-  FiDatabase, FiArchive, FiCamera, FiCode, FiDownload, FiUpload, FiMonitor,
-  FiPlay, FiPause, FiTool, FiGlobe, FiShield, FiSliders
-} from 'react-icons/fi';
-
-const CLIENT_ID = '1094576727672-7dqakbaer20l2o50qs3u5vfiqdvin3jj.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
-
-const iconComponents = [
-  FiCheckCircle, FiCalendar, FiBarChart2, FiClipboard, FiList, FiBell, FiBookOpen,
-  FiClock, FiEdit, FiFolder, FiHeart, FiInbox, FiLayers, FiMail, FiMessageCircle,
-  FiPieChart, FiSearch, FiSettings, FiStar, FiTag, FiTrendingUp, FiUser, FiUsers,
-  FiDatabase, FiArchive, FiCamera, FiCode, FiDownload, FiUpload, FiMonitor,
-  FiPlay, FiPause, FiTool, FiGlobe, FiShield, FiSliders
-];
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login: setAuthUser } = useAuth();
 
-  useEffect(() => {
-    function start() {
-      gapi.client.init({
-        clientId: CLIENT_ID,
-        scope: SCOPES,
-      });
-    }
-    gapi.load('client:auth2', start);
-  }, []);
-
-  const handleGoogleSignIn = () => {
-    const authInstance = gapi.auth2.getAuthInstance();
-    authInstance.signIn().then((user) => {
-      const profile = user.getBasicProfile();
-      alert(`✅ Welcome ${profile.getName()}!`);
-      navigate('/dashboard');
-    }).catch((err) => {
-      console.error('Google Sign-in Error:', err);
-      alert('❌ Google Sign-in failed.');
-    });
+  const setField = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+    setServerError('');
   };
 
-  const handleLogin = async (e) => {
+  const validate = () => {
+    const next = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email';
+    if (!form.password) next.password = 'Password is required';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    setServerError('');
     try {
-      setLoading(true);
-      const res = await login(form);
-      const { token, user } = res.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setAuthUser(user);
-      alert('✅ Login Successful!');
+      const { data } = await loginRequest(form);
+      setAuthUser(data.user, data.accessToken);
       navigate('/dashboard', { replace: true });
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      const msg = error?.response?.data?.message || 'Server error';
-      alert('Login Failed: ' + msg);
+    } catch (err) {
+      setServerError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -74,109 +46,52 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      <div className="relative min-h-screen w-full bg-[#f5f6f8] dark:bg-[#0d0d0d] flex items-center justify-center px-6 py-20 overflow-hidden font-[Inter]">
-        {/* Floating Icons */}
-        {iconComponents.map((Icon, index) => {
-          const top = Math.floor(Math.random() * 90);
-          const left = Math.floor(Math.random() * 90);
-          const size = Math.floor(Math.random() * 24) + 24;
-          const opacity = Math.random() * 0.12 + 0.05;
-          return (
-            <motion.div
-              key={index}
-              className="absolute text-gray-300 dark:text-gray-600 select-none pointer-events-none"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity, scale: 1 }}
-              transition={{ delay: index * 0.02, duration: 0.6 }}
-              style={{ top: `${top}%`, left: `${left}%`, fontSize: `${size}px`, zIndex: 0 }}
-            >
-              <Icon />
-            </motion.div>
-          );
-        })}
+      <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
+      <p className="mt-2 mb-8 text-gray-500 dark:text-gray-400">Log in to your Motive workspace.</p>
 
-        {/* Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 w-full max-w-2xl bg-white dark:bg-[#1c1c1c] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl px-12 py-14"
+      {serverError && (
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+          <AlertCircle size={16} /> {serverError}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <AuthField
+          label="Email"
+          icon={Mail}
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={setField('email')}
+          error={errors.email}
+        />
+        <AuthField
+          label="Password"
+          icon={Lock}
+          type="password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          value={form.password}
+          onChange={setField('password')}
+          error={errors.password}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-brand-gradient py-3 font-semibold text-white shadow-brand-sm transition hover:shadow-brand disabled:opacity-60"
         >
-          <h2 className="text-3xl font-extrabold text-center mb-6 text-gray-800 dark:text-white tracking-tight hover:text-indigo-500 transition-colors">
-            🔐 Login to Your Account
-          </h2>
+          {loading ? 'Logging in…' : 'Log in'}
+        </button>
+      </form>
 
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Email</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="you@example.com"
-                required
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="••••••••"
-                required
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition duration-300 shadow-md"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </motion.button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center justify-center my-4">
-            <span className="text-gray-400 text-sm">or</span>
-          </div>
-
-          {/* Google Sign-In */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.02 }}
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-3 py-3 px-6 
-                       border border-gray-300 dark:border-gray-700 
-                       text-gray-800 dark:text-white 
-                       bg-white dark:bg-[#2a2a2a] 
-                       hover:bg-indigo-50 dark:hover:bg-indigo-600 
-                       hover:text-indigo-700 dark:hover:text-white 
-                       rounded-lg font-medium text-sm shadow transition-all duration-300"
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            Continue with Google
-          </motion.button>
-
-          {/* Bottom text */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
-            Don’t have an account?{' '}
-            <a href="/register" className="text-indigo-500 hover:underline">
-              Sign up
-            </a>
-          </p>
-        </motion.div>
-      </div>
+      <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        Don’t have an account?{' '}
+        <Link to="/register" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+          Sign up
+        </Link>
+      </p>
     </AuthLayout>
   );
 };

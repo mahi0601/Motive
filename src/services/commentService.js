@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from './api';
 
-const API = 'http://localhost:5000/api/comments';
-
-export const getComments = (taskId) => axios.get(`${API}/${taskId}`);
-export const addComment = (taskId, comment) => axios.post(`${API}/${taskId}`, { comment });
+export const getComments = (taskId) => api.get(`/api/comments/${taskId}`);
+export const addComment = (taskId, comment) =>
+  api.post(`/api/comments/${taskId}`, { comment });

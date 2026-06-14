@@ -3,24 +3,20 @@ import DashboardLayout from '../layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiLogOut, FiArrowLeft, FiClock } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
-  const [loginTime, setLoginTime] = useState(null);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [loginTime, setLoginTime] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
     const loginTimestamp = localStorage.getItem('loginTime');
-    if (storedUser) setUser(JSON.parse(storedUser));
     if (loginTimestamp) setLoginTime(new Date(loginTimestamp).toLocaleString());
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('loginTime');
-    navigate('/');
+    logout(); // revokes refresh token, clears cookie + access token, redirects
   };
 
   return (
