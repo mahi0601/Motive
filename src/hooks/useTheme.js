@@ -1,6 +1,2 @@
-import { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
-
-const useTheme = () => useContext(ThemeContext);
-
-export default useTheme;
+// Re-export the theme hook from the context (single source of truth).
+export { useTheme as default } from '../context/ThemeContext';

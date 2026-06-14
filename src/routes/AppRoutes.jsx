@@ -11,24 +11,29 @@ import TaskBoard from '../pages/TaskBoard';
 import Home from '../pages/Home';
 import Profile from '../pages/Profile';
 import TemplateBuilder from '../templates/TemplateBuilder';
-
-const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
-};
+import Templates from '../pages/Templates';
+import PageView from '../pages/PageView';
+import BrandShowcase from '../pages/BrandShowcase';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />} />
-      <Route path="/task/:id" element={isAuthenticated() ? <TaskDetail /> : <Navigate to="/login" />} />
-      <Route path="/calendar" element={isAuthenticated() ? <Calendar /> : <Navigate to="/login" />} />
-      <Route path="/stats" element={isAuthenticated() ? <Statistics /> : <Navigate to="/login" />} />
-      <Route path="/settings" element={isAuthenticated() ? <Settings /> : <Navigate to="/login" />} />
-      <Route path="/task" element={isAuthenticated() ? <TaskBoard /> : <Navigate to="/login" />} />
-      <Route path="/profile" element={isAuthenticated() ? <Profile /> : <Navigate to="/login" />} />
-      <Route path="/templates" element={isAuthenticated() ? <TemplateBuilder /> : <Navigate to="/login" />} />
 
+      {/* Protected — wait for session bootstrap, then gate on auth */}
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/task/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
+      <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+      <Route path="/stats" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/task" element={<ProtectedRoute><TaskBoard /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
+      <Route path="/templates/builder" element={<ProtectedRoute><TemplateBuilder /></ProtectedRoute>} />
+      <Route path="/page/:id" element={<ProtectedRoute><PageView /></ProtectedRoute>} />
+
+      <Route path="/brand" element={<BrandShowcase />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
@@ -38,4 +43,3 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
-

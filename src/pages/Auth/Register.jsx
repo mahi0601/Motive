@@ -1,136 +1,139 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { User, Mail, Lock, AlertCircle } from 'lucide-react';
 import AuthLayout from '../../layout/AuthLayout';
-import { motion } from 'framer-motion';
-import { register } from '../../services/authService';
+import AuthField from '../../components/AuthField';
+import { register as registerRequest } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 
-import {
-  FiCheckCircle, FiCalendar, FiBarChart2, FiClipboard, FiList, FiBell, FiBookOpen,
-  FiClock, FiEdit, FiFolder, FiHeart, FiInbox, FiLayers, FiMail, FiMessageCircle,
-  FiPieChart, FiSearch, FiSettings, FiStar, FiTag, FiTrendingUp, FiUser, FiUsers,
-  FiDatabase, FiArchive, FiCamera, FiCode, FiDownload, FiUpload, FiMonitor,
-  FiPlay, FiPause, FiTool, FiGlobe, FiShield, FiSliders
-} from 'react-icons/fi';
-
-const iconComponents = [
-  FiCheckCircle, FiCalendar, FiBarChart2, FiClipboard, FiList, FiBell, FiBookOpen,
-  FiClock, FiEdit, FiFolder, FiHeart, FiInbox, FiLayers, FiMail, FiMessageCircle,
-  FiPieChart, FiSearch, FiSettings, FiStar, FiTag, FiTrendingUp, FiUser, FiUsers,
-  FiDatabase, FiArchive, FiCamera, FiCode, FiDownload, FiUpload, FiMonitor,
-  FiPlay, FiPause, FiTool, FiGlobe, FiShield, FiSliders
-];
+const strength = (pw) => {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return score; // 0..4
+};
+const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+const STRENGTH_COLOR = ['', 'bg-red-400', 'bg-amber-400', 'bg-lime-400', 'bg-emerald-500'];
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login: setAuthUser } = useAuth();
+
+  const setField = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [key]: undefined }));
+    setServerError('');
+  };
+
+  const validate = () => {
+    const next = {};
+    if (!form.name.trim()) next.name = 'Name is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email';
+    if (form.password.length < 8) next.password = 'At least 8 characters';
+    else if (!/\d/.test(form.password)) next.password = 'Include at least one number';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    setServerError('');
     try {
-      setLoading(true);
-      const res = await register(form);
-      alert('✅ Registration Successful!');
-      console.log('Server Response:', res);
-      // Redirect to login
-      window.location.href = '/login';
+      const { data } = await registerRequest(form);
+      // Backend returns an access token on register → log the user straight in.
+      setAuthUser(data.user, data.accessToken);
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      console.error('Registration Error:', err);
-      alert('❌ Registration Failed: ' + (err?.response?.data?.message || 'Server Error'));
+      setServerError(err?.response?.data?.message || 'Could not create your account.');
     } finally {
       setLoading(false);
     }
   };
 
+  const s = strength(form.password);
+
   return (
     <AuthLayout>
-      <div className="relative min-h-screen w-full bg-[#f5f6f8] flex items-center justify-center px-6 py-20 overflow-hidden font-[Inter]">
-        {iconComponents.map((Icon, index) => {
-          const top = Math.random() * 90;
-          const left = Math.random() * 90;
-          const size = Math.random() * 24 + 24;
-          const opacity = Math.random() * 0.12 + 0.05;
-          return (
-            <motion.div
-              key={index}
-              className="absolute text-gray-300 select-none pointer-events-none"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity, scale: 1 }}
-              transition={{ delay: index * 0.02, duration: 0.6 }}
-              style={{
-                top: `${top}%`,
-                left: `${left}%`,
-                fontSize: `${size}px`,
-                zIndex: 0,
-              }}
-            >
-              <Icon />
-            </motion.div>
-          );
-        })}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 w-full max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-xl px-12 py-14"
+      <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white">
+        Create your account
+      </h2>
+      <p className="mt-2 mb-8 text-gray-500 dark:text-gray-400">Start organizing in seconds.</p>
+
+      {serverError && (
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+          <AlertCircle size={16} /> {serverError}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <AuthField
+          label="Full name"
+          icon={User}
+          autoComplete="name"
+          placeholder="Jane Doe"
+          value={form.name}
+          onChange={setField('name')}
+          error={errors.name}
+        />
+        <AuthField
+          label="Email"
+          icon={Mail}
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={form.email}
+          onChange={setField('email')}
+          error={errors.email}
+        />
+        <div>
+          <AuthField
+            label="Password"
+            icon={Lock}
+            type="password"
+            autoComplete="new-password"
+            placeholder="At least 8 characters, 1 number"
+            value={form.password}
+            onChange={setField('password')}
+            error={errors.password}
+          />
+          {form.password && !errors.password && (
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex h-1.5 flex-1 gap-1">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className={`flex-1 rounded-full ${i <= s ? STRENGTH_COLOR[s] : 'bg-gray-200 dark:bg-[#2A2733]'}`}
+                  />
+                ))}
+              </div>
+              <span className="w-12 text-right text-xs text-gray-500">{STRENGTH_LABEL[s]}</span>
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-brand-gradient py-3 font-semibold text-white shadow-brand-sm transition hover:shadow-brand disabled:opacity-60"
         >
-          <h2 className="text-3xl font-extrabold text-center mb-6 text-gray-800 tracking-tight hover:text-indigo-500 transition-colors">
-            📝 Create Your Account
-          </h2>
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Full Name</label>
-              <input
-                type="text"
-                placeholder="John Doe"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-                className="w-full p-3 border border-gray-300 bg-white text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                placeholder="email@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-                className="w-full p-3 border border-gray-300 bg-white text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-                className="w-full p-3 border border-gray-300 bg-white text-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-md"
-            >
-              {loading ? 'Registering...' : 'Register'}
-            </motion.button>
-          </form>
-
-          <p className="text-sm text-gray-500 mt-6 text-center">
-            Already have an account?{' '}
-            <a href="/login" className="text-indigo-500 hover:underline">
-              Login
-            </a>
-          </p>
-        </motion.div>
-      </div>
+      <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        Already have an account?{' '}
+        <Link to="/login" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+          Log in
+        </Link>
+      </p>
     </AuthLayout>
   );
 };
