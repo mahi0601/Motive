@@ -1,9 +1,7 @@
-import axios from 'axios';
-
-const API = 'http://localhost:5000/api/upload';
+import api from './api';
 
 export const uploadFile = (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  return axios.post(API, formData);
+  return api.post('/api/upload', formData);
 };

@@ -1,34 +1,66 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { setAccessToken, clearAccessToken, refreshSession } from '../services/api';
+import { logout as logoutRequest } from '../services/authService';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+// Mirror the (non-sensitive) user profile to localStorage for instant UI hydration.
+// The access token is NEVER stored here — only this profile object.
+const persistUser = (u) => {
+  if (u) localStorage.setItem('user', JSON.stringify(u));
+  else localStorage.removeItem('user');
+};
 
+export const AuthProvider = ({ children }) => {
+  // Start unauthenticated; the real state is established by the bootstrap
+  // refresh below. (Don't trust a stale localStorage user — it would make
+  // isAuthenticated briefly true and fire premature, unauthenticated API calls.)
+  const [user, setUserState] = useState(null);
+  const setUser = (u) => {
+    persistUser(u);
+    setUserState(u);
+  };
+  // `bootstrapping` is true until we've tried to restore the session on load,
+  // so protected routes can wait instead of flashing the login page.
+  const [bootstrapping, setBootstrapping] = useState(true);
+
+  // On app start, try to restore the session from the refresh cookie.
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    let active = true;
+    (async () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Error parsing user from localStorage:', e);
+        const { user: restored } = await refreshSession();
+        if (active) setUser(restored);
+      } catch {
+        if (active) setUser(null);
+      } finally {
+        if (active) setBootstrapping(false);
       }
-    }
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const login = (userData) => {
+  // Called by Login/Register after a successful response.
+  const login = useCallback((userData, accessToken) => {
+    setAccessToken(accessToken);
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(async () => {
+    try {
+      await logoutRequest(); // revokes refresh token + clears cookie
+    } catch {
+      /* best effort */
+    }
+    clearAccessToken();
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  };
+    window.location.assign('/login');
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, bootstrapping, isAuthenticated: !!user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

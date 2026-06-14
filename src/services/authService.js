@@ -1,7 +1,6 @@
-import axios from 'axios';
+import api from './api';
 
-const API = 'http://localhost:5000/api/auth';
-
-export const login = (credentials) => axios.post(`${API}/login`, credentials);
-export const register = (data) => axios.post(`${API}/register`, data);
-export const logout = () => axios.post(`${API}/logout`);
+// Uses the shared axios instance (baseURL + auth interceptor + silent refresh).
+export const login = (credentials) => api.post('/api/auth/login', credentials);
+export const register = (data) => api.post('/api/auth/register', data);
+export const logout = () => api.post('/api/auth/logout');
