@@ -7,10 +7,8 @@ import TaskDetail from '../pages/TaskDetail';
 import Calendar from '../pages/Calendar';
 import Statistics from '../pages/Statistics';
 import Settings from '../pages/Settings';
-import TaskBoard from '../pages/TaskBoard';
 import Home from '../pages/Home';
 import Profile from '../pages/Profile';
-import TemplateBuilder from '../templates/TemplateBuilder';
 import Templates from '../pages/Templates';
 import PageView from '../pages/PageView';
 import BrandShowcase from '../pages/BrandShowcase';
@@ -27,10 +25,8 @@ const AppRoutes = () => {
       <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
       <Route path="/stats" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-      <Route path="/task" element={<ProtectedRoute><TaskBoard /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
-      <Route path="/templates/builder" element={<ProtectedRoute><TemplateBuilder /></ProtectedRoute>} />
       <Route path="/page/:id" element={<ProtectedRoute><PageView /></ProtectedRoute>} />
 
       <Route path="/brand" element={<BrandShowcase />} />
