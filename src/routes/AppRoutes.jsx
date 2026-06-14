@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
-import TaskDetail from '../pages/TaskDetail';
 import Calendar from '../pages/Calendar';
 import Statistics from '../pages/Statistics';
 import Settings from '../pages/Settings';
@@ -21,7 +20,6 @@ const AppRoutes = () => {
 
       {/* Protected — wait for session bootstrap, then gate on auth */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/task/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
       <Route path="/stats" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
