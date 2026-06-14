@@ -74,6 +74,11 @@ const AuthLayout = ({ children }) => (
           </span>
         </Link>
         {children}
+        <p className="mt-8 text-center text-xs text-gray-400">
+          <Link to="/privacy" className="hover:text-brand-600 dark:hover:text-brand-400">
+            Privacy Policy
+          </Link>
+        </p>
       </motion.div>
     </div>
   </div>
