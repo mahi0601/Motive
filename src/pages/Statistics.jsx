@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { FiBarChart2, FiPieChart, FiTrendingUp, FiTrendingDown, FiCalendar, FiClock, FiTarget, FiAward } from 'react-icons/fi';
 import api from '../services/api';
+import { getTasks } from '../services/taskService';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc'];
 
@@ -20,10 +21,14 @@ const Statistics = () => {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    const storedTasks = localStorage.getItem('tasks');
-    if (storedTasks) {
-      setTasks(JSON.parse(storedTasks));
-    }
+    (async () => {
+      try {
+        const { data } = await getTasks({ limit: 200 });
+        setTasks(data.items || []);
+      } catch (err) {
+        console.error('Error loading tasks:', err);
+      }
+    })();
   }, []);
 
   const fetchStats = async () => {
@@ -45,7 +50,7 @@ const Statistics = () => {
   }, [timeRange]);
 
   const totalTasks = priorityData.reduce((acc, item) => acc + item.value, 0);
-  const completedTasks = tasks.filter(t => t.completed || t.status === 'completed').length;
+  const completedTasks = tasks.filter((t) => t.status === 'done').length;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   const avgCompletionTime = 2.5;
   const streakDays = 7;
