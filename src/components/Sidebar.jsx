@@ -24,7 +24,7 @@ const Sidebar = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-3 left-3 z-50 rounded-lg border border-gray-200 bg-white/90 p-2 text-gray-700 shadow-md backdrop-blur lg:hidden dark:border-[#2A2733] dark:bg-[#1a1a1a]/90 dark:text-gray-200"
+          className="fixed left-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 rounded-lg border border-gray-200 bg-white/90 p-2 text-gray-700 shadow-md backdrop-blur lg:hidden dark:border-[#2A2733] dark:bg-[#1a1a1a]/90 dark:text-gray-200"
           title="Open menu"
           aria-label="Open menu"
         >
@@ -42,7 +42,7 @@ const Sidebar = () => {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-6 shadow-xl transition-transform duration-300 ease-in-out dark:border-gray-700 dark:bg-[#1a1a1a]
+        className={`fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-xl transition-transform duration-300 ease-in-out dark:border-gray-700 dark:bg-[#1a1a1a]
           lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="mb-8 flex items-center justify-between">
