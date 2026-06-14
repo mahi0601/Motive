@@ -11,6 +11,7 @@ import Profile from '../pages/Profile';
 import Templates from '../pages/Templates';
 import PageView from '../pages/PageView';
 import BrandShowcase from '../pages/BrandShowcase';
+import Privacy from '../pages/Privacy';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const AppRoutes = () => {
@@ -28,6 +29,7 @@ const AppRoutes = () => {
       <Route path="/page/:id" element={<ProtectedRoute><PageView /></ProtectedRoute>} />
 
       <Route path="/brand" element={<BrandShowcase />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
