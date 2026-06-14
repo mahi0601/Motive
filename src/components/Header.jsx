@@ -17,7 +17,7 @@ const Header = () => {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 70 }}
-      className="z-30 flex w-full items-center justify-between border-b border-gray-200 bg-white py-3 pl-16 pr-4 dark:border-gray-700 dark:bg-[#1a1a1a] sm:pr-6 lg:pl-6"
+      className="z-30 flex w-full items-center justify-between border-b border-gray-200 bg-white pb-3 pl-16 pr-4 pt-[calc(0.75rem+env(safe-area-inset-top))] dark:border-gray-700 dark:bg-[#1a1a1a] sm:pr-6 lg:pl-6"
     >
       {/* pl-16 on mobile leaves room for the floating menu button */}
       <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
