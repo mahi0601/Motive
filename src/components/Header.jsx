@@ -1,72 +1,83 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const { isDark, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
   return (
     <motion.header
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 70 }}
-      className="w-full px-6 py-4 bg-[#f9f9f9] dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 shadow-sm flex justify-between items-center z-40 font-inter"
+      className="z-30 flex w-full items-center justify-between border-b border-gray-200 bg-white py-3 pl-16 pr-4 dark:border-gray-700 dark:bg-[#1a1a1a] sm:pr-6 lg:pl-6"
     >
-     
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <Link to="/" className="transition-transform duration-300 hover:scale-[1.03] inline-block">
-          <Logo size={30} />
-        </Link>
-      </motion.div>
+      {/* pl-16 on mobile leaves room for the floating menu button */}
+      <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
+        <Logo size={28} />
+      </Link>
 
-      <motion.nav
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="flex items-center gap-4"
-      >
-
-        <Link to="/login">
-          <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-800 hover:text-indigo-600 hover:border-indigo-500 hover:shadow-lg dark:bg-[#2a2a2a] dark:text-gray-100 dark:border-gray-600 dark:hover:text-indigo-400 dark:hover:border-indigo-400 transition-all duration-300"
-          >
-            Login
-          </motion.button>
-        </Link>
-
-        <Link to="/register">
-          <motion.button
-            whileHover={{ scale: 1.07, y: -2 }}
-            whileTap={{ scale: 0.94 }}
-            className="px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition-all duration-300"
-          >
-            Sign Up
-          </motion.button>
-        </Link>
-
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          whileHover={{ rotate: 12 }}
+      <nav className="flex items-center gap-2 sm:gap-3">
+        <button
           onClick={toggleTheme}
-          className="ml-1 p-2 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300"
-          title="Toggle Theme"
+          className="rounded-full border border-gray-300 bg-white p-2 transition hover:bg-gray-100 dark:border-gray-600 dark:bg-[#2a2a2a] dark:hover:bg-gray-700"
+          title="Toggle theme"
+          aria-label="Toggle theme"
         >
           {isDark ? (
-            <Sun className="w-5 h-5 text-spark-400 transition-transform duration-300" />
+            <Sun className="h-5 w-5 text-spark-400" />
           ) : (
-            <Moon className="w-5 h-5 text-gray-800 dark:text-gray-100 transition-transform duration-300" />
+            <Moon className="h-5 w-5 text-gray-800 dark:text-gray-100" />
           )}
-        </motion.button>
-      </motion.nav>
+        </button>
+
+        {isAuthenticated ? (
+          <>
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-gray-100 dark:hover:bg-white/5"
+              title="Profile"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-sm font-bold text-white">
+                {initial}
+              </span>
+              <span className="hidden max-w-[120px] truncate text-sm font-medium text-gray-700 dark:text-gray-200 sm:inline">
+                {user?.name || user?.email}
+              </span>
+            </Link>
+            <button
+              onClick={logout}
+              className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-red-500 dark:text-gray-300 dark:hover:bg-white/5"
+              title="Log out"
+              aria-label="Log out"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/login"
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-800 transition hover:border-brand-500 hover:text-brand-600 dark:border-gray-600 dark:text-gray-100"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="rounded-lg bg-brand-gradient px-3 py-1.5 text-sm font-medium text-white shadow-brand-sm transition hover:shadow-brand"
+            >
+              Sign Up
+            </Link>
+          </>
+        )}
+      </nav>
     </motion.header>
   );
 };
