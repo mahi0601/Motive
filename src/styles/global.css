@@ -3,10 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --brand: #7c5cf6;
+  --brand-strong: #6b46e8;
+  --brand-soft: #a07dfb;
+  --spark: #f5a524;
+}
+
 body {
-  @apply text-gray-300;
   font-family: 'Inter', 'Segoe UI', sans-serif;
-  background-color: #0d0d0d;
+  background-color: #fafafa;
+  color: #2c2a36;
   font-size: 16px;
   line-height: 1.7;
   letter-spacing: 0.1px;
@@ -15,60 +22,79 @@ body {
   scroll-behavior: smooth;
 }
 
+html.dark body {
+  background-color: #0e0d12;
+  color: #c9c6d4;
+}
+
 h1, h2, h3, h4, h5, h6 {
+  font-family: 'Sora', 'Inter', sans-serif;
   font-weight: 600;
-  color: #ffffff;
+  color: #1b1924;
   line-height: 1.3;
   margin-bottom: 0.5rem;
 }
 
+html.dark h1, html.dark h2, html.dark h3,
+html.dark h4, html.dark h5, html.dark h6 {
+  color: #ffffff;
+}
+
 p {
-  color: #cfcfcf;
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
 a {
-  color: #818cf8;
+  color: var(--brand);
   font-weight: 500;
   text-decoration: none;
   transition: all 0.3s ease-in-out;
 }
 
 a:hover {
-  color: #a5b4fc;
+  color: var(--brand-strong);
   text-decoration: underline;
 }
 
-button {
-  font-weight: 500;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #1a1a1a;
-  color: #f4f4f4;
-  border: 1px solid #2a2a2a;
+::selection {
+  background-color: rgba(124, 92, 246, 0.25);
 }
 
-button:focus {
+/* Minimal button reset: unstyled by default so utility classes (and icon
+   buttons) fully control appearance. The `.primary` / `.secondary` helper
+   classes opt into styling. (Previously every button got a dark box.) */
+button {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  transition: all 0.3s ease-in-out;
+}
+
+button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+  box-shadow: 0 0 0 3px rgba(124, 92, 246, 0.35);
 }
 
 button.primary {
-  background-color: #6366f1;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  background-image: linear-gradient(135deg, #7c5cf6 0%, #9b5cff 55%, #c45bd6 100%);
   color: white;
 }
 
 button.primary:hover {
-  background-color: #4f46e5;
+  box-shadow: 0 8px 24px -6px rgba(124, 92, 246, 0.5);
+  transform: translateY(-1px);
 }
 
 button.secondary {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
   background-color: #262626;
   color: #a5b4fc;
 }
@@ -131,8 +157,8 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+  border-color: #7c5cf6;
+  box-shadow: 0 0 0 3px rgba(124, 92, 246, 0.3);
 }
 
 ::placeholder {
@@ -149,8 +175,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #333333;
+  background-color: rgba(124, 92, 246, 0.35);
   border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(124, 92, 246, 0.55);
 }
 
 .text-title {

@@ -8,7 +8,7 @@ import {
   LineChart, Line, AreaChart, Area, CartesianGrid
 } from 'recharts';
 import { FiBarChart2, FiPieChart, FiTrendingUp, FiTrendingDown, FiCalendar, FiClock, FiTarget, FiAward } from 'react-icons/fi';
-import axios from 'axios';
+import api from '../services/api';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc'];
 
@@ -28,10 +28,7 @@ const Statistics = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/api/stats'); // token attached + silent refresh by interceptor
       const { taskStats, priorityStats } = res.data;
 
       setTaskData(taskStats || []);
