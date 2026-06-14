@@ -5,23 +5,24 @@ import { motion } from 'framer-motion';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-[#121212] transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0e0d12] transition-colors duration-300">
       <Sidebar />
 
-      <div className="flex flex-col flex-grow">
+      {/* Offset for the persistent sidebar on desktop; full width on mobile. */}
+      <div className="flex min-h-screen flex-col lg:ml-64">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
         >
           <Header />
         </motion.div>
 
         <motion.main
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="p-6 overflow-y-auto flex-grow bg-gray-50 dark:bg-[#1c1c1c] rounded-t-2xl shadow-inner transition-all duration-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="flex-grow overflow-y-auto p-4 sm:p-6"
         >
           {children}
         </motion.main>

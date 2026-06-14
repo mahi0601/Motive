@@ -78,16 +78,22 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
   );
 };
 
-const PageTree = () => {
+const PageTree = ({ onNavigate }) => {
   const { pages, addPage, removePage } = useWorkspace();
   const navigate = useNavigate();
   const { id: currentId } = useParams();
+
+  // Navigate and (on mobile) close the drawer.
+  const go = (path) => {
+    navigate(path);
+    onNavigate?.();
+  };
 
   const roots = pages.filter((p) => !p.parentId);
 
   const handleAdd = async (parentId = null) => {
     const page = await addPage({ parentId, title: 'Untitled' });
-    if (page?._id) navigate(`/page/${page._id}`);
+    if (page?._id) go(`/page/${page._id}`);
   };
 
   const handleDelete = async (id) => {
@@ -103,7 +109,7 @@ const PageTree = () => {
         <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Pages</span>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => navigate('/templates')}
+            onClick={() => go('/templates')}
             className="text-gray-400 hover:text-brand-500"
             title="New from template"
           >
@@ -136,7 +142,7 @@ const PageTree = () => {
               currentId={currentId}
               onAdd={handleAdd}
               onDelete={handleDelete}
-              navigate={navigate}
+              navigate={go}
             />
           ))
         )}
