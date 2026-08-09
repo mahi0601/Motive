@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { FiSettings, FiMoon, FiBell, FiLogOut, FiMail, FiUser, FiTrash2, FiAlertTriangle } from 'react-icons/fi';
+import { FiSettings, FiMoon, FiBell, FiLogOut, FiMail, FiUser, FiTrash2, FiAlertTriangle, FiStar, FiCheckCircle } from 'react-icons/fi';
 import { Menu } from '@headlessui/react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { deleteAccount } from '../services/userService';
+import { createCheckoutSession } from '../services/paymentService';
 
 const Settings = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { isDark: isDarkMode, toggleTheme: handleToggleTheme } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Upgrade flow — the buyer picks a currency, which decides which payment
+  // methods Stripe can offer (see paymentService.js for the constraints).
+  const CURRENCIES = [
+    { code: 'usd', label: '$9.99 USD', methods: 'Card · Google Pay · Apple Pay' },
+    { code: 'inr', label: '₹799 INR', methods: 'UPI (PhonePe, Google Pay, Paytm) · Card' },
+  ];
+  const [currency, setCurrency] = useState('usd');
+  const [upgrading, setUpgrading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState('');
+  const upgradeStatus = searchParams.get('upgrade'); // 'success' | 'cancelled' | null
+
+  // Coming back from Stripe Checkout — re-fetch the profile so `isPro` reflects
+  // the webhook's update, then drop the query param so a refresh doesn't re-trigger it.
+  useEffect(() => {
+    if (upgradeStatus !== 'success') return;
+    refreshUser().finally(() => {
+      setSearchParams({}, { replace: true });
+    });
+  }, [upgradeStatus, refreshUser, setSearchParams]);
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    setUpgradeError('');
+    try {
+      const { data } = await createCheckoutSession(currency);
+      window.location.href = data.url; // hand off to Stripe Checkout
+    } catch (err) {
+      setUpgradeError(err?.response?.data?.message || 'Could not start checkout. Try again.');
+      setUpgrading(false);
+    }
+  };
 
   // Account deletion flow
   const [confirming, setConfirming] = useState(false);
@@ -148,6 +182,66 @@ const Settings = () => {
               </button>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Enable email alerts and notifications.</p>
+          </motion.div>
+
+          {/* Upgrade to Pro */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-lg hover:ring-1 hover:ring-indigo-500 hover:border-indigo-500 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <FiStar className="text-indigo-500" />
+                <h4 className="text-lg font-semibold">Motive Pro</h4>
+              </div>
+              {user?.isPro && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <FiCheckCircle /> You're a Pro member
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              {user?.isPro
+                ? 'Thanks for supporting Motive — all Pro features are unlocked.'
+                : 'Unlock Pro features with a single one-time payment, no subscription.'}
+            </p>
+
+            {!user?.isPro && (
+              <>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {CURRENCIES.map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => setCurrency(c.code)}
+                      className={`text-left rounded-lg border px-3 py-2 transition-all duration-200 ${
+                        currency === c.code
+                          ? 'border-indigo-500 ring-1 ring-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-indigo-400'
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100">{c.label}</span>
+                      <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">{c.methods}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Actual methods shown at checkout depend on what's enabled for this Stripe account — this is just what each currency makes possible.
+                </p>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={upgrading}
+                  className="mt-3 px-4 py-2 text-sm rounded-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-60"
+                >
+                  {upgrading ? 'Redirecting…' : 'Upgrade — one-time payment'}
+                </button>
+              </>
+            )}
+
+            {upgradeError && <p className="text-xs text-red-500 mt-2">{upgradeError}</p>}
+            {upgradeStatus === 'cancelled' && !user?.isPro && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">Checkout was cancelled — no charge was made.</p>
+            )}
           </motion.div>
 
           {/* Danger Zone — delete account */}

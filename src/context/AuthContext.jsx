@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { setAccessToken, clearAccessToken, refreshSession } from '../services/api';
 import { logout as logoutRequest } from '../services/authService';
+import { getProfile } from '../services/userService';
 
 const AuthContext = createContext();
 
@@ -48,6 +49,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   }, []);
 
+  // Re-fetch the current user profile from the server — e.g. after returning
+  // from Stripe Checkout, to pick up the `isPro` flag the webhook just set.
+  const refreshUser = useCallback(async () => {
+    const { data } = await getProfile();
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await logoutRequest(); // revokes refresh token + clears cookie
@@ -60,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, bootstrapping, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, bootstrapping, isAuthenticated: !!user, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
