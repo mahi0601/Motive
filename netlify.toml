@@ -1,0 +1,31 @@
+# Netlify deploy config for the Motive web app (Vite static build + PWA).
+# Backend stays on Render — see motive-backend/render.yaml. Set VITE_API_BASE_URL
+# in Netlify's dashboard (Site settings → Environment variables) or via
+# `netlify env:set VITE_API_BASE_URL https://motive-api-u7xg.onrender.com`
+# before the first deploy; Vite inlines it at build time.
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+# SPA fallback — every non-file path serves index.html so client-side routing
+# (react-router) handles the path instead of Netlify 404ing it.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Never cache the service worker / manifest, or PWA updates won't reach clients.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/registerSW.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
