@@ -6,8 +6,13 @@ const KeyboardShortcuts = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const isEditableTarget = (el) =>
+      el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      // '?' opens this reference modal — Cmd/Ctrl+K now opens the real
+      // command palette instead (see CommandPaletteContext).
+      if (e.key === '?' && !isEditableTarget(e.target)) {
         e.preventDefault();
         setIsOpen(true);
       }
@@ -21,12 +26,9 @@ const KeyboardShortcuts = () => {
   }, []);
 
   const shortcuts = [
-    { key: 'N', description: 'Create new task', action: 'Ctrl/Cmd + N' },
-    { key: 'K', description: 'Open shortcuts', action: 'Ctrl/Cmd + K' },
-    { key: 'F', description: 'Focus search', action: 'Ctrl/Cmd + F' },
+    { key: 'K', description: 'Open command palette / search', action: 'Ctrl/Cmd + K' },
     { key: 'Escape', description: 'Close modals', action: 'Esc' },
-    { key: '/', description: 'Quick search', action: '/' },
-    { key: '?', description: 'Show shortcuts', action: '?' },
+    { key: '?', description: 'Show this shortcuts reference', action: '?' },
   ];
 
   return (
@@ -83,7 +85,7 @@ const KeyboardShortcuts = () => {
                 </div>
                 <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl">
                   <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                    💡 Tip: Press <kbd className="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">Ctrl/Cmd + K</kbd> anytime to open this menu
+                    💡 Tip: Press <kbd className="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">?</kbd> anytime to open this menu, or <kbd className="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">Ctrl/Cmd + K</kbd> for the command palette
                   </p>
                 </div>
               </div>
@@ -97,7 +99,7 @@ const KeyboardShortcuts = () => {
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40"
-        title="Keyboard Shortcuts (Ctrl/Cmd + K)"
+        title="Keyboard Shortcuts (?)"
       >
         <FiCommand className="w-5 h-5" />
       </motion.button>
