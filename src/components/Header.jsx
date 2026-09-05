@@ -1,16 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Moon, Sun, LogOut } from 'lucide-react';
+import { Moon, Sun, LogOut, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { getNotifications } from '../services/notificationService';
+import NotificationCenter from './NotificationCenter';
 
 const Header = () => {
   const { isDark, toggleTheme } = useTheme();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, bootstrapping, isAuthenticated, logout } = useAuth();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
+
+  // Initial unread count so the badge shows up before the panel is ever opened.
+  useEffect(() => {
+    if (bootstrapping || !isAuthenticated) return;
+    (async () => {
+      try {
+        const { data } = await getNotifications();
+        setUnreadCount((data.notifications || []).filter((n) => !n.read).length);
+      } catch {
+        /* badge just stays at 0 */
+      }
+    })();
+  }, [bootstrapping, isAuthenticated]);
+
+  const handleUnreadChange = useCallback((count) => setUnreadCount(count), []);
 
   return (
     <motion.header
@@ -40,6 +59,19 @@ const Header = () => {
 
         {isAuthenticated ? (
           <>
+            <button
+              onClick={() => setNotifOpen(true)}
+              className="relative rounded-full border border-gray-300 bg-white p-2 transition hover:bg-gray-100 dark:border-gray-600 dark:bg-[#2a2a2a] dark:hover:bg-gray-700"
+              title="Notifications"
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5 text-gray-800 dark:text-gray-100" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
             <Link
               to="/profile"
               className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-gray-100 dark:hover:bg-white/5"
@@ -78,6 +110,12 @@ const Header = () => {
           </>
         )}
       </nav>
+
+      <NotificationCenter
+        isOpen={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        onUnreadChange={handleUnreadChange}
+      />
     </motion.header>
   );
 };
