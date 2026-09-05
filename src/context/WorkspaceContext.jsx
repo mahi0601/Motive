@@ -52,14 +52,14 @@ export const WorkspaceProvider = ({ children }) => {
 
   const editPage = async (id, payload) => {
     const { data } = await updatePage(id, payload);
-    setPages((prev) => prev.map((p) => (p._id === id ? data : p)));
+    setPages((prev) => prev.map((p) => (p.id === id ? data : p)));
     return data;
   };
 
   const removePage = async (id) => {
     await deletePage(id);
     // archived pages + descendants disappear from the tree
-    setPages((prev) => prev.filter((p) => p._id !== id && p.parentId !== id));
+    setPages((prev) => prev.filter((p) => p.id !== id && p.parentId !== id));
     await refreshPages();
   };
 
