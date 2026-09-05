@@ -77,9 +77,18 @@ const BlockEditor = ({ pageId }) => {
     await deleteBlock(id).catch((e) => console.error(e));
   };
 
+  // Table/embed carry a different content shape than the plain-text blocks —
+  // resetting to { text: '' } on convert would leave them with the wrong shape.
+  const defaultContentFor = (type) => {
+    if (type === 'table') return { rows: [['', ''], ['', '']] };
+    if (type === 'embed') return { url: '' };
+    return { text: '' };
+  };
+
   const handleConvert = (id, type) => {
-    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, type, content: { text: '' } } : b)));
-    updateBlock(id, { type, content: { text: '' } }).catch((e) => console.error(e));
+    const content = defaultContentFor(type);
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, type, content } : b)));
+    updateBlock(id, { type, content }).catch((e) => console.error(e));
     setFocusId(id);
   };
 
@@ -96,12 +105,7 @@ const BlockEditor = ({ pageId }) => {
 
   const selectSlashType = (type) => {
     if (!slash) return;
-    if (type === 'divider' || type === 'image') {
-      // replace current block with the special block
-      handleConvert(slash.blockId, type);
-    } else {
-      handleConvert(slash.blockId, type);
-    }
+    handleConvert(slash.blockId, type);
     setSlash(null);
   };
 
