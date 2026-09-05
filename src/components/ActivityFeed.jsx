@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiCheckCircle, FiPlus, FiEdit, FiTrash2, FiClock } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { getActivity } from '../services/activityService';
 
 const ActivityFeed = ({ limit = 5 }) => {
+  const { bootstrapping, isAuthenticated } = useAuth();
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('taskActivities');
-    if (stored) {
-      setActivities(JSON.parse(stored).slice(0, limit));
+    if (bootstrapping) return;
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
     }
-  }, [limit]);
+    (async () => {
+      try {
+        const { data } = await getActivity({ limit });
+        setActivities(data.items || []);
+      } catch (e) {
+        console.error('Failed to load activity', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [bootstrapping, isAuthenticated, limit]);
 
   const getActivityIcon = (type) => {
     switch (type) {
@@ -42,7 +57,7 @@ const ActivityFeed = ({ limit = 5 }) => {
     }
   };
 
-  if (activities.length === 0) {
+  if (loading || activities.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -51,7 +66,7 @@ const ActivityFeed = ({ limit = 5 }) => {
       >
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Activity</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-          No recent activity
+          {loading ? 'Loading…' : 'No recent activity'}
         </p>
       </motion.div>
     );
@@ -68,22 +83,20 @@ const ActivityFeed = ({ limit = 5 }) => {
         Recent Activity
       </h3>
       <div className="space-y-3">
-        {activities.map((activity, index) => (
+        {activities.map((activity) => (
           <motion.div
-            key={index}
+            key={activity.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`p-3 rounded-lg border ${getActivityColor(activity.type)}`}
+            className={`p-3 rounded-lg border ${getActivityColor(activity.action)}`}
           >
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
-                {getActivityIcon(activity.type)}
+                {getActivityIcon(activity.action)}
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-800 dark:text-gray-200">
-                  <span className="font-medium">{activity.taskTitle}</span>
-                  <span className="text-gray-600 dark:text-gray-400"> {activity.message}</span>
+                  {activity.description}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   {new Date(activity.timestamp).toLocaleString()}
@@ -98,4 +111,3 @@ const ActivityFeed = ({ limit = 5 }) => {
 };
 
 export default ActivityFeed;
-
