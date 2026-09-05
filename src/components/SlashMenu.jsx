@@ -13,6 +13,8 @@ import {
   Minus,
   Image as ImageIcon,
   Info,
+  Table,
+  Link as LinkIcon,
 } from 'lucide-react';
 
 export const BLOCK_OPTIONS = [
@@ -29,6 +31,8 @@ export const BLOCK_OPTIONS = [
   { type: 'callout', label: 'Callout', icon: Info, keywords: 'callout note' },
   { type: 'divider', label: 'Divider', icon: Minus, keywords: 'divider line hr' },
   { type: 'image', label: 'Image', icon: ImageIcon, keywords: 'image picture photo' },
+  { type: 'table', label: 'Table', icon: Table, keywords: 'table grid rows columns' },
+  { type: 'embed', label: 'Embed', icon: LinkIcon, keywords: 'embed link video youtube url' },
 ];
 
 const SlashMenu = ({ query, position, onSelect, onClose }) => {
