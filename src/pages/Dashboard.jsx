@@ -98,11 +98,22 @@ const Dashboard = () => {
     }
   };
 
-  const removeTask = async (task) => {
-    if (!window.confirm(`Delete "${task.title}"?`)) return;
+  // Optimistically hide the task, then actually delete it after a grace
+  // window — long enough for the "Undo" toast action to cancel it.
+  const removeTask = (task) => {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
-    await deleteTask(task.id).catch((e) => console.error(e));
-    notify('success', 'Task deleted', task.title);
+    let undone = false;
+    const timer = setTimeout(() => {
+      if (!undone) deleteTask(task.id).catch((e) => console.error(e));
+    }, 5000);
+    notify('info', 'Task deleted', task.title, {
+      label: 'Undo',
+      onAction: () => {
+        undone = true;
+        clearTimeout(timer);
+        setTasks((prev) => [...prev, task]);
+      },
+    });
   };
 
   const toggleComplete = async (task) => {

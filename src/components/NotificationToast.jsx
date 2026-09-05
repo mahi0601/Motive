@@ -58,6 +58,17 @@ const NotificationToast = ({ notifications, onRemove }) => {
                   </p>
                 )}
               </div>
+              {notification.action && (
+                <button
+                  onClick={() => {
+                    notification.action.onAction();
+                    onRemove(notification.id);
+                  }}
+                  className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-brand-600 hover:bg-black/10 dark:text-brand-400"
+                >
+                  {notification.action.label}
+                </button>
+              )}
               <button
                 onClick={() => onRemove(notification.id)}
                 className="p-1 hover:bg-black/10 rounded transition-colors"

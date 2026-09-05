@@ -63,9 +63,16 @@ export const WorkspaceProvider = ({ children }) => {
     await refreshPages();
   };
 
+  // Undo for removePage — the backend only archives (blocks are left
+  // intact), so un-archiving genuinely restores the page's real content.
+  const restorePage = async (id) => {
+    await editPage(id, { archived: false });
+    await refreshPages();
+  };
+
   return (
     <WorkspaceContext.Provider
-      value={{ workspace, pages, loading, refreshPages, addPage, editPage, removePage }}
+      value={{ workspace, pages, loading, refreshPages, addPage, editPage, removePage, restorePage }}
     >
       {children}
     </WorkspaceContext.Provider>
