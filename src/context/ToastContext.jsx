@@ -16,10 +16,12 @@ export const ToastProvider = ({ children }) => {
 
   // A counter (not Date.now()) — two toasts fired in the same tick would
   // otherwise collide on id and break the AnimatePresence/React keys.
-  const notify = useCallback((type, title, message = '') => {
+  // `action` (optional): { label, onAction } renders a button in the toast
+  // (e.g. "Undo") and extends the auto-dismiss window so there's time to click it.
+  const notify = useCallback((type, title, message = '', action = null) => {
     const id = ++nextId.current;
-    setToasts((t) => [...t, { id, type, title, message }]);
-    timers.current[id] = setTimeout(() => remove(id), 4000);
+    setToasts((t) => [...t, { id, type, title, message, action }]);
+    timers.current[id] = setTimeout(() => remove(id), action ? 6000 : 4000);
   }, [remove]);
 
   useEffect(() => {
