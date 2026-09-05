@@ -1,18 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { FiSettings, FiMoon, FiBell, FiLogOut, FiMail, FiUser, FiTrash2, FiAlertTriangle, FiStar, FiCheckCircle } from 'react-icons/fi';
+import { FiSettings, FiMoon, FiBell, FiLogOut, FiMail, FiUser, FiTrash2, FiAlertTriangle, FiStar, FiCheckCircle, FiUsers } from 'react-icons/fi';
 import { Menu } from '@headlessui/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
 import { createCheckoutSession } from '../services/paymentService';
+import { inviteMember } from '../services/workspaceService';
 
 const Settings = () => {
   const { user, logout, refreshUser } = useAuth();
   const { isDark: isDarkMode, toggleTheme: handleToggleTheme } = useTheme();
+  const { workspace, loadWorkspace } = useWorkspace();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Invite a teammate into the workspace — this is the only way another real
+  // person ever becomes @mentionable (there's no other sharing mechanism).
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteStatus, setInviteStatus] = useState(null); // { type: 'success'|'error', message }
+  const [inviting, setInviting] = useState(false);
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim() || !workspace?.id) return;
+    setInviting(true);
+    setInviteStatus(null);
+    try {
+      await inviteMember(workspace.id, inviteEmail.trim());
+      setInviteStatus({ type: 'success', message: `Added ${inviteEmail.trim()} to your workspace.` });
+      setInviteEmail('');
+      loadWorkspace(); // refresh so the new member shows up immediately
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not invite that user.' });
+    } finally {
+      setInviting(false);
+    }
+  };
 
   // Upgrade flow — the buyer picks a currency, which decides which payment
   // methods Stripe can offer (see paymentService.js for the constraints).
@@ -182,6 +208,53 @@ const Settings = () => {
               </button>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Enable email alerts and notifications.</p>
+          </motion.div>
+
+          {/* Workspace members — the only way another person becomes @mentionable */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="p-5 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm hover:shadow-lg hover:ring-1 hover:ring-indigo-500 hover:border-indigo-500 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <FiUsers className="text-indigo-500" />
+              <h4 className="text-lg font-semibold">Workspace</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Invite a teammate by email — they'll be able to comment and be @mentioned on your tasks.
+            </p>
+            <form onSubmit={handleInvite} className="flex gap-2">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="teammate@example.com"
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+              />
+              <button
+                type="submit"
+                disabled={inviting}
+                className="px-4 py-2 text-sm rounded-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
+              >
+                {inviting ? 'Inviting…' : 'Invite'}
+              </button>
+            </form>
+            {inviteStatus && (
+              <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
+                {inviteStatus.message}
+              </p>
+            )}
+            {workspace?.members?.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {workspace.members.map((m) => (
+                  <span
+                    key={m.id}
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
+                    {m.user?.name} {m.role === 'owner' ? '(you)' : ''}
+                  </span>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Upgrade to Pro */}
