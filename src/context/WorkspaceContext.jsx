@@ -72,7 +72,7 @@ export const WorkspaceProvider = ({ children }) => {
 
   return (
     <WorkspaceContext.Provider
-      value={{ workspace, pages, loading, refreshPages, addPage, editPage, removePage, restorePage }}
+      value={{ workspace, pages, loading, refreshPages, loadWorkspace, addPage, editPage, removePage, restorePage }}
     >
       {children}
     </WorkspaceContext.Provider>
