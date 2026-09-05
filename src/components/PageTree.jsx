@@ -5,7 +5,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 
 const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate }) => {
   const [open, setOpen] = useState(true);
-  const children = allPages.filter((p) => String(p.parentId) === String(page._id));
+  const children = allPages.filter((p) => String(p.parentId) === String(page.id));
   const hasChildren = children.length > 0;
 
   return (
@@ -13,12 +13,12 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
       <div
         className={`group flex items-center gap-1 rounded-md px-2 py-1 text-sm cursor-pointer
           ${
-            String(currentId) === String(page._id)
+            String(currentId) === String(page.id)
               ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
           }`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
-        onClick={() => navigate(`/page/${page._id}`)}
+        onClick={() => navigate(`/page/${page.id}`)}
       >
         <button
           onClick={(e) => {
@@ -42,7 +42,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onAdd(page._id);
+            onAdd(page.id);
           }}
           className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-indigo-500"
           title="Add sub-page"
@@ -52,7 +52,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(page._id);
+            onDelete(page.id);
           }}
           className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500"
           title="Delete page"
@@ -64,7 +64,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
       {open &&
         children.map((child) => (
           <PageNode
-            key={child._id}
+            key={child.id}
             page={child}
             allPages={allPages}
             depth={depth + 1}
@@ -93,7 +93,7 @@ const PageTree = ({ onNavigate }) => {
 
   const handleAdd = async (parentId = null) => {
     const page = await addPage({ parentId, title: 'Untitled' });
-    if (page?._id) go(`/page/${page._id}`);
+    if (page?.id) go(`/page/${page.id}`);
   };
 
   const handleDelete = async (id) => {
@@ -135,7 +135,7 @@ const PageTree = ({ onNavigate }) => {
         ) : (
           roots.map((page) => (
             <PageNode
-              key={page._id}
+              key={page.id}
               page={page}
               allPages={pages}
               depth={0}

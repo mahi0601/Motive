@@ -25,7 +25,7 @@ const BlockEditor = ({ pageId }) => {
       if (data.length === 0) {
         const { data: first } = await createBlock(pageId, { type: 'paragraph', content: { text: '' } });
         setBlocks([first]);
-        setFocusId(first._id);
+        setFocusId(first.id);
       } else {
         setBlocks(data);
       }
@@ -43,7 +43,7 @@ const BlockEditor = ({ pageId }) => {
   }, []);
 
   const handleChange = (id, content) => {
-    setBlocks((prev) => prev.map((b) => (b._id === id ? { ...b, content } : b)));
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content } : b)));
     scheduleSave(id, { content });
 
     // keep slash menu query in sync
@@ -65,29 +65,29 @@ const BlockEditor = ({ pageId }) => {
       next.splice(index + 1, 0, created);
       return next;
     });
-    setFocusId(created._id);
+    setFocusId(created.id);
     // re-sequence positions on the server
     persistOrder();
   };
 
   const handleDeleteEmpty = async (id, index) => {
     if (blocks.length === 1) return; // keep at least one block
-    setBlocks((prev) => prev.filter((b) => b._id !== id));
-    if (index > 0) setFocusId(blocks[index - 1]._id);
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
+    if (index > 0) setFocusId(blocks[index - 1].id);
     await deleteBlock(id).catch((e) => console.error(e));
   };
 
   const handleConvert = (id, type) => {
-    setBlocks((prev) => prev.map((b) => (b._id === id ? { ...b, type, content: { text: '' } } : b)));
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, type, content: { text: '' } } : b)));
     updateBlock(id, { type, content: { text: '' } }).catch((e) => console.error(e));
     setFocusId(id);
   };
 
   const handleToggleCheck = (id, checked) => {
     setBlocks((prev) =>
-      prev.map((b) => (b._id === id ? { ...b, content: { ...b.content, checked } } : b))
+      prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, checked } } : b))
     );
-    updateBlock(id, { content: { ...blocks.find((b) => b._id === id)?.content, checked } }).catch(
+    updateBlock(id, { content: { ...blocks.find((b) => b.id === id)?.content, checked } }).catch(
       (e) => console.error(e)
     );
   };
@@ -117,7 +117,7 @@ const BlockEditor = ({ pageId }) => {
     setBlocks(reordered);
     reorderBlocks(
       pageId,
-      reordered.map((b, i) => ({ id: b._id, position: i }))
+      reordered.map((b, i) => ({ id: b.id, position: i }))
     ).catch((e) => console.error(e));
   };
 
@@ -125,7 +125,7 @@ const BlockEditor = ({ pageId }) => {
     setBlocks((cur) => {
       reorderBlocks(
         pageId,
-        cur.map((b, i) => ({ id: b._id, position: i }))
+        cur.map((b, i) => ({ id: b.id, position: i }))
       ).catch(() => {});
       return cur;
     });
@@ -138,13 +138,13 @@ const BlockEditor = ({ pageId }) => {
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {blocks.map((block, index) => (
-                <Draggable key={block._id} draggableId={block._id} index={index}>
+                <Draggable key={block.id} draggableId={block.id} index={index}>
                   {(prov) => (
                     <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
                       <Block
                         block={block}
                         index={index}
-                        shouldFocus={focusId === block._id}
+                        shouldFocus={focusId === block.id}
                         onChange={handleChange}
                         onEnter={handleEnter}
                         onDeleteEmpty={handleDeleteEmpty}
