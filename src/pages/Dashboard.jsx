@@ -11,6 +11,7 @@ import QuickActions from '../components/QuickActions';
 import TaskAnalytics from '../components/TaskAnalytics';
 import ActivityFeed from '../components/ActivityFeed';
 import KeyboardShortcuts from '../components/KeyboardShortcuts';
+import WelcomeModal, { hasSeenWelcome } from '../components/WelcomeModal';
 import { useToast } from '../context/ToastContext';
 import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
@@ -31,12 +32,17 @@ const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const { notify } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const { data } = await getTasks({ limit: 200 });
         setTasks(data.items || []);
+        // Only for a genuinely new, empty account — not just "never
+        // dismissed in this browser" (that would also fire for an existing
+        // user on a fresh device/incognito window).
+        if ((data.items || []).length === 0 && !hasSeenWelcome()) setShowWelcome(true);
       } catch (e) {
         console.error('Failed to load tasks', e);
       } finally {
@@ -269,6 +275,7 @@ const Dashboard = () => {
       )}
 
       <KeyboardShortcuts />
+      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
     </DashboardLayout>
   );
 };
