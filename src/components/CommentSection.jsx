@@ -1,39 +1,194 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { FiSend } from 'react-icons/fi';
+import { getComments, addComment } from '../services/commentService';
+import { getWorkspaces } from '../services/workspaceService';
+import { useAuth } from '../context/AuthContext';
 
-const CommentsSection = ({ comments = [] }) => {
+// Mentions are authored inline as @[Display Name](userId) and rendered back
+// as a highlighted chip — same token format the backend parses to decide
+// who to notify (see comment.controller.js).
+const MENTION_RE = /@\[([^\]]+)\]\(([^)]+)\)/g;
+
+const renderWithMentions = (text) => {
+  const parts = [];
+  let last = 0;
+  for (const m of text.matchAll(MENTION_RE)) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    parts.push(
+      <span key={m.index} className="rounded bg-brand-soft px-1 font-medium text-brand-600 dark:text-brand-400">
+        @{m[1]}
+      </span>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+};
+
+const CommentSection = ({ taskId }) => {
+  const { user } = useAuth();
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState('');
+  const [members, setMembers] = useState([]);
+  const [mentionQuery, setMentionQuery] = useState(null); // string while the picker is open, else null
+  const [mentionStart, setMentionStart] = useState(null); // index of the '@' that triggered it
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (!taskId) return;
+    (async () => {
+      try {
+        const { data } = await getComments(taskId);
+        setComments(data.comments || []);
+      } catch (e) {
+        console.error('Failed to load comments', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // Workspace members are the mention candidates — there's no per-task
+    // sharing model in this app, so "who can be @mentioned" is scoped to
+    // your own workspace rather than "who has access to this task".
+    (async () => {
+      try {
+        const { data } = await getWorkspaces();
+        const all = (data[0]?.members || []).map((m) => m.user).filter(Boolean);
+        setMembers(all);
+      } catch (e) {
+        console.error('Failed to load workspace members', e);
+      }
+    })();
+  }, [taskId]);
+
+  const filteredMembers = useMemo(() => {
+    if (mentionQuery == null) return [];
+    const q = mentionQuery.toLowerCase();
+    return members.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)).slice(0, 5);
+  }, [mentionQuery, members]);
+
+  const handleTextChange = (e) => {
+    const value = e.target.value;
+    setText(value);
+    const caret = e.target.selectionStart;
+    const upToCaret = value.slice(0, caret);
+    const atIndex = upToCaret.lastIndexOf('@');
+    if (atIndex === -1 || /\s/.test(upToCaret.slice(atIndex + 1))) {
+      setMentionQuery(null);
+      return;
+    }
+    setMentionStart(atIndex);
+    setMentionQuery(upToCaret.slice(atIndex + 1));
+  };
+
+  const selectMention = (member) => {
+    const before = text.slice(0, mentionStart);
+    const after = text.slice(mentionStart + 1 + (mentionQuery?.length || 0));
+    const token = `@[${member.name}](${member.id})`;
+    setText(`${before}${token} ${after}`);
+    setMentionQuery(null);
+    textareaRef.current?.focus();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    try {
+      const { data } = await addComment(taskId, text.trim());
+      setComments((prev) => [...prev, data.comment]);
+      setText('');
+    } catch (e) {
+      console.error('Failed to add comment', e);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-6 bg-white dark:bg-[#2a2a2a] p-5 rounded-2xl shadow-md border border-gray-200 dark:border-[#3a3a3a]"
+      className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
     >
-      <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-        💬 Comments
+      <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
+        💬 Comments ({comments.length})
       </h4>
 
-      {comments.length === 0 ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-          No comments yet.
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {comments.map((c, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="text-sm text-gray-800 dark:text-gray-100 bg-gray-100 dark:bg-[#1f1f1f] p-3 rounded-lg border border-gray-200 dark:border-[#3a3a3a] shadow-sm"
+      <form onSubmit={handleSubmit} className="relative mb-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-bold text-white">
+            {(user?.name || '?').charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={handleTextChange}
+              placeholder="Add a comment… use @ to mention someone"
+              rows={3}
+              className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 outline-none transition focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+            {mentionQuery != null && filteredMembers.length > 0 && (
+              <div className="absolute z-10 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#1f1f1f]">
+                {filteredMembers.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      selectMention(m);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5"
+                  >
+                    <span className="font-medium text-gray-800 dark:text-white">{m.name}</span>
+                    <span className="text-xs text-gray-400">{m.email}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="mt-2 flex justify-end">
+              <button
+                type="submit"
+                className="flex items-center gap-2 rounded-lg bg-brand-gradient px-4 py-2 font-medium text-white shadow-sm transition hover:shadow-md"
+              >
+                <FiSend className="h-4 w-4" />
+                Post Comment
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div className="space-y-4">
+        {loading ? (
+          <p className="text-center text-sm text-gray-400">Loading…</p>
+        ) : comments.length === 0 ? (
+          <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            No comments yet. Be the first to comment!
+          </p>
+        ) : (
+          comments.map((c) => (
+            <div
+              key={c.id}
+              className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700/50"
             >
-              {c}
-            </motion.li>
-          ))}
-        </ul>
-      )}
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-bold text-white">
+                  {(c.user?.name || '?').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white">{c.user?.name || 'Someone'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(c.createdAt).toLocaleString()}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                    {renderWithMentions(c.text)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </motion.div>
   );
 };
 
-export default CommentsSection;
+export default CommentSection;
