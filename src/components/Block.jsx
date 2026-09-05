@@ -71,7 +71,7 @@ const Block = ({
       ref.current.textContent = block.content?.text || '';
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [block._id, block.type]);
+  }, [block.id, block.type]);
 
   useEffect(() => {
     if (shouldFocus && ref.current) {
@@ -93,7 +93,7 @@ const Block = ({
     for (const { re, type } of MD_SHORTCUTS) {
       if (re.test(text)) {
         e.currentTarget.textContent = '';
-        onConvert(block._id, type);
+        onConvert(block.id, type);
         return;
       }
     }
@@ -102,25 +102,25 @@ const Block = ({
     if (text === '/') {
       const rect = e.currentTarget.getBoundingClientRect();
       const parentRect = e.currentTarget.offsetParent?.getBoundingClientRect() || { top: 0, left: 0 };
-      onSlash(block._id, {
+      onSlash(block.id, {
         top: rect.bottom - parentRect.top + 4,
         left: rect.left - parentRect.left,
       });
     }
 
-    onChange(block._id, { ...block.content, text });
+    onChange(block.id, { ...block.content, text });
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey && block.type !== 'code') {
       e.preventDefault();
-      onEnter(block._id, index);
+      onEnter(block.id, index);
     } else if (e.key === 'Backspace') {
       const text = e.currentTarget.textContent;
       if (text.length === 0 || caretAtStart(e.currentTarget)) {
         if (text.length === 0) {
           e.preventDefault();
-          onDeleteEmpty(block._id, index);
+          onDeleteEmpty(block.id, index);
         }
       }
     }
@@ -174,7 +174,7 @@ const Block = ({
         <input
           type="checkbox"
           checked={!!block.content?.checked}
-          onChange={() => onToggleCheck(block._id, !block.content?.checked)}
+          onChange={() => onToggleCheck(block.id, !block.content?.checked)}
           className="mt-1.5 h-4 w-4 accent-indigo-500"
         />
       )}

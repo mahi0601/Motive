@@ -77,7 +77,7 @@ const EventRow = ({ t, onDelete }) => (
     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor(t.priority)}`} />
     <span className="flex-1 truncate text-sm text-gray-800 dark:text-gray-100">{t.title}</span>
     <button
-      onClick={() => onDelete(t._id)}
+      onClick={() => onDelete(t.id)}
       className="text-gray-300 opacity-0 transition group-hover:opacity-100 hover:text-red-500"
       aria-label="Delete event"
     >
@@ -164,7 +164,7 @@ const CalendarView = () => {
   };
 
   const handleDelete = async (id) => {
-    setTasks((prev) => prev.filter((t) => t._id !== id));
+    setTasks((prev) => prev.filter((t) => t.id !== id));
     await deleteTask(id).catch((e) => console.error(e));
   };
 
@@ -253,7 +253,7 @@ const CalendarView = () => {
                   </span>
                   <div className="flex h-1.5 items-center gap-0.5">
                     {dayTasks.slice(0, 3).map((t) => (
-                      <span key={t._id} className={`h-1.5 w-1.5 rounded-full ${dotColor(t.priority)}`} />
+                      <span key={t.id} className={`h-1.5 w-1.5 rounded-full ${dotColor(t.priority)}`} />
                     ))}
                   </div>
                 </button>
@@ -275,7 +275,7 @@ const CalendarView = () => {
             ) : (
               <ul className="mt-3 divide-y divide-gray-100 dark:divide-[#2A2733]">
                 <AnimatePresence initial={false}>
-                  {selectedTasks.map((t) => <EventRow key={t._id} t={t} onDelete={handleDelete} />)}
+                  {selectedTasks.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} />)}
                 </AnimatePresence>
               </ul>
             )}
@@ -304,7 +304,7 @@ const CalendarView = () => {
                   </div>
                   <ul className="divide-y divide-gray-100 dark:divide-[#2A2733]">
                     <AnimatePresence initial={false}>
-                      {g.items.map((t) => <EventRow key={t._id} t={t} onDelete={handleDelete} />)}
+                      {g.items.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} />)}
                     </AnimatePresence>
                   </ul>
                 </div>

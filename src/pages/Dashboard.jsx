@@ -17,7 +17,7 @@ const CATEGORIES = ['Personal', 'Finance', 'Health', 'Development'];
 const PRIORITIES = ['High', 'Medium', 'Low'];
 
 // Map a persisted task to the shape the card/analytics components expect.
-const toView = (t) => ({ ...t, id: t._id, completed: t.status === 'done', tags: t.tags || [] });
+const toView = (t) => ({ ...t, completed: t.status === 'done', tags: t.tags || [] });
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -80,7 +80,7 @@ const Dashboard = () => {
         priority: data.priority,
         category: data.category,
       });
-      setTasks((prev) => prev.map((t) => (t._id === editingTask.id ? res.task : t)));
+      setTasks((prev) => prev.map((t) => (t.id === editingTask.id ? res.task : t)));
       notify('success', 'Task updated', res.task.title);
     } catch (e) {
       notify('error', 'Could not update task');
@@ -93,21 +93,21 @@ const Dashboard = () => {
 
   const removeTask = async (task) => {
     if (!window.confirm(`Delete "${task.title}"?`)) return;
-    setTasks((prev) => prev.filter((t) => t._id !== task.id));
+    setTasks((prev) => prev.filter((t) => t.id !== task.id));
     await deleteTask(task.id).catch((e) => console.error(e));
     notify('success', 'Task deleted', task.title);
   };
 
   const toggleComplete = async (task) => {
     const status = task.completed ? 'todo' : 'done';
-    setTasks((prev) => prev.map((t) => (t._id === task.id ? { ...t, status } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status } : t)));
     await updateTask(task.id, { status }).catch((e) => console.error(e));
   };
 
   const onDragEnd = ({ destination, source, draggableId }) => {
     if (!destination || destination.droppableId === source.droppableId) return;
     const category = destination.droppableId;
-    setTasks((prev) => prev.map((t) => (t._id === draggableId ? { ...t, category } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === draggableId ? { ...t, category } : t)));
     updateTask(draggableId, { category }).catch((e) => console.error(e));
   };
 
