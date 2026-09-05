@@ -30,7 +30,7 @@ const PageView = () => {
     if (page && titleRef.current && titleRef.current.textContent !== page.title) {
       titleRef.current.textContent = page.title === 'Untitled' ? '' : page.title;
     }
-  }, [page?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTitleInput = (e) => {
     const title = e.currentTarget.textContent || 'Untitled';

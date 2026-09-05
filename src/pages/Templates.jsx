@@ -28,7 +28,7 @@ const Templates = () => {
           </div>
         </div>
 
-        <TemplateGallery onUse={(page) => page && navigate(`/page/${page._id}`)} />
+        <TemplateGallery onUse={(page) => page && navigate(`/page/${page.id}`)} />
       </div>
     </DashboardLayout>
   );
