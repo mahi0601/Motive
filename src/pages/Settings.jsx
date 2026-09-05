@@ -25,7 +25,15 @@ const Settings = () => {
 
   const handleInvite = async (e) => {
     e.preventDefault();
-    if (!inviteEmail.trim() || !workspace?.id) return;
+    if (!inviteEmail.trim()) return;
+    if (!workspace?.id) {
+      // Workspace loads async on app start; this only happens if the user
+      // clicks Invite in that brief window. Silently no-op'ing here (the
+      // original bug) looked identical to a successful invite that just
+      // didn't do anything.
+      setInviteStatus({ type: 'error', message: 'Still loading your workspace — try again in a moment.' });
+      return;
+    }
     setInviting(true);
     setInviteStatus(null);
     try {
