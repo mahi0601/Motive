@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { GripVertical, Plus } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { GripVertical, Plus, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { htmlForContent, sanitizeInlineHtml, toggleMark } from '../utils/richText';
 
 // Markdown prefixes that auto-convert a block on space.
 const MD_SHORTCUTS = [
@@ -41,6 +42,106 @@ const placeholderFor = (type) =>
     callout: 'Callout',
   }[type] || "Type '/' for commands");
 
+// content: { rows: string[][] }
+const TableBlock = ({ content, onChange }) => {
+  const rows = content?.rows?.length ? content.rows : [['', '']];
+
+  const setCell = (r, c, value) => {
+    const next = rows.map((row) => [...row]);
+    next[r][c] = value;
+    onChange({ rows: next });
+  };
+
+  const addRow = () => onChange({ rows: [...rows, rows[0].map(() => '')] });
+  const addColumn = () => onChange({ rows: rows.map((row) => [...row, '']) });
+
+  return (
+    <div className="w-full">
+      <table className="w-full border-collapse text-sm">
+        <tbody>
+          {rows.map((row, r) => (
+            <tr key={r}>
+              {row.map((cell, c) => (
+                <td key={c} className="border border-gray-300 p-0 dark:border-gray-600">
+                  <div
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => setCell(r, c, e.currentTarget.textContent)}
+                    className="min-w-[80px] px-2 py-1.5 outline-none focus:bg-brand-soft"
+                  >
+                    {cell}
+                  </div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="mt-1 flex gap-3 text-xs text-gray-400">
+        <button onClick={addRow} className="hover:text-brand-500">+ Row</button>
+        <button onClick={addColumn} className="hover:text-brand-500">+ Column</button>
+      </div>
+    </div>
+  );
+};
+
+// content: { url: string }
+const YOUTUBE_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+const EmbedBlock = ({ content, onChange }) => {
+  const [draft, setDraft] = useState(content?.url || '');
+  const url = content?.url;
+
+  if (!url) {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (draft.trim()) onChange({ url: draft.trim() });
+        }}
+        className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 p-3 dark:border-gray-600"
+      >
+        <LinkIcon size={16} className="shrink-0 text-gray-400" />
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Paste a link (YouTube, or any URL)…"
+          className="flex-1 border-none bg-transparent text-sm outline-none"
+        />
+        <button type="submit" className="text-xs font-semibold text-brand-500 hover:text-brand-600">
+          Embed
+        </button>
+      </form>
+    );
+  }
+
+  const ytMatch = url.match(YOUTUBE_RE);
+  if (ytMatch) {
+    return (
+      <div className="aspect-video w-full overflow-hidden rounded-lg">
+        <iframe
+          src={`https://www.youtube.com/embed/${ytMatch[1]}`}
+          title="Embedded video"
+          className="h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 rounded-lg border border-gray-200 p-3 text-sm text-brand-600 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/5"
+    >
+      <ExternalLink size={16} className="shrink-0" />
+      <span className="truncate">{url}</span>
+    </a>
+  );
+};
+
 const caretAtStart = (el) => {
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) return false;
@@ -64,11 +165,40 @@ const Block = ({
   onAddBelow,
 }) => {
   const ref = useRef(null);
+  const [toolbar, setToolbar] = useState(null); // { top, left } or null
 
-  // Uncontrolled: seed text once on mount / when block identity changes.
+  // Show a floating format toolbar when the user selects text within this
+  // block. Two things rule out the more obvious approaches: keyboard
+  // shortcuts (Cmd+B etc.) are unreliable — macOS Chrome/Safari intercept
+  // them as a native OS-level Edit-menu command before any DOM keydown event
+  // fires at all — and onMouseUp doesn't work either, because the drag-handle
+  // wrapper each block sits in (BlockEditor.jsx's <Draggable>) stops
+  // propagation of its own mouseup handling before it bubbles to React's
+  // synthetic listener here. `selectionchange` is the actual standard event
+  // for "the selection changed" and fires regardless of what triggered it or
+  // how any wrapper's event handlers behave.
   useEffect(() => {
-    if (ref.current && ref.current.textContent !== (block.content?.text || '')) {
-      ref.current.textContent = block.content?.text || '';
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0 || !ref.current?.contains(sel.anchorNode)) {
+        setToolbar(null);
+        return;
+      }
+      const rect = sel.getRangeAt(0).getBoundingClientRect();
+      const parentRect = ref.current.offsetParent?.getBoundingClientRect() || { top: 0, left: 0 };
+      setToolbar({ top: rect.top - parentRect.top - 36, left: rect.left - parentRect.left });
+    };
+    document.addEventListener('selectionchange', onSelectionChange);
+    return () => document.removeEventListener('selectionchange', onSelectionChange);
+  }, []);
+
+  // Uncontrolled: seed content once on mount / when block identity changes.
+  // `content.html` carries inline marks (bold/italic/code); legacy blocks
+  // only have `content.text` (plain string), escaped into safe HTML here.
+  useEffect(() => {
+    const html = htmlForContent(block.content);
+    if (ref.current && ref.current.innerHTML !== html) {
+      ref.current.innerHTML = html;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [block.id, block.type]);
@@ -87,6 +217,8 @@ const Block = ({
   }, [shouldFocus]);
 
   const handleInput = (e) => {
+    // Markdown-shortcut/slash detection stays plain-text — unaffected by
+    // whatever inline marks are present.
     const text = e.currentTarget.textContent;
 
     // markdown auto-conversion
@@ -108,10 +240,28 @@ const Block = ({
       });
     }
 
-    onChange(block.id, { ...block.content, text });
+    // `text` is kept in sync as a plain-text mirror — the backend's page
+    // search filters on content.text (JSON path), so it needs to stay a
+    // plain string even though `html` now carries the real formatted markup.
+    const html = sanitizeInlineHtml(e.currentTarget.innerHTML);
+    onChange(block.id, { ...block.content, html, text });
+  };
+
+  const handleFormatKeydown = (e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (!mod) return false;
+    const tag = { b: 'B', i: 'EM', e: 'CODE' }[e.key.toLowerCase()];
+    if (!tag) return false;
+    e.preventDefault();
+    toggleMark(ref.current, tag);
+    // toggleMark mutates the DOM directly — sync content back into state
+    // the same way a normal keystroke would.
+    handleInput({ currentTarget: ref.current });
+    return true;
   };
 
   const handleKeyDown = (e) => {
+    if (handleFormatKeydown(e)) return;
     if (e.key === 'Enter' && !e.shiftKey && block.type !== 'code') {
       e.preventDefault();
       onEnter(block.id, index);
@@ -134,6 +284,22 @@ const Block = ({
     );
   }
 
+  if (block.type === 'table') {
+    return (
+      <div className="group relative py-1">
+        <TableBlock content={block.content} onChange={(content) => onChange(block.id, content)} />
+      </div>
+    );
+  }
+
+  if (block.type === 'embed') {
+    return (
+      <div className="group relative py-1">
+        <EmbedBlock content={block.content} onChange={(content) => onChange(block.id, content)} />
+      </div>
+    );
+  }
+
   const editable = (
     <div
       ref={ref}
@@ -142,14 +308,46 @@ const Block = ({
       data-placeholder={placeholderFor(block.type)}
       onInput={handleInput}
       onKeyDown={handleKeyDown}
-      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 ${
+      onBlur={() => setToolbar(null)}
+      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-gray-700 ${
         typeClasses[block.type] || 'text-base'
       } ${block.content?.checked ? 'line-through text-gray-400' : ''}`}
     />
   );
 
+  const applyMark = (tag) => {
+    toggleMark(ref.current, tag);
+    handleInput({ currentTarget: ref.current });
+  };
+
+  const FormatToolbar = toolbar && (
+    <div
+      className="absolute z-10 flex gap-0.5 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-[#1f1f1f]"
+      style={{ top: toolbar.top, left: toolbar.left }}
+    >
+      {[
+        { tag: 'B', label: 'B', title: 'Bold', cls: 'font-bold' },
+        { tag: 'EM', label: 'I', title: 'Italic', cls: 'italic' },
+        { tag: 'CODE', label: '</>', title: 'Code', cls: 'font-mono text-xs' },
+      ].map((b) => (
+        <button
+          key={b.tag}
+          title={b.title}
+          onMouseDown={(e) => {
+            e.preventDefault(); // keep the selection alive through the click
+            applyMark(b.tag);
+          }}
+          className={`h-7 w-7 rounded text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10 ${b.cls}`}
+        >
+          {b.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="group relative flex items-start gap-1 rounded px-1 py-0.5 hover:bg-gray-50 dark:hover:bg-white/5">
+      {FormatToolbar}
       {/* hover controls */}
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity pt-1">
         <button
