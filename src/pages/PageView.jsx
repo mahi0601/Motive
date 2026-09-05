@@ -6,6 +6,7 @@ import BlockEditor from '../components/BlockEditor';
 import { getPage } from '../services/pageService';
 import { saveTemplate } from '../services/templateService';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { usePageSocket } from '../hooks/usePageSocket';
 
 const PageView = () => {
   const { id } = useParams();
@@ -14,6 +15,8 @@ const PageView = () => {
   const [savedTpl, setSavedTpl] = useState(false);
   const titleRef = useRef(null);
   const saveTimer = useRef(null);
+  const contentRef = useRef(null);
+  const { peers, sendCursor } = usePageSocket(id, contentRef);
 
   useEffect(() => {
     let mounted = true;
@@ -70,7 +73,45 @@ const PageView = () => {
 
   return (
     <DashboardLayout>
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div
+        ref={contentRef}
+        onMouseMove={(e) => sendCursor(e.clientX, e.clientY)}
+        className="relative mx-auto max-w-3xl px-6 py-10"
+      >
+        {/* Other viewers' live cursors — position is a 0-1 fraction of this container. */}
+        {peers.map((p) =>
+          p.x == null ? null : (
+            <div
+              key={p.socketId}
+              className="pointer-events-none absolute z-20 -translate-x-0.5 -translate-y-0.5 transition-[left,top] duration-100"
+              style={{ left: `${p.x * 100}%`, top: `${p.y * 100}%` }}
+            >
+              <div className="h-3 w-3 rotate-12 rounded-sm" style={{ backgroundColor: p.color }} />
+              <span
+                className="ml-2 whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium text-white"
+                style={{ backgroundColor: p.color }}
+              >
+                {p.user.name}
+              </span>
+            </div>
+          )
+        )}
+
+        {peers.length > 0 && (
+          <div className="absolute right-6 top-4 z-20 flex -space-x-2">
+            {peers.map((p) => (
+              <div
+                key={p.socketId}
+                title={p.user.name}
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white dark:border-gray-900"
+                style={{ backgroundColor: p.color }}
+              >
+                {p.user.name?.charAt(0).toUpperCase()}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="mb-4 flex items-center gap-3 text-sm text-gray-400">
           <span className="text-3xl">{page.icon || '📄'}</span>
           <button
