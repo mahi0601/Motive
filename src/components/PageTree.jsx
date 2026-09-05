@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, ChevronDown, Plus, Trash2, FileText, LayoutTemplate } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useToast } from '../context/ToastContext';
 
 const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate }) => {
   const [open, setOpen] = useState(true);
@@ -79,7 +80,8 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
 };
 
 const PageTree = ({ onNavigate }) => {
-  const { pages, addPage, removePage } = useWorkspace();
+  const { pages, addPage, removePage, restorePage } = useWorkspace();
+  const { notify } = useToast();
   const navigate = useNavigate();
   const { id: currentId } = useParams();
 
@@ -97,10 +99,13 @@ const PageTree = ({ onNavigate }) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this page and its sub-pages?')) {
-      await removePage(id);
-      if (String(currentId) === String(id)) navigate('/');
-    }
+    const page = pages.find((p) => p.id === id);
+    await removePage(id);
+    if (String(currentId) === String(id)) navigate('/');
+    notify('info', 'Page deleted', page?.title || 'Untitled', {
+      label: 'Undo',
+      onAction: () => restorePage(id),
+    });
   };
 
   return (
