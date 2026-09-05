@@ -8,6 +8,23 @@
   --brand-strong: #6b46e8;
   --brand-soft: #a07dfb;
   --spark: #f5a524;
+
+  /* Light-mode surface tokens. Dark-mode values below match
+     tailwind.config.js's `dark.*` palette exactly, so both live in one
+     place instead of each component hardcoding its own hex. */
+  --surface: #ffffff;
+  --surface-raised: #f4f4f6;
+  --surface-border: #e5e3ea;
+  --text: #2c2a36;
+  --text-muted: #6b7280;
+}
+
+html.dark {
+  --surface: #17151d; /* dark.surface */
+  --surface-raised: #211e29; /* dark.raised */
+  --surface-border: #2a2733; /* dark.border */
+  --text: #e9e7ef; /* dark.text */
+  --text-muted: #9c99a8; /* dark.muted */
 }
 
 body {
@@ -23,8 +40,8 @@ body {
 }
 
 html.dark body {
-  background-color: #0e0d12;
-  color: #c9c6d4;
+  background-color: #0e0d12; /* dark.background */
+  color: var(--text);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -95,12 +112,12 @@ button.secondary {
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  background-color: #262626;
-  color: #a5b4fc;
+  background-color: var(--surface-raised);
+  color: var(--brand);
 }
 
 button.secondary:hover {
-  background-color: #333333;
+  background-color: var(--surface-border);
 }
 
 .btn-glow:hover {
@@ -108,22 +125,29 @@ button.secondary:hover {
 }
 
 .card {
-  background-color: #111111;
+  background-color: var(--surface);
   padding: 1.5rem;
   border-radius: 1rem;
-  border: 1px solid #2a2a2a;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+html.dark .card {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
 .card:hover {
   transform: scale(1.015);
+}
+
+html.dark .card:hover {
   box-shadow: 0 12px 28px rgba(255, 255, 255, 0.05);
 }
 
 .card-section {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background-color: var(--surface-raised);
+  border: 1px solid var(--surface-border);
   border-radius: 0.5rem;
   padding: 1rem;
 }
@@ -135,11 +159,15 @@ button.secondary:hover {
 }
 
 .page-wrapper {
-  background-color: #111111;
+  background-color: var(--surface);
   padding: 1.5rem;
   border-radius: 1rem;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--surface-border);
   margin-top: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .page-wrapper {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
@@ -147,11 +175,11 @@ input, select, textarea {
   font-family: inherit;
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #3a3a3a;
-  background-color: #111111;
+  border: 1px solid var(--surface-border);
+  background-color: var(--surface);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: #f1f1f1;
+  color: var(--text);
   transition: border 0.2s, box-shadow 0.2s;
 }
 
@@ -194,13 +222,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 .text-title {
-  color: #f4f4f4;
+  color: var(--text);
   font-weight: 600;
 }
 
 .text-muted {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -258,12 +286,11 @@ input:focus, select:focus, textarea:focus {
   padding: 0.5rem 1rem;
   border-radius: 0.75rem;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  background-color: #111111;
-  color: #e4e4e4;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 .sidebar-item:hover {
-  background-color: #222222;
+  background-color: var(--surface-raised);
   transform: translateX(4px);
-  color: #ffffff;
 }
