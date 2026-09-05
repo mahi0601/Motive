@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion } from 'framer-motion';
 import { FiPlusCircle, FiSearch } from 'react-icons/fi';
@@ -10,7 +11,7 @@ import QuickActions from '../components/QuickActions';
 import TaskAnalytics from '../components/TaskAnalytics';
 import ActivityFeed from '../components/ActivityFeed';
 import KeyboardShortcuts from '../components/KeyboardShortcuts';
-import NotificationToast from '../components/NotificationToast';
+import { useToast } from '../context/ToastContext';
 import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
 const CATEGORIES = ['Personal', 'Finance', 'Health', 'Development'];
@@ -28,7 +29,8 @@ const Dashboard = () => {
   );
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-  const [notifications, setNotifications] = useState([]);
+  const { notify } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     (async () => {
@@ -43,12 +45,17 @@ const Dashboard = () => {
     })();
   }, []);
 
-  const notify = (type, title, message = '') => {
-    const id = Date.now();
-    setNotifications((n) => [...n, { id, type, title, message }]);
-    setTimeout(() => setNotifications((n) => n.filter((x) => x.id !== id)), 4000);
-  };
-  const removeNotification = (id) => setNotifications((n) => n.filter((x) => x.id !== id));
+  // The command palette's "New task" action lands here as ?new=task.
+  useEffect(() => {
+    if (searchParams.get('new') === 'task') {
+      setEditingTask(null);
+      setShowTaskForm(true);
+      setSearchParams((p) => {
+        p.delete('new');
+        return p;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const addTask = async (category, data) => {
     const payload = data
@@ -250,7 +257,6 @@ const Dashboard = () => {
         />
       )}
 
-      <NotificationToast notifications={notifications} onRemove={removeNotification} />
       <KeyboardShortcuts />
     </DashboardLayout>
   );
