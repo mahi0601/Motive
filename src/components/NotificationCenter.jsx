@@ -1,30 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiBell, FiX, FiCheckCircle, FiAlertCircle, FiInfo, FiSettings } from 'react-icons/fi';
+import { FiBell, FiX, FiCheckCircle, FiAlertCircle, FiInfo, FiMessageSquare, FiTrash2 } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { getNotifications, markNotificationRead, clearNotifications } from '../services/notificationService';
 
-const NotificationCenter = ({ isOpen, onClose }) => {
+const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
+  const { bootstrapping, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    if (bootstrapping || !isAuthenticated) return;
+    setLoading(true);
+    try {
+      const { data } = await getNotifications();
+      const list = data.notifications || [];
+      setNotifications(list);
+      onUnreadChange?.(list.filter((n) => !n.read).length);
+    } catch (e) {
+      console.error('Failed to load notifications', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [bootstrapping, isAuthenticated, onUnreadChange]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('notifications') || '[]');
-    setNotifications(stored.slice(0, 20));
-  }, [isOpen]);
+    if (isOpen) load();
+  }, [isOpen, load]);
 
-  const markAsRead = (id) => {
-    const updated = notifications.map(n => n.id === id ? { ...n, read: true } : n);
-    setNotifications(updated);
-    localStorage.setItem('notifications', JSON.stringify(updated));
+  const markAsRead = async (id) => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      onUnreadChange?.(updated.filter((n) => !n.read).length);
+      return updated;
+    });
+    try {
+      await markNotificationRead(id);
+    } catch (e) {
+      console.error('Failed to mark notification read', e);
+    }
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
+    const prev = notifications;
     setNotifications([]);
-    localStorage.setItem('notifications', JSON.stringify([]));
+    onUnreadChange?.(0);
+    try {
+      await clearNotifications();
+    } catch (e) {
+      console.error('Failed to clear notifications', e);
+      setNotifications(prev); // roll back on failure
+    }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'comment':
+        return <FiMessageSquare className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
       case 'success':
         return <FiCheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
       case 'error':
@@ -67,7 +101,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   title="Clear all"
                 >
-                  <FiSettings className="w-5 h-5 text-gray-500" />
+                  <FiTrash2 className="w-5 h-5 text-gray-500" />
                 </button>
                 <button
                   onClick={onClose}
@@ -79,15 +113,19 @@ const NotificationCenter = ({ isOpen, onClose }) => {
             </div>
 
             <div className="overflow-y-auto h-[calc(100vh-80px)]">
-              {notifications.length > 0 ? (
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                </div>
+              ) : notifications.length > 0 ? (
                 <div className="p-4 space-y-2">
                   {notifications.map((notification, index) => (
                     <motion.div
-                      key={notification.id || index}
+                      key={notification.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={() => !notification.read && markAsRead(notification.id)}
                       className={`p-4 rounded-xl border cursor-pointer transition-all ${
                         notification.read
                           ? 'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-700'
@@ -108,7 +146,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
                             </p>
                           )}
                           <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                            {new Date(notification.timestamp).toLocaleString()}
+                            {new Date(notification.createdAt).toLocaleString()}
                           </p>
                         </div>
                         {!notification.read && (
@@ -133,4 +171,3 @@ const NotificationCenter = ({ isOpen, onClose }) => {
 };
 
 export default NotificationCenter;
-
