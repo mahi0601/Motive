@@ -51,14 +51,23 @@ const SlashMenu = ({ query, position, onSelect, onClose }) => {
       if (!filtered.length) return;
       if (e.key === 'ArrowDown') {
         e.preventDefault();
+        e.stopPropagation();
         setActive((a) => (a + 1) % filtered.length);
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
+        e.stopPropagation();
         setActive((a) => (a - 1 + filtered.length) % filtered.length);
       } else if (e.key === 'Enter') {
+        // Without stopPropagation, this capture-phase preventDefault() doesn't
+        // stop the event from *also* reaching the underlying block's own
+        // Enter handler (bubble-phase) right after -- so selecting a type
+        // here would simultaneously create a stray new block and steal focus
+        // away from the block that was just converted.
         e.preventDefault();
+        e.stopPropagation();
         onSelect(filtered[active].type);
       } else if (e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
       }
     };
