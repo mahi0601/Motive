@@ -7,7 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
   LineChart, Line, AreaChart, Area, CartesianGrid
 } from 'recharts';
-import { FiBarChart2, FiPieChart, FiTrendingUp, FiTrendingDown, FiCalendar, FiClock, FiTarget, FiAward } from 'react-icons/fi';
+import { FiBarChart2, FiPieChart, FiTrendingUp, FiCalendar, FiClock, FiTarget, FiAward } from 'react-icons/fi';
 import api from '../services/api';
 import { getTasks } from '../services/taskService';
 
@@ -52,8 +52,25 @@ const Statistics = () => {
   const totalTasks = priorityData.reduce((acc, item) => acc + item.value, 0);
   const completedTasks = tasks.filter((t) => t.status === 'done').length;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  const avgCompletionTime = 2.5;
-  const streakDays = 7;
+
+  // Real, computed from actual task data — these used to be hardcoded
+  // (2.5 / 7) regardless of the account's real activity.
+  const doneTasks = tasks.filter((t) => t.status === 'done');
+  const avgCompletionTime = doneTasks.length
+    ? (
+        doneTasks.reduce((sum, t) => sum + (new Date(t.updatedAt) - new Date(t.createdAt)), 0) /
+        doneTasks.length /
+        (1000 * 60 * 60 * 24)
+      ).toFixed(1)
+    : null;
+
+  const dayKey = (d) => new Date(d).toDateString();
+  const completedDays = new Set(doneTasks.map((t) => dayKey(t.updatedAt)));
+  let streakDays = 0;
+  for (let d = new Date(); ; d.setDate(d.getDate() - 1)) {
+    if (!completedDays.has(dayKey(d))) break;
+    streakDays += 1;
+  }
 
   const statsCards = [
     {
@@ -61,32 +78,30 @@ const Statistics = () => {
       value: totalTasks,
       icon: <FiTarget className="w-6 h-6" />,
       color: 'indigo',
-      trend: '+12%',
-      trendUp: true
     },
     {
       label: 'Completed',
       value: completedTasks,
       icon: <FiAward className="w-6 h-6" />,
       color: 'indigo',
-      trend: '+8%',
-      trendUp: true
     },
     {
       label: 'Completion Rate',
       value: `${completionRate}%`,
       icon: <FiTrendingUp className="w-6 h-6" />,
       color: 'purple',
-      trend: '+5%',
-      trendUp: true
+    },
+    {
+      label: 'Avg. Completion Time',
+      value: avgCompletionTime == null ? '—' : `${avgCompletionTime}d`,
+      icon: <FiCalendar className="w-6 h-6" />,
+      color: 'indigo',
     },
     {
       label: 'Current Streak',
-      value: `${streakDays} days`,
+      value: `${streakDays} day${streakDays === 1 ? '' : 's'}`,
       icon: <FiCalendar className="w-6 h-6" />,
       color: 'indigo',
-      trend: '+2 days',
-      trendUp: true
     }
   ];
 
@@ -146,7 +161,7 @@ const Statistics = () => {
             <>
               <TaskAnalytics tasks={tasks} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {statsCards.map((stat, index) => (
                   <motion.div
                     key={index}
@@ -163,12 +178,6 @@ const Statistics = () => {
                           : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
                       }`}>
                         {stat.icon}
-                      </div>
-                      <div className={`flex items-center gap-1 text-xs font-medium ${
-                        stat.trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {stat.trendUp ? <FiTrendingUp /> : <FiTrendingDown />}
-                        {stat.trend}
                       </div>
                     </div>
                     <div>
