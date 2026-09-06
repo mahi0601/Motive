@@ -6,6 +6,7 @@ import { TaskProvider } from './context/TaskContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ToastProvider } from './context/ToastContext';
+import { NotificationSocketProvider } from './context/NotificationSocketContext';
 import { CommandPaletteProvider } from './context/CommandPaletteContext';
 import CommandPalette from './components/CommandPalette';
 
@@ -14,16 +15,18 @@ const App = () => {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
-          <TaskProvider>
-            <WorkspaceProvider>
-              <Router>
-                <CommandPaletteProvider>
-                  <AppRoutes />
-                  <CommandPalette />
-                </CommandPaletteProvider>
-              </Router>
-            </WorkspaceProvider>
-          </TaskProvider>
+          <NotificationSocketProvider>
+            <TaskProvider>
+              <WorkspaceProvider>
+                <Router>
+                  <CommandPaletteProvider>
+                    <AppRoutes />
+                    <CommandPalette />
+                  </CommandPaletteProvider>
+                </Router>
+              </WorkspaceProvider>
+            </TaskProvider>
+          </NotificationSocketProvider>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
