@@ -5,3 +5,4 @@ export const getTasks = (params = {}) => api.get('/api/tasks', { params });
 export const createTask = (task) => api.post('/api/tasks', task);
 export const updateTask = (id, task) => api.patch(`/api/tasks/${id}`, task);
 export const deleteTask = (id) => api.delete(`/api/tasks/${id}`);
+export const searchTasks = (q) => api.get('/api/tasks/search', { params: { q } });
