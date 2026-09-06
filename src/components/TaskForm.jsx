@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiCalendar, FiTag, FiFlag, FiX } from 'react-icons/fi';
 import CommentSection from './CommentSection';
+import SubtaskList from './SubtaskList';
+import AttachmentList from './AttachmentList';
 
 const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
   const [formData, setFormData] = useState({
@@ -216,9 +218,11 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           </div>
         </form>
 
-        {/* Comments only make sense once the task actually exists. */}
+        {/* Subtasks/comments only make sense once the task actually exists. */}
         {initialData?.id && (
-          <div className="border-t border-gray-200 px-6 pb-6 dark:border-gray-700">
+          <div className="px-6 pb-6">
+            <SubtaskList taskId={initialData.id} />
+            <AttachmentList taskId={initialData.id} />
             <CommentSection taskId={initialData.id} />
           </div>
         )}
