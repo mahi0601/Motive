@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Moon, Sun, LogOut, Bell } from 'lucide-react';
+import { Moon, Sun, LogOut, Bell, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { getNotifications } from '../services/notificationService';
 import NotificationCenter from './NotificationCenter';
 
 const Header = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, bootstrapping, isAuthenticated, logout } = useAuth();
+  const { canInstall, promptInstall } = useInstallPrompt();
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -44,6 +46,16 @@ const Header = () => {
       </Link>
 
       <nav className="flex items-center gap-2 sm:gap-3">
+        {canInstall && (
+          <button
+            onClick={promptInstall}
+            className="hidden items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:bg-[#2a2a2a] dark:text-gray-200 dark:hover:bg-gray-700 sm:flex"
+            title="Install Motive"
+          >
+            <Download className="h-4 w-4" />
+            Install
+          </button>
+        )}
         <button
           onClick={toggleTheme}
           className="rounded-full border border-gray-300 bg-white p-2 transition hover:bg-gray-100 dark:border-gray-600 dark:bg-[#2a2a2a] dark:hover:bg-gray-700"
