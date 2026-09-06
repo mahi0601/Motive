@@ -163,6 +163,11 @@ const Block = ({
   onSlash,
   onToggleCheck,
   onAddBelow,
+  onToggleCollapse,
+  onIndent,
+  onOutdent,
+  childBlocks,
+  renderChild,
 }) => {
   const ref = useRef(null);
   const [toolbar, setToolbar] = useState(null); // { top, left } or null
@@ -214,7 +219,14 @@ const Block = ({
       sel.removeAllRanges();
       sel.addRange(range);
     }
-  }, [shouldFocus]);
+    // `block.type` is also a dependency, not just `shouldFocus`: converting a
+    // block (e.g. via the slash menu) to a type with a different DOM
+    // structure (toggle, table, embed) unmounts/remounts the actual
+    // contentEditable node. If `shouldFocus` was already true beforehand (the
+    // common case right after creating a block), its *value* doesn't change
+    // across the conversion, so this effect wouldn't re-run and the new node
+    // would silently never receive focus.
+  }, [shouldFocus, block.type]);
 
   const handleInput = (e) => {
     // Markdown-shortcut/slash detection stays plain-text — unaffected by
@@ -262,15 +274,21 @@ const Block = ({
 
   const handleKeyDown = (e) => {
     if (handleFormatKeydown(e)) return;
-    if (e.key === 'Enter' && !e.shiftKey && block.type !== 'code') {
+    if (e.key === 'Tab') {
+      // Indent under the preceding toggle / outdent back to top-level.
+      // Only meaningful for top-level blocks (children don't nest further).
       e.preventDefault();
-      onEnter(block.id, index);
+      if (e.shiftKey) onOutdent?.(block.id);
+      else onIndent?.(block.id);
+    } else if (e.key === 'Enter' && !e.shiftKey && block.type !== 'code') {
+      e.preventDefault();
+      onEnter(block.id);
     } else if (e.key === 'Backspace') {
       const text = e.currentTarget.textContent;
       if (text.length === 0 || caretAtStart(e.currentTarget)) {
         if (text.length === 0) {
           e.preventDefault();
-          onDeleteEmpty(block.id, index);
+          onDeleteEmpty(block.id);
         }
       }
     }
@@ -296,6 +314,43 @@ const Block = ({
     return (
       <div className="group relative py-1">
         <EmbedBlock content={block.content} onChange={(content) => onChange(block.id, content)} />
+      </div>
+    );
+  }
+
+  if (block.type === 'toggle') {
+    const collapsed = !!block.content?.collapsed;
+    return (
+      <div className="group relative">
+        <div className="flex items-start gap-1 rounded px-1 py-0.5 hover:bg-gray-50 dark:hover:bg-white/5">
+          <button
+            onClick={() => onToggleCollapse?.(block.id)}
+            className="mt-1 shrink-0 text-gray-400 transition-transform hover:text-gray-600 dark:hover:text-gray-200"
+            style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)' }}
+            aria-label={collapsed ? 'Expand' : 'Collapse'}
+          >
+            ▶
+          </button>
+          <div
+            ref={ref}
+            contentEditable
+            suppressContentEditableWarning
+            data-placeholder="Toggle"
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+            onBlur={() => setToolbar(null)}
+            className="flex-1 font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500"
+          />
+        </div>
+        {!collapsed && (
+          <div className="ml-5 border-l border-gray-200 pl-3 dark:border-gray-700">
+            {(childBlocks || []).length === 0 ? (
+              <p className="py-1 text-sm italic text-gray-400">Empty — press Tab on a block above to nest it here.</p>
+            ) : (
+              childBlocks.map((child, i) => renderChild(child, i))
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -369,7 +424,7 @@ const Block = ({
         <button
           onMouseDown={(e) => {
             e.preventDefault();
-            onAddBelow(index);
+            onAddBelow(block.id);
           }}
           className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
           title="Add block below"
