@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Moon, Sun, LogOut, Bell, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -6,32 +6,19 @@ import Logo from './Logo';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
-import { getNotifications } from '../services/notificationService';
+import { useNotificationSocket } from '../context/NotificationSocketContext';
 import NotificationCenter from './NotificationCenter';
 
 const Header = () => {
   const { isDark, toggleTheme } = useTheme();
-  const { user, bootstrapping, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { canInstall, promptInstall } = useInstallPrompt();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount, setUnreadCount } = useNotificationSocket();
 
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
-  // Initial unread count so the badge shows up before the panel is ever opened.
-  useEffect(() => {
-    if (bootstrapping || !isAuthenticated) return;
-    (async () => {
-      try {
-        const { data } = await getNotifications();
-        setUnreadCount((data.notifications || []).filter((n) => !n.read).length);
-      } catch {
-        /* badge just stays at 0 */
-      }
-    })();
-  }, [bootstrapping, isAuthenticated]);
-
-  const handleUnreadChange = useCallback((count) => setUnreadCount(count), []);
+  const handleUnreadChange = useCallback((count) => setUnreadCount(count), [setUnreadCount]);
 
   return (
     <motion.header
