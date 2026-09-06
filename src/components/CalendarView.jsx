@@ -17,7 +17,7 @@ import {
 } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, LayoutGrid, List } from 'lucide-react';
-import { getTasks, createTask, deleteTask } from '../services/taskService';
+import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -67,12 +67,17 @@ const AddForm = ({ draft, setDraft, onSubmit, saving }) => (
   </form>
 );
 
-const EventRow = ({ t, onDelete }) => (
+// Draggable onto a month-grid day cell to reschedule (native HTML5 DnD --
+// simpler than wiring ~42 day cells as react-beautiful-dnd Droppables for a
+// single cross-container drag).
+const EventRow = ({ t, onDelete, draggable }) => (
   <motion.li
     initial={{ opacity: 0, y: 4 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-    className="group flex items-center gap-3 py-2.5"
+    draggable={draggable}
+    onDragStart={draggable ? (e) => e.dataTransfer.setData('text/plain', t.id) : undefined}
+    className={`group flex items-center gap-3 py-2.5 ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
   >
     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor(t.priority)}`} />
     <span className="flex-1 truncate text-sm text-gray-800 dark:text-gray-100">{t.title}</span>
@@ -94,6 +99,7 @@ const CalendarView = () => {
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState({ title: '', priority: 'Medium' });
   const [saving, setSaving] = useState(false);
+  const [dragOverDay, setDragOverDay] = useState(null);
 
   const loadTasks = async () => {
     setLoading(true);
@@ -160,6 +166,23 @@ const CalendarView = () => {
       console.error('Failed to add event', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Keeps the existing time-of-day (noon), same as handleAdd, just moves the date.
+  const rescheduleTask = async (id, day) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const prevDue = task.dueDate;
+    const next = new Date(day);
+    next.setHours(12, 0, 0, 0);
+    const nextIso = next.toISOString();
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, dueDate: nextIso } : t)));
+    try {
+      await updateTask(id, { dueDate: nextIso });
+    } catch (e) {
+      console.error('Failed to reschedule task', e);
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, dueDate: prevDue } : t))); // roll back
     }
   };
 
@@ -236,11 +259,25 @@ const CalendarView = () => {
               const today = isToday(day);
               const isSelected = isSameDay(day, selected);
               const dayTasks = tasksByDay[dayKey(day)] || [];
+              const isDragOver = dragOverDay && isSameDay(dragOverDay, day);
               return (
                 <button
                   key={day.toISOString()}
                   onClick={() => setSelected(day)}
-                  className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl transition hover:bg-gray-100 dark:hover:bg-white/5"
+                  onDragOver={(e) => {
+                    e.preventDefault(); // required for onDrop to fire at all
+                    setDragOverDay(day);
+                  }}
+                  onDragLeave={() => setDragOverDay((d) => (isSameDay(d, day) ? null : d))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOverDay(null);
+                    const id = e.dataTransfer.getData('text/plain');
+                    if (id) rescheduleTask(id, day);
+                  }}
+                  className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl transition hover:bg-gray-100 dark:hover:bg-white/5 ${
+                    isDragOver ? 'bg-brand-soft ring-2 ring-brand-400' : ''
+                  }`}
                 >
                   <span
                     className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition
@@ -273,11 +310,14 @@ const CalendarView = () => {
             ) : selectedTasks.length === 0 ? (
               <p className="py-6 text-center text-sm text-gray-400">No events. Add one above.</p>
             ) : (
-              <ul className="mt-3 divide-y divide-gray-100 dark:divide-[#2A2733]">
-                <AnimatePresence initial={false}>
-                  {selectedTasks.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} />)}
-                </AnimatePresence>
-              </ul>
+              <>
+                <p className="mt-1 text-xs text-gray-400">Drag an event onto another day to reschedule it.</p>
+                <ul className="mt-2 divide-y divide-gray-100 dark:divide-[#2A2733]">
+                  <AnimatePresence initial={false}>
+                    {selectedTasks.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} draggable />)}
+                  </AnimatePresence>
+                </ul>
+              </>
             )}
           </div>
         </>
