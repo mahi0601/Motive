@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion } from 'framer-motion';
-import { FiPlusCircle, FiSearch } from 'react-icons/fi';
+import { FiPlusCircle, FiSearch, FiCheckSquare, FiX } from 'react-icons/fi';
 import { Loader2 } from 'lucide-react';
 import DashboardLayout from '../layout/DashboardLayout';
 import EnhancedTaskCard from '../components/EnhancedTaskCard';
@@ -34,6 +34,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   useEffect(() => {
     (async () => {
@@ -145,6 +147,48 @@ const Dashboard = () => {
     await updateTask(task.id, { status }).catch((e) => console.error(e));
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const bulkComplete = async () => {
+    const ids = [...selectedIds];
+    setTasks((prev) => prev.map((t) => (ids.includes(t.id) ? { ...t, status: 'done' } : t)));
+    exitSelectMode();
+    await Promise.all(ids.map((id) => updateTask(id, { status: 'done' }).catch((e) => console.error(e))));
+    notify('success', `Completed ${ids.length} task${ids.length === 1 ? '' : 's'}`);
+  };
+
+  // Same undo pattern as single-task delete, just for the whole batch.
+  const bulkDelete = () => {
+    const ids = [...selectedIds];
+    const removed = tasks.filter((t) => ids.includes(t.id));
+    setTasks((prev) => prev.filter((t) => !ids.includes(t.id)));
+    exitSelectMode();
+    let undone = false;
+    const timer = setTimeout(() => {
+      if (!undone) ids.forEach((id) => deleteTask(id).catch((e) => console.error(e)));
+    }, 5000);
+    notify('info', `Deleted ${ids.length} task${ids.length === 1 ? '' : 's'}`, '', {
+      label: 'Undo',
+      onAction: () => {
+        undone = true;
+        clearTimeout(timer);
+        setTasks((prev) => [...prev, ...removed]);
+      },
+    });
+  };
+
   const onDragEnd = ({ destination, source, draggableId }) => {
     if (!destination || destination.droppableId === source.droppableId) return;
     const category = destination.droppableId;
@@ -188,8 +232,8 @@ const Dashboard = () => {
 
         <TaskAnalytics tasks={analyticsTasks} />
 
-        <div className="mx-auto mb-6 max-w-md">
-          <div className="relative">
+        <div className="mx-auto mb-6 flex max-w-md items-center gap-2">
+          <div className="relative flex-1">
             <FiSearch className="absolute left-3 top-3.5 text-gray-400" />
             <input
               type="text"
@@ -199,6 +243,18 @@ const Dashboard = () => {
               className="w-full rounded-lg border border-gray-300 bg-white p-3 pl-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             />
           </div>
+          <button
+            onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+            className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-3 text-sm font-medium transition ${
+              selectMode
+                ? 'border-brand-500 bg-brand-soft text-brand-600'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'
+            }`}
+            title="Select multiple tasks"
+          >
+            {selectMode ? <FiX /> : <FiCheckSquare />}
+            {selectMode ? 'Cancel' : 'Select'}
+          </button>
         </div>
 
         {loading ? (
@@ -259,7 +315,7 @@ const Dashboard = () => {
 
                       <div className="flex-1 space-y-4">
                         {grouped[category].map((task, index) => (
-                          <Draggable key={task.id} draggableId={task.id} index={index}>
+                          <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={selectMode}>
                             {(prov) => (
                               <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
                                 <EnhancedTaskCard
@@ -267,6 +323,9 @@ const Dashboard = () => {
                                   onEdit={(t) => { setEditingTask(t); setShowTaskForm(true); }}
                                   onDelete={removeTask}
                                   onComplete={toggleComplete}
+                                  selectMode={selectMode}
+                                  selected={selectedIds.has(task.id)}
+                                  onSelectToggle={() => toggleSelect(task.id)}
                                 />
                               </div>
                             )}
@@ -293,6 +352,30 @@ const Dashboard = () => {
 
       <KeyboardShortcuts />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+
+      {selectMode && selectedIds.size > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+        >
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            {selectedIds.size} selected
+          </span>
+          <button
+            onClick={bulkComplete}
+            className="rounded-full bg-brand-gradient px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+          >
+            Complete
+          </button>
+          <button
+            onClick={bulkDelete}
+            className="rounded-full border border-red-300 px-4 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+          >
+            Delete
+          </button>
+        </motion.div>
+      )}
     </DashboardLayout>
   );
 };
