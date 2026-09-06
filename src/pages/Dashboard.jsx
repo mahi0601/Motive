@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion } from 'framer-motion';
 import { FiPlusCircle, FiSearch } from 'react-icons/fi';
@@ -31,6 +31,7 @@ const Dashboard = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const { notify } = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -160,8 +161,8 @@ const Dashboard = () => {
               onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
               onFilter={() => notify('info', 'Use the search box to filter')}
               onSearch={() => document.querySelector('input[type="text"]')?.focus()}
-              onCalendar={() => (window.location.href = '/calendar')}
-              onStats={() => (window.location.href = '/stats')}
+              onCalendar={() => navigate('/calendar')}
+              onStats={() => navigate('/stats')}
             />
           </div>
           <div className="lg:w-80">
