@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { FiCalendar, FiTag, FiFlag, FiEdit, FiTrash2, FiCheckCircle, FiClock } from 'react-icons/fi';
 import PriorityBadge from './PriorityBadge';
 
-const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick }) => {
+const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick, selectMode, selected, onSelectToggle }) => {
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
-  const daysUntilDue = task.dueDate 
+  const daysUntilDue = task.dueDate
     ? Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
 
@@ -14,21 +14,38 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02, y: -4 }}
+      onClick={selectMode ? onSelectToggle : undefined}
       className={`relative border rounded-2xl p-5 shadow-md bg-white dark:bg-gray-800 transition-all duration-300 ${
-        task.completed
+        selectMode ? 'cursor-pointer' : ''
+      } ${
+        selected
+          ? 'border-brand-500 ring-2 ring-brand-400'
+          : task.completed
           ? 'border-indigo-200 dark:border-indigo-800 opacity-75'
           : isOverdue
           ? 'border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-300 dark:ring-indigo-800'
           : 'border-gray-200 dark:border-gray-700 hover:border-indigo-500 hover:ring-1 hover:ring-indigo-500'
       }`}
     >
+      {selectMode && (
+        <div className="absolute top-4 left-4">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={onSelectToggle}
+            onClick={(e) => e.stopPropagation()}
+            className="h-5 w-5 cursor-pointer accent-brand-500"
+          />
+        </div>
+      )}
+
       {task.completed && (
         <div className="absolute top-4 right-4">
           <FiCheckCircle className="w-6 h-6 text-green-500" />
         </div>
       )}
 
-      <div className="flex justify-between items-start mb-3">
+      <div className={`flex justify-between items-start mb-3 ${selectMode ? 'pl-7' : ''}`}>
         <div className="flex-1">
           <h3 className={`font-semibold text-lg mb-1 ${
             task.completed
@@ -91,6 +108,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick 
         </div>
       )}
 
+      {!selectMode && (
       <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           {onCalendarClick && (
@@ -137,6 +155,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick 
           )}
         </div>
       </div>
+      )}
     </motion.div>
   );
 };
