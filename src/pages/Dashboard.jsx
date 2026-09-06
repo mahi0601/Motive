@@ -64,6 +64,22 @@ const Dashboard = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  // A task result picked in the command palette lands here as ?edit=<id> —
+  // wait for tasks to actually be loaded before looking it up.
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (!editId || loading) return;
+    const task = tasks.find((t) => t.id === editId);
+    if (task) {
+      setEditingTask(toView(task));
+      setShowTaskForm(true);
+    }
+    setSearchParams((p) => {
+      p.delete('edit');
+      return p;
+    }, { replace: true });
+  }, [searchParams, setSearchParams, tasks, loading]);
+
   const addTask = async (category, data) => {
     const payload = data
       ? { title: data.title, description: data.description, priority: data.priority, category: data.category || category }

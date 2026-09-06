@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FiSearch, FiHome, FiCalendar, FiBarChart2, FiLayout, FiSettings, FiPlusCircle, FiFileText,
+  FiSearch, FiHome, FiCalendar, FiBarChart2, FiLayout, FiSettings, FiPlusCircle, FiFileText, FiCheckSquare,
 } from 'react-icons/fi';
 import { useCommandPalette } from '../context/CommandPaletteContext';
 import { searchPages } from '../services/pageService';
+import { searchTasks } from '../services/taskService';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 const QUICK_ACTIONS = [
@@ -22,6 +23,7 @@ const CommandPalette = () => {
   const { isOpen, close } = useCommandPalette();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [taskResults, setTaskResults] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -31,24 +33,33 @@ const CommandPalette = () => {
     if (isOpen) {
       setQuery('');
       setResults([]);
+      setTaskResults([]);
       setActiveIndex(0);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [isOpen]);
 
-  // Debounced live page search — reuses the existing /api/pages/search endpoint.
+  // Debounced live page + task search — reuses the existing search endpoints.
   useEffect(() => {
     if (!isOpen || !query.trim()) {
       setResults([]);
+      setTaskResults([]);
       return;
     }
     let active = true;
     const t = setTimeout(async () => {
+      const q = query.trim();
       try {
-        const { data } = await searchPages(query.trim());
+        const { data } = await searchPages(q);
         if (active) setResults(data || []);
       } catch {
         if (active) setResults([]);
+      }
+      try {
+        const { data } = await searchTasks(q);
+        if (active) setTaskResults(data || []);
+      } catch {
+        if (active) setTaskResults([]);
       }
     }, 250);
     return () => {
@@ -63,20 +74,25 @@ const CommandPalette = () => {
     return QUICK_ACTIONS.filter((a) => a.label.toLowerCase().includes(q));
   }, [query]);
 
-  // Actions first, then live page-search results — one flat list for arrow-key nav.
+  // Actions first, then live page/task-search results — one flat list for arrow-key nav.
   const items = useMemo(
     () => [
       ...filteredActions.map((a) => ({ kind: 'action', ...a })),
+      ...taskResults.map((t) => ({ kind: 'task', id: t.id, label: t.title, icon: FiCheckSquare })),
       ...results.map((p) => ({ kind: 'page', id: p.id, label: p.title || 'Untitled', icon: FiFileText })),
     ],
-    [filteredActions, results]
+    [filteredActions, results, taskResults]
   );
 
   const choose = async (item) => {
     if (!item) return;
     close();
-    if (item.kind !== 'action') {
+    if (item.kind === 'page') {
       navigate(`/page/${item.id}`);
+      return;
+    }
+    if (item.kind === 'task') {
+      navigate(`/dashboard?edit=${item.id}`);
       return;
     }
     if (item.id === 'new-page') {
@@ -130,7 +146,7 @@ const CommandPalette = () => {
                   setActiveIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                placeholder="Search pages, or jump to a quick action…"
+                placeholder="Search pages and tasks, or jump to a quick action…"
                 className="w-full bg-transparent text-sm outline-none"
                 style={{ color: 'var(--text)' }}
               />
@@ -160,8 +176,10 @@ const CommandPalette = () => {
                   >
                     <Icon className="h-4 w-4 shrink-0 text-brand-500" />
                     <span className="truncate">{item.label}</span>
-                    {item.kind === 'page' && (
-                      <span className="ml-auto shrink-0 text-xs" style={{ color: 'var(--text-muted)' }}>Page</span>
+                    {(item.kind === 'page' || item.kind === 'task') && (
+                      <span className="ml-auto shrink-0 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {item.kind === 'page' ? 'Page' : 'Task'}
+                      </span>
                     )}
                   </button>
                 );
