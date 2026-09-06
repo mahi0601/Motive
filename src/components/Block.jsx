@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GripVertical, Plus, Link as LinkIcon, ExternalLink } from 'lucide-react';
-import { htmlForContent, sanitizeInlineHtml, toggleMark } from '../utils/richText';
+import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink } from '../utils/richText';
 
 // Markdown prefixes that auto-convert a block on space.
 const MD_SHORTCUTS = [
@@ -309,7 +309,7 @@ const Block = ({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       onBlur={() => setToolbar(null)}
-      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-gray-700 ${
+      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-gray-700 [&_a]:text-brand-500 [&_a]:underline [&_mark]:rounded-sm [&_mark]:bg-yellow-200 [&_mark]:px-0.5 dark:[&_mark]:bg-yellow-300 dark:[&_mark]:text-black ${
         typeClasses[block.type] || 'text-base'
       } ${block.content?.checked ? 'line-through text-gray-400' : ''}`}
     />
@@ -317,6 +317,11 @@ const Block = ({
 
   const applyMark = (tag) => {
     toggleMark(ref.current, tag);
+    handleInput({ currentTarget: ref.current });
+  };
+
+  const applyLink = () => {
+    toggleLink(ref.current);
     handleInput({ currentTarget: ref.current });
   };
 
@@ -329,6 +334,7 @@ const Block = ({
         { tag: 'B', label: 'B', title: 'Bold', cls: 'font-bold' },
         { tag: 'EM', label: 'I', title: 'Italic', cls: 'italic' },
         { tag: 'CODE', label: '</>', title: 'Code', cls: 'font-mono text-xs' },
+        { tag: 'MARK', label: 'H', title: 'Highlight', cls: 'rounded-sm bg-yellow-200 px-0.5 dark:bg-yellow-300 dark:text-black' },
       ].map((b) => (
         <button
           key={b.tag}
@@ -342,6 +348,16 @@ const Block = ({
           {b.label}
         </button>
       ))}
+      <button
+        title="Link"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          applyLink();
+        }}
+        className="h-7 w-7 rounded text-sm text-gray-700 underline hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
+      >
+        🔗
+      </button>
     </div>
   );
 
