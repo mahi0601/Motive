@@ -4,8 +4,8 @@ import DOMPurify from 'dompurify';
 // Everything else (scripts, styles, event handlers, arbitrary tags from a
 // paste) is stripped.
 const SANITIZE_CONFIG = {
-  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'code', 'br'],
-  ALLOWED_ATTR: [],
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'code', 'br', 'a', 'mark'],
+  ALLOWED_ATTR: ['href'],
 };
 
 // macOS Chrome/Safari intercept Cmd+B/Cmd+I as a native OS-level text-editing
@@ -76,6 +76,38 @@ export const toggleMark = (root, tagName) => {
   sel.removeAllRanges();
   const after = document.createRange();
   after.selectNodeContents(wrapper);
+  after.collapse(false);
+  sel.addRange(after);
+};
+
+// Links need a URL (via prompt), not just a bare wrap/unwrap, so this is
+// separate from toggleMark rather than a generic case of it.
+export const toggleLink = (root) => {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+
+  let node = range.commonAncestorContainer;
+  while (node && node !== root) {
+    if (node.nodeType === 1 && node.tagName === 'A') {
+      const parent = node.parentNode;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      parent.removeChild(node);
+      return;
+    }
+    node = node.parentNode;
+  }
+
+  const url = window.prompt('Link URL:', 'https://');
+  if (!url || !url.trim()) return;
+
+  const a = document.createElement('a');
+  a.href = url.trim();
+  a.appendChild(range.extractContents());
+  range.insertNode(a);
+  sel.removeAllRanges();
+  const after = document.createRange();
+  after.selectNodeContents(a);
   after.collapse(false);
   sel.addRange(after);
 };
