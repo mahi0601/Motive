@@ -13,16 +13,16 @@ const TemplatePreview = ({ template }) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-indigo-500 transition-all duration-300"
+            className="p-4 bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border shadow-sm hover:shadow-md hover:border-brand-500 transition-all duration-300"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-indigo-600 rounded-full" />
-                <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{task}</h4>
+                <div className="w-2 h-2 bg-brand-600 rounded-full" />
+                <h4 className="font-semibold text-light-text dark:text-white text-sm">{task}</h4>
               </div>
               <PriorityBadge priority={index % 3 === 0 ? 'High' : index % 3 === 1 ? 'Medium' : 'Low'} />
             </div>
-            <div className="flex items-center gap-3 mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-3 mt-3 text-xs text-light-muted dark:text-dark-muted">
               <span className="flex items-center gap-1">
                 <FiTag className="w-3 h-3" />
                 {template.category}

@@ -63,7 +63,7 @@ const Logo = ({ size = 32, showText = true, className = '' }) => (
     <LogoMark size={size} />
     {showText && (
       <span
-        className="font-display font-bold tracking-tight text-gray-900 dark:text-white"
+        className="font-display font-bold tracking-tight text-light-text dark:text-dark-text"
         style={{ fontSize: size * 0.62 }}
       >
         Motive

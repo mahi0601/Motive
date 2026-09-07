@@ -50,9 +50,9 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg"
+      className="flex items-center gap-2 p-2 bg-light-border/40 dark:bg-dark-raised rounded-lg"
     >
-      <span className="text-sm font-mono text-gray-700 dark:text-gray-300 min-w-[80px]">
+      <span className="text-sm font-mono text-light-text dark:text-dark-text min-w-[80px]">
         {formatTime(time)}
       </span>
       <div className="flex gap-1">
@@ -60,15 +60,15 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
           onClick={() => setIsRunning(!isRunning)}
           className={`p-1.5 rounded transition-colors ${
             isRunning
-              ? 'bg-purple-500 hover:bg-purple-600 text-white'
-              : 'bg-indigo-500 hover:bg-indigo-600 text-white'
+              ? 'bg-spark-500 hover:bg-spark-600 text-white'
+              : 'bg-brand-500 hover:bg-brand-600 text-white'
           }`}
         >
           {isRunning ? <FiPause className="w-3 h-3" /> : <FiPlay className="w-3 h-3" />}
         </button>
         <button
           onClick={handleReset}
-          className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors"
+          className="p-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded transition-colors"
         >
           <FiSquare className="w-3 h-3" />
         </button>

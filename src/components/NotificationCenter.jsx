@@ -58,13 +58,13 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'comment':
-        return <FiMessageSquare className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
+        return <FiMessageSquare className="w-5 h-5 text-brand-600 dark:text-brand-400" />;
       case 'success':
-        return <FiCheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
+        return <FiCheckCircle className="w-5 h-5 text-brand-600 dark:text-brand-400" />;
       case 'error':
-        return <FiAlertCircle className="w-5 h-5 text-indigo-700 dark:text-indigo-300" />;
+        return <FiAlertCircle className="w-5 h-5 text-brand-700 dark:text-brand-300" />;
       default:
-        return <FiInfo className="w-5 h-5 text-purple-600 dark:text-purple-400" />;
+        return <FiInfo className="w-5 h-5 text-spark-600 dark:text-spark-400" />;
     }
   };
 
@@ -82,15 +82,15 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
-            className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl"
+            className="absolute right-0 top-0 h-full w-full max-w-md bg-light-surface dark:bg-dark-raised shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-light-surface dark:bg-dark-raised border-b border-light-border dark:border-dark-border px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FiBell className="w-6 h-6 text-indigo-500" />
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Notifications</h3>
+                <FiBell className="w-6 h-6 text-brand-500" />
+                <h3 className="text-xl font-bold text-light-text dark:text-white">Notifications</h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 bg-indigo-600 text-white text-xs font-bold rounded-full">
+                  <span className="px-2 py-0.5 bg-brand-600 text-white text-xs font-bold rounded-full">
                     {unreadCount}
                   </span>
                 )}
@@ -98,16 +98,16 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={clearAll}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                   title="Clear all"
                 >
-                  <FiTrash2 className="w-5 h-5 text-gray-500" />
+                  <FiTrash2 className="w-5 h-5 text-light-muted" />
                 </button>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                 >
-                  <FiX className="w-5 h-5 text-gray-500" />
+                  <FiX className="w-5 h-5 text-light-muted" />
                 </button>
               </div>
             </div>
@@ -115,7 +115,7 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
             <div className="overflow-y-auto h-[calc(100vh-80px)]">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
                 </div>
               ) : notifications.length > 0 ? (
                 <div className="p-4 space-y-2">
@@ -128,8 +128,8 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
                       onClick={() => !notification.read && markAsRead(notification.id)}
                       className={`p-4 rounded-xl border cursor-pointer transition-all ${
                         notification.read
-                          ? 'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-700'
-                          : 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'
+                          ? 'bg-light-border/30 dark:bg-dark-raised/30 border-light-border dark:border-dark-border'
+                          : 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800'
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -137,20 +137,20 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-800 dark:text-white text-sm">
+                          <p className="font-semibold text-light-text dark:text-white text-sm">
                             {notification.title}
                           </p>
                           {notification.message && (
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-light-muted dark:text-dark-muted mt-1">
                               {notification.message}
                             </p>
                           )}
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                          <p className="text-xs text-light-muted dark:text-dark-muted mt-2">
                             {new Date(notification.createdAt).toLocaleString()}
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-indigo-600 rounded-full mt-2" />
+                          <div className="w-2 h-2 bg-brand-600 rounded-full mt-2" />
                         )}
                       </div>
                     </motion.div>
@@ -158,8 +158,8 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-12">
-                  <FiBell className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No notifications</p>
+                  <FiBell className="w-16 h-16 text-light-muted dark:text-dark-muted mb-4" />
+                  <p className="text-light-muted dark:text-dark-muted">No notifications</p>
                 </div>
               )}
             </div>

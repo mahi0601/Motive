@@ -30,30 +30,30 @@ const ActivityFeed = ({ limit = 5 }) => {
   const getActivityIcon = (type) => {
     switch (type) {
       case 'created':
-        return <FiPlus className="w-4 h-4 text-indigo-500" />;
+        return <FiPlus className="w-4 h-4 text-brand-500" />;
       case 'completed':
-        return <FiCheckCircle className="w-4 h-4 text-indigo-600" />;
+        return <FiCheckCircle className="w-4 h-4 text-brand-600" />;
       case 'updated':
-        return <FiEdit className="w-4 h-4 text-purple-500" />;
+        return <FiEdit className="w-4 h-4 text-spark-500" />;
       case 'deleted':
-        return <FiTrash2 className="w-4 h-4 text-indigo-700" />;
+        return <FiTrash2 className="w-4 h-4 text-brand-700" />;
       default:
-        return <FiClock className="w-4 h-4 text-gray-500" />;
+        return <FiClock className="w-4 h-4 text-light-muted" />;
     }
   };
 
   const getActivityColor = (type) => {
     switch (type) {
       case 'created':
-        return 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800';
+        return 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800';
       case 'completed':
-        return 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800';
+        return 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800';
       case 'updated':
-        return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
+        return 'bg-spark-50 dark:bg-spark-900/20 border-spark-200 dark:border-spark-800';
       case 'deleted':
-        return 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700';
+        return 'bg-brand-100 dark:bg-brand-900/30 border-brand-300 dark:border-brand-700';
       default:
-        return 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
+        return 'bg-light-border/30 dark:bg-dark-raised border-light-border dark:border-dark-border';
     }
   };
 
@@ -62,10 +62,10 @@ const ActivityFeed = ({ limit = 5 }) => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm"
+        className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6 shadow-sm"
       >
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Activity</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Recent Activity</h3>
+        <p className="text-sm text-light-muted dark:text-dark-muted text-center py-4">
           {loading ? 'Loading…' : 'No recent activity'}
         </p>
       </motion.div>
@@ -76,10 +76,10 @@ const ActivityFeed = ({ limit = 5 }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+      className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6 shadow-sm hover:shadow-lg transition-all duration-300"
     >
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-        <FiClock className="text-indigo-500" />
+      <h3 className="text-lg font-semibold text-light-text dark:text-white mb-4 flex items-center gap-2">
+        <FiClock className="text-brand-500" />
         Recent Activity
       </h3>
       <div className="space-y-3">
@@ -95,10 +95,10 @@ const ActivityFeed = ({ limit = 5 }) => {
                 {getActivityIcon(activity.action)}
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-800 dark:text-gray-200">
+                <p className="text-sm text-light-text dark:text-dark-text">
                   {activity.description}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                <p className="text-xs text-light-muted dark:text-dark-muted mt-1">
                   {new Date(activity.timestamp).toLocaleString()}
                 </p>
               </div>

@@ -45,6 +45,15 @@ export default {
           text: '#E9E7EF',
           muted: '#9C99A8',
         },
+        // Warm-neutral light-mode counterpart to `dark.*` — replaces the
+        // stark #f9f9f9/white + gray-* that pages used to hardcode.
+        light: {
+          background: '#FAF6F0',
+          surface: '#FFFFFF',
+          border: '#E7E0D4',
+          text: '#23201B',
+          muted: '#8B8479',
+        },
       },
       fontFamily: {
         display: ['Sora', 'Inter', 'system-ui', 'sans-serif'],
@@ -54,6 +63,7 @@ export default {
       backgroundImage: {
         'brand-gradient': 'linear-gradient(135deg, #7C5CF6 0%, #9B5CFF 55%, #C45BD6 100%)',
         'brand-soft': 'linear-gradient(135deg, rgba(124,92,246,0.12) 0%, rgba(196,91,214,0.12) 100%)',
+        'spark-gradient': 'linear-gradient(135deg, #FFC04D 0%, #F5A524 100%)',
       },
       boxShadow: {
         brand: '0 8px 24px -6px rgba(124, 92, 246, 0.45)',

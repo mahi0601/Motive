@@ -11,7 +11,7 @@ const Sidebar = () => {
   const closeOnMobile = () => setIsOpen(false);
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: <FiHome /> },
+    { name: 'Dashboard', path: '/dashboard', icon: <FiHome /> },
     { name: 'Calendar', path: '/calendar', icon: <FiCalendar /> },
     { name: 'Statistics', path: '/stats', icon: <FiBarChart2 /> },
     { name: 'Templates', path: '/templates', icon: <FiGrid /> },
@@ -24,7 +24,7 @@ const Sidebar = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed left-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 rounded-lg border border-gray-200 bg-white/90 p-2 text-gray-700 shadow-md backdrop-blur lg:hidden dark:border-[#2A2733] dark:bg-[#1a1a1a]/90 dark:text-gray-200"
+          className="fixed left-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-50 rounded-lg border border-light-border bg-light-surface/90 p-2 text-light-text shadow-md backdrop-blur lg:hidden dark:border-dark-border dark:bg-dark-surface/90 dark:text-dark-text"
           title="Open menu"
           aria-label="Open menu"
         >
@@ -42,7 +42,7 @@ const Sidebar = () => {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-xl transition-transform duration-300 ease-in-out dark:border-gray-700 dark:bg-[#1a1a1a]
+        className={`fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-y-auto border-r border-light-border bg-light-surface px-5 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-xl transition-transform duration-300 ease-in-out dark:border-dark-border dark:bg-dark-surface
           lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="mb-8 flex items-center justify-between">
@@ -52,7 +52,7 @@ const Sidebar = () => {
           {/* Close button only on mobile */}
           <button
             onClick={closeOnMobile}
-            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 lg:hidden dark:text-gray-300 dark:hover:bg-white/5"
+            className="rounded-md p-2 text-light-muted hover:bg-light-border/40 lg:hidden dark:text-dark-muted dark:hover:bg-white/5"
             title="Close menu"
             aria-label="Close menu"
           >
@@ -71,7 +71,7 @@ const Sidebar = () => {
                   ${
                     isActive
                       ? 'bg-brand-gradient text-white shadow-brand-sm'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5'
+                      : 'text-light-text hover:bg-light-border/40 dark:text-dark-muted dark:hover:bg-white/5'
                   }`
                 }
               >

@@ -15,16 +15,16 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02, y: -4 }}
       onClick={selectMode ? onSelectToggle : undefined}
-      className={`relative border rounded-2xl p-5 shadow-md bg-white dark:bg-gray-800 transition-all duration-300 ${
+      className={`relative border rounded-2xl p-5 shadow-md bg-light-surface dark:bg-dark-raised transition-all duration-300 ${
         selectMode ? 'cursor-pointer' : ''
       } ${
         selected
           ? 'border-brand-500 ring-2 ring-brand-400'
           : task.completed
-          ? 'border-indigo-200 dark:border-indigo-800 opacity-75'
+          ? 'border-brand-200 dark:border-brand-800 opacity-75'
           : isOverdue
-          ? 'border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-300 dark:ring-indigo-800'
-          : 'border-gray-200 dark:border-gray-700 hover:border-indigo-500 hover:ring-1 hover:ring-indigo-500'
+          ? 'border-brand-400 dark:border-brand-600 ring-2 ring-brand-300 dark:ring-brand-800'
+          : 'border-light-border dark:border-dark-border hover:border-brand-500 hover:ring-1 hover:ring-brand-500'
       }`}
     >
       {selectMode && (
@@ -49,13 +49,13 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
         <div className="flex-1">
           <h3 className={`font-semibold text-lg mb-1 ${
             task.completed
-              ? 'line-through text-gray-500 dark:text-gray-500'
-              : 'text-gray-800 dark:text-white'
+              ? 'line-through text-light-muted dark:text-dark-muted'
+              : 'text-light-text dark:text-white'
           }`}>
             {task.title}
           </h3>
           {task.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
+            <p className="text-sm text-light-muted dark:text-dark-text mb-2 line-clamp-2">
               {task.description}
             </p>
           )}
@@ -65,7 +65,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
 
       {task.category && (
         <div className="mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-md text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-md text-xs font-medium">
             <FiTag className="w-3 h-3" />
             {task.category}
           </span>
@@ -77,7 +77,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           {task.tags.map((tag, index) => (
             <span
               key={index}
-              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs"
+              className="px-2 py-0.5 bg-light-border/40 dark:bg-dark-raised text-light-muted dark:text-dark-muted rounded text-xs"
             >
               #{tag}
             </span>
@@ -88,10 +88,10 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
       {task.dueDate && (
         <div className={`flex items-center gap-2 mb-3 text-sm ${
           isOverdue
-            ? 'text-indigo-700 dark:text-indigo-300 font-medium'
+            ? 'text-brand-700 dark:text-brand-300 font-medium'
             : daysUntilDue !== null && daysUntilDue <= 3
-            ? 'text-purple-600 dark:text-purple-400'
-            : 'text-gray-600 dark:text-gray-400'
+            ? 'text-spark-600 dark:text-spark-400'
+            : 'text-light-muted dark:text-dark-muted'
         }`}>
           <FiCalendar className="w-4 h-4" />
           <span>
@@ -109,12 +109,12 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
       )}
 
       {!selectMode && (
-      <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between pt-3 border-t border-light-border dark:border-dark-border">
         <div className="flex items-center gap-2">
           {onCalendarClick && (
             <button
               onClick={onCalendarClick}
-              className="p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-lg transition-all shadow-sm hover:shadow-md"
+              className="p-2 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border hover:border-brand-500 dark:hover:border-brand-500 text-brand-600 dark:text-brand-400 rounded-lg transition-all shadow-sm hover:shadow-md"
               title="Add to Calendar"
             >
               <FiCalendar className="w-4 h-4" />
@@ -123,10 +123,10 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           {onComplete && (
             <button
               onClick={() => onComplete(task)}
-              className={`p-2 rounded-lg transition-all shadow-sm hover:shadow-md bg-white dark:bg-gray-700 border ${
+              className={`p-2 rounded-lg transition-all shadow-sm hover:shadow-md bg-light-surface dark:bg-dark-raised border ${
                 task.completed
-                  ? 'border-indigo-500 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-500 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  ? 'border-brand-500 dark:border-brand-500 text-brand-600 dark:text-brand-400'
+                  : 'border-light-border dark:border-dark-border hover:border-brand-500 dark:hover:border-brand-500 text-light-muted dark:text-dark-muted hover:text-brand-600 dark:hover:text-brand-400'
               }`}
               title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
             >
@@ -138,7 +138,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           {onEdit && (
             <button
               onClick={() => onEdit(task)}
-              className="p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-500 text-purple-600 dark:text-purple-400 rounded-lg transition-all shadow-sm hover:shadow-md"
+              className="p-2 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border hover:border-spark-500 dark:hover:border-spark-500 text-spark-600 dark:text-spark-400 rounded-lg transition-all shadow-sm hover:shadow-md"
               title="Edit task"
             >
               <FiEdit className="w-4 h-4" />
@@ -147,7 +147,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           {onDelete && (
             <button
               onClick={() => onDelete(task)}
-              className="p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-500 text-indigo-700 dark:text-indigo-300 rounded-lg transition-all shadow-sm hover:shadow-md"
+              className="p-2 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border hover:border-brand-500 dark:hover:border-brand-500 text-brand-700 dark:text-brand-300 rounded-lg transition-all shadow-sm hover:shadow-md"
               title="Delete task"
             >
               <FiTrash2 className="w-4 h-4" />
