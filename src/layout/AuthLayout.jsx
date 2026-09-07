@@ -15,7 +15,7 @@ const points = [
  * Pages pass their form as children.
  */
 const AuthLayout = ({ children }) => (
-  <div className="flex min-h-screen w-full bg-white dark:bg-[#0b0a0f]">
+  <div className="flex min-h-screen w-full bg-light-surface dark:bg-dark-background">
     {/* Brand panel (hidden on small screens) */}
     <div className="relative hidden w-1/2 overflow-hidden bg-brand-gradient lg:flex lg:flex-col lg:justify-between p-12 text-white">
       <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-2xl" />
@@ -69,12 +69,12 @@ const AuthLayout = ({ children }) => (
         {/* Brand logo above the form — visible on every screen size */}
         <Link to="/" className="mb-8 flex items-center gap-2.5">
           <LogoMark size={36} />
-          <span className="font-display text-2xl font-bold text-gray-900 dark:text-white">
+          <span className="font-display text-2xl font-bold text-light-text dark:text-dark-text">
             Motive
           </span>
         </Link>
         {children}
-        <p className="mt-8 text-center text-xs text-gray-400">
+        <p className="mt-8 text-center text-xs text-light-muted dark:text-dark-muted">
           <Link to="/privacy" className="hover:text-brand-600 dark:hover:text-brand-400">
             Privacy Policy
           </Link>

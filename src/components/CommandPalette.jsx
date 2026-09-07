@@ -137,7 +137,7 @@ const CommandPalette = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b px-4 py-3" style={{ borderColor: 'var(--surface-border)' }}>
-              <FiSearch className="h-5 w-5 shrink-0 text-gray-400" />
+              <FiSearch className="h-5 w-5 shrink-0 text-light-muted dark:text-dark-muted" />
               <input
                 ref={inputRef}
                 value={query}

@@ -107,9 +107,9 @@ const CommentSection = ({ taskId }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      className="mt-6 rounded-xl border border-light-border bg-light-surface p-6 shadow-sm dark:border-dark-border dark:bg-dark-raised"
     >
-      <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-white">
+      <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-white">
         💬 Comments ({comments.length})
       </h4>
 
@@ -125,10 +125,10 @@ const CommentSection = ({ taskId }) => {
               onChange={handleTextChange}
               placeholder="Add a comment… use @ to mention someone"
               rows={3}
-              className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 outline-none transition focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full resize-none rounded-xl border border-light-border bg-light-surface px-4 py-3 text-light-text outline-none transition focus:ring-2 focus:ring-brand-500 dark:border-dark-border dark:bg-dark-raised dark:text-white"
             />
             {mentionQuery != null && filteredMembers.length > 0 && (
-              <div className="absolute z-10 mt-1 w-64 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-[#1f1f1f]">
+              <div className="absolute z-10 mt-1 w-64 rounded-lg border border-light-border bg-light-surface py-1 shadow-lg dark:border-dark-border dark:bg-dark-raised">
                 {filteredMembers.map((m) => (
                   <button
                     key={m.id}
@@ -137,10 +137,10 @@ const CommentSection = ({ taskId }) => {
                       e.preventDefault();
                       selectMention(m);
                     }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-white/5"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-light-border/40 dark:hover:bg-white/5"
                   >
-                    <span className="font-medium text-gray-800 dark:text-white">{m.name}</span>
-                    <span className="text-xs text-gray-400">{m.email}</span>
+                    <span className="font-medium text-light-text dark:text-white">{m.name}</span>
+                    <span className="text-xs text-light-muted">{m.email}</span>
                   </button>
                 ))}
               </div>
@@ -160,25 +160,25 @@ const CommentSection = ({ taskId }) => {
 
       <div className="space-y-4">
         {loading ? (
-          <p className="text-center text-sm text-gray-400">Loading…</p>
+          <p className="text-center text-sm text-light-muted">Loading…</p>
         ) : comments.length === 0 ? (
-          <p className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="py-4 text-center text-sm text-light-muted dark:text-dark-muted">
             No comments yet. Be the first to comment!
           </p>
         ) : (
           comments.map((c) => (
             <div
               key={c.id}
-              className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700/50"
+              className="rounded-xl border border-light-border bg-light-border/30 p-4 dark:border-dark-border dark:bg-dark-raised/50"
             >
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-bold text-white">
                   {(c.user?.name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">{c.user?.name || 'Someone'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(c.createdAt).toLocaleString()}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  <p className="text-sm font-semibold text-light-text dark:text-white">{c.user?.name || 'Someone'}</p>
+                  <p className="text-xs text-light-muted dark:text-dark-muted">{new Date(c.createdAt).toLocaleString()}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-light-text dark:text-dark-muted">
                     {renderWithMentions(c.text)}
                   </p>
                 </div>

@@ -62,10 +62,10 @@ const Register = () => {
 
   return (
     <AuthLayout>
-      <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white">
+      <h2 className="font-display text-3xl font-bold text-light-text dark:text-white">
         Create your account
       </h2>
-      <p className="mt-2 mb-8 text-gray-500 dark:text-gray-400">Start organizing in seconds.</p>
+      <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Start organizing in seconds.</p>
 
       {serverError && (
         <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
@@ -110,11 +110,11 @@ const Register = () => {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className={`flex-1 rounded-full ${i <= s ? STRENGTH_COLOR[s] : 'bg-gray-200 dark:bg-[#2A2733]'}`}
+                    className={`flex-1 rounded-full ${i <= s ? STRENGTH_COLOR[s] : 'bg-light-border dark:bg-dark-border'}`}
                   />
                 ))}
               </div>
-              <span className="w-12 text-right text-xs text-gray-500">{STRENGTH_LABEL[s]}</span>
+              <span className="w-12 text-right text-xs text-light-muted dark:text-dark-muted">{STRENGTH_LABEL[s]}</span>
             </div>
           )}
         </div>
@@ -128,7 +128,7 @@ const Register = () => {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Already have an account?{' '}
         <Link to="/login" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
           Log in

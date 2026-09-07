@@ -87,7 +87,7 @@ const WelcomeModal = ({ onClose }) => {
                 {STEPS.map((_, i) => (
                   <span
                     key={i}
-                    className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-brand-500' : 'w-1.5 bg-gray-300 dark:bg-gray-600'}`}
+                    className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-brand-500' : 'w-1.5 bg-light-border dark:bg-dark-border'}`}
                   />
                 ))}
               </div>

@@ -7,37 +7,27 @@ const QuickActions = ({ onAddTask, onFilter, onSearch, onCalendar, onStats }) =>
     {
       icon: <FiPlus className="w-5 h-5" />,
       label: 'New Task',
-      onClick: onAddTask,
-      gradient: 'from-indigo-600 to-purple-600',
-      hover: 'from-indigo-700 to-purple-700'
+      onClick: onAddTask
     },
     {
       icon: <FiFilter className="w-5 h-5" />,
       label: 'Filter',
-      onClick: onFilter,
-      gradient: 'from-indigo-500 to-indigo-600',
-      hover: 'from-indigo-600 to-indigo-700'
+      onClick: onFilter
     },
     {
       icon: <FiSearch className="w-5 h-5" />,
       label: 'Search',
-      onClick: onSearch,
-      gradient: 'from-purple-500 to-indigo-600',
-      hover: 'from-purple-600 to-indigo-700'
+      onClick: onSearch
     },
     {
       icon: <FiCalendar className="w-5 h-5" />,
       label: 'Calendar',
-      onClick: onCalendar,
-      gradient: 'from-indigo-600 to-purple-500',
-      hover: 'from-indigo-700 to-purple-600'
+      onClick: onCalendar
     },
     {
       icon: <FiTrendingUp className="w-5 h-5" />,
       label: 'Analytics',
-      onClick: onStats,
-      gradient: 'from-purple-600 to-indigo-500',
-      hover: 'from-purple-700 to-indigo-600'
+      onClick: onStats
     }
   ];
 
@@ -53,7 +43,7 @@ const QuickActions = ({ onAddTask, onFilter, onSearch, onCalendar, onStats }) =>
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
           onClick={action.onClick}
-          className={`flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r ${action.gradient} hover:bg-gradient-to-r ${action.hover} text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all duration-300`}
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand-gradient text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all duration-300"
         >
           {action.icon}
           <span className="hidden sm:inline">{action.label}</span>

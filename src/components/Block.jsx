@@ -62,7 +62,7 @@ const TableBlock = ({ content, onChange }) => {
           {rows.map((row, r) => (
             <tr key={r}>
               {row.map((cell, c) => (
-                <td key={c} className="border border-gray-300 p-0 dark:border-gray-600">
+                <td key={c} className="border border-light-border p-0 dark:border-dark-border">
                   <div
                     contentEditable
                     suppressContentEditableWarning
@@ -77,7 +77,7 @@ const TableBlock = ({ content, onChange }) => {
           ))}
         </tbody>
       </table>
-      <div className="mt-1 flex gap-3 text-xs text-gray-400">
+      <div className="mt-1 flex gap-3 text-xs text-light-muted">
         <button onClick={addRow} className="hover:text-brand-500">+ Row</button>
         <button onClick={addColumn} className="hover:text-brand-500">+ Column</button>
       </div>
@@ -98,9 +98,9 @@ const EmbedBlock = ({ content, onChange }) => {
           e.preventDefault();
           if (draft.trim()) onChange({ url: draft.trim() });
         }}
-        className="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 p-3 dark:border-gray-600"
+        className="flex items-center gap-2 rounded-lg border border-dashed border-light-border p-3 dark:border-dark-border"
       >
-        <LinkIcon size={16} className="shrink-0 text-gray-400" />
+        <LinkIcon size={16} className="shrink-0 text-light-muted" />
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -134,7 +134,7 @@ const EmbedBlock = ({ content, onChange }) => {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 rounded-lg border border-gray-200 p-3 text-sm text-brand-600 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/5"
+      className="flex items-center gap-2 rounded-lg border border-light-border p-3 text-sm text-brand-600 hover:bg-gray-50 dark:border-dark-border dark:hover:bg-white/5"
     >
       <ExternalLink size={16} className="shrink-0" />
       <span className="truncate">{url}</span>
@@ -297,7 +297,7 @@ const Block = ({
   if (block.type === 'divider') {
     return (
       <div className="group relative flex items-center py-2">
-        <hr className="w-full border-gray-300 dark:border-gray-600" />
+        <hr className="w-full border-light-border dark:border-dark-border" />
       </div>
     );
   }
@@ -325,7 +325,7 @@ const Block = ({
         <div className="flex items-start gap-1 rounded px-1 py-0.5 hover:bg-gray-50 dark:hover:bg-white/5">
           <button
             onClick={() => onToggleCollapse?.(block.id)}
-            className="mt-1 shrink-0 text-gray-400 transition-transform hover:text-gray-600 dark:hover:text-gray-200"
+            className="mt-1 shrink-0 text-light-muted transition-transform hover:text-light-muted dark:hover:text-dark-text"
             style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)' }}
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
@@ -339,13 +339,13 @@ const Block = ({
             onInput={handleInput}
             onKeyDown={handleKeyDown}
             onBlur={() => setToolbar(null)}
-            className="flex-1 font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500"
+            className="flex-1 font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted"
           />
         </div>
         {!collapsed && (
-          <div className="ml-5 border-l border-gray-200 pl-3 dark:border-gray-700">
+          <div className="ml-5 border-l border-light-border pl-3 dark:border-dark-border">
             {(childBlocks || []).length === 0 ? (
-              <p className="py-1 text-sm italic text-gray-400">Empty — press Tab on a block above to nest it here.</p>
+              <p className="py-1 text-sm italic text-light-muted">Empty — press Tab on a block above to nest it here.</p>
             ) : (
               childBlocks.map((child, i) => renderChild(child, i))
             )}
@@ -364,9 +364,9 @@ const Block = ({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       onBlur={() => setToolbar(null)}
-      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 dark:empty:before:text-gray-500 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-gray-700 [&_a]:text-brand-500 [&_a]:underline [&_mark]:rounded-sm [&_mark]:bg-yellow-200 [&_mark]:px-0.5 dark:[&_mark]:bg-yellow-300 dark:[&_mark]:text-black ${
+      className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted [&_code]:rounded [&_code]:bg-light-border/40 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-dark-raised [&_a]:text-brand-500 [&_a]:underline [&_mark]:rounded-sm [&_mark]:bg-yellow-200 [&_mark]:px-0.5 dark:[&_mark]:bg-yellow-300 dark:[&_mark]:text-black ${
         typeClasses[block.type] || 'text-base'
-      } ${block.content?.checked ? 'line-through text-gray-400' : ''}`}
+      } ${block.content?.checked ? 'line-through text-light-muted' : ''}`}
     />
   );
 
@@ -382,7 +382,7 @@ const Block = ({
 
   const FormatToolbar = toolbar && (
     <div
-      className="absolute z-10 flex gap-0.5 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-[#1f1f1f]"
+      className="absolute z-10 flex gap-0.5 rounded-lg border border-light-border bg-light-surface p-1 shadow-lg dark:border-dark-border dark:bg-dark-raised"
       style={{ top: toolbar.top, left: toolbar.left }}
     >
       {[
@@ -398,7 +398,7 @@ const Block = ({
             e.preventDefault(); // keep the selection alive through the click
             applyMark(b.tag);
           }}
-          className={`h-7 w-7 rounded text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10 ${b.cls}`}
+          className={`h-7 w-7 rounded text-sm text-light-text hover:bg-light-border/40 dark:text-dark-text dark:hover:bg-white/10 ${b.cls}`}
         >
           {b.label}
         </button>
@@ -409,7 +409,7 @@ const Block = ({
           e.preventDefault();
           applyLink();
         }}
-        className="h-7 w-7 rounded text-sm text-gray-700 underline hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
+        className="h-7 w-7 rounded text-sm text-light-text underline hover:bg-light-border/40 dark:text-dark-text dark:hover:bg-white/10"
       >
         🔗
       </button>
@@ -426,12 +426,12 @@ const Block = ({
             e.preventDefault();
             onAddBelow(block.id);
           }}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          className="text-light-muted hover:text-light-muted dark:hover:text-dark-text"
           title="Add block below"
         >
           <Plus size={16} />
         </button>
-        <span className="cursor-grab text-gray-400" title="Drag to reorder">
+        <span className="cursor-grab text-light-muted" title="Drag to reorder">
           <GripVertical size={16} />
         </span>
       </div>
@@ -444,14 +444,14 @@ const Block = ({
           type="checkbox"
           checked={!!block.content?.checked}
           onChange={() => onToggleCheck(block.id, !block.content?.checked)}
-          className="mt-1.5 h-4 w-4 accent-indigo-500"
+          className="mt-1.5 h-4 w-4 accent-brand-500"
         />
       )}
-      {block.type === 'quote' && <span className="self-stretch w-1 rounded bg-gray-300 dark:bg-gray-600" />}
+      {block.type === 'quote' && <span className="self-stretch w-1 rounded bg-light-border dark:bg-dark-border" />}
       {block.type === 'callout' && <span className="pt-0.5 select-none">💡</span>}
 
       {block.type === 'code' ? (
-        <div className="flex-1 rounded bg-gray-100 dark:bg-[#161616] p-3">{editable}</div>
+        <div className="flex-1 rounded bg-light-border/40 dark:bg-dark-raised p-3">{editable}</div>
       ) : (
         editable
       )}

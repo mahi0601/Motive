@@ -47,10 +47,10 @@ const AttachmentList = ({ taskId }) => {
   };
 
   return (
-    <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-      <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white">
+    <div className="mt-6 border-t border-light-border pt-6 dark:border-dark-border">
+      <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-light-text dark:text-white">
         <FiPaperclip className="text-brand-500" />
-        Attachments {files.length > 0 && <span className="text-gray-400">({files.length})</span>}
+        Attachments {files.length > 0 && <span className="text-light-muted">({files.length})</span>}
       </h4>
 
       {!loading && files.length > 0 && (
@@ -58,9 +58,9 @@ const AttachmentList = ({ taskId }) => {
           {files.map((f) => (
             <div
               key={f.id}
-              className="group flex items-center gap-2 rounded-lg border border-gray-200 p-2 text-sm dark:border-gray-700"
+              className="group flex items-center gap-2 rounded-lg border border-light-border p-2 text-sm dark:border-dark-border"
             >
-              <FiFile className="h-4 w-4 shrink-0 text-gray-400" />
+              <FiFile className="h-4 w-4 shrink-0 text-light-muted" />
               <a
                 href={f.url}
                 target="_blank"
@@ -71,7 +71,7 @@ const AttachmentList = ({ taskId }) => {
               </a>
               <button
                 onClick={() => handleDelete(f)}
-                className="rounded p-1 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-gray-700"
+                className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-red-500 group-hover:opacity-100 dark:hover:bg-dark-border"
                 aria-label="Remove attachment"
               >
                 <FiX className="h-4 w-4" />
@@ -82,7 +82,7 @@ const AttachmentList = ({ taskId }) => {
       )}
 
       <AttachmentUploader onUpload={handleUpload} />
-      {uploading && <p className="mt-1 text-xs text-gray-400">Uploading…</p>}
+      {uploading && <p className="mt-1 text-xs text-light-muted">Uploading…</p>}
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );

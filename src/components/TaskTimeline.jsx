@@ -38,14 +38,14 @@ const TaskTimeline = ({ tasks = [] }) => {
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-indigo-600 rounded-full" />
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                <FiCalendar className="text-indigo-500" />
+              <div className="w-3 h-3 bg-brand-600 rounded-full" />
+              <h3 className="text-lg font-semibold text-light-text dark:text-white flex items-center gap-2">
+                <FiCalendar className="text-brand-500" />
                 {date}
               </h3>
             </div>
-            <div className="flex-1 h-px bg-gradient-to-r from-indigo-200 to-transparent dark:from-indigo-800" />
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex-1 h-px bg-gradient-to-r from-brand-200 to-transparent dark:from-brand-800" />
+            <span className="text-sm text-light-muted dark:text-dark-muted">
               {dateTasks.length} {dateTasks.length === 1 ? 'task' : 'tasks'}
             </span>
           </div>
@@ -57,38 +57,38 @@ const TaskTimeline = ({ tasks = [] }) => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: (groupIndex * 0.1) + (index * 0.05) }}
-                className="relative pl-6 border-l-2 border-indigo-200 dark:border-indigo-800"
+                className="relative pl-6 border-l-2 border-brand-200 dark:border-brand-800"
               >
                 <div className="absolute -left-2 top-2">
                   {task.completed ? (
-                    <div className="w-4 h-4 bg-indigo-600 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                    <div className="w-4 h-4 bg-brand-600 rounded-full border-2 border-white dark:border-dark-raised flex items-center justify-center">
                       <FiCheckCircle className="w-2.5 h-2.5 text-white" />
                     </div>
                   ) : (
-                    <div className="w-4 h-4 bg-white dark:bg-gray-800 border-2 border-indigo-600 rounded-full" />
+                    <div className="w-4 h-4 bg-white dark:bg-dark-raised border-2 border-brand-600 rounded-full" />
                   )}
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md hover:border-indigo-500 transition-all duration-300">
+                <div className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-4 shadow-sm hover:shadow-md hover:border-brand-500 transition-all duration-300">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className={`font-semibold ${
-                          task.completed 
-                            ? 'line-through text-gray-500 dark:text-gray-500' 
-                            : 'text-gray-800 dark:text-white'
+                          task.completed
+                            ? 'line-through text-light-muted dark:text-dark-muted'
+                            : 'text-light-text dark:text-white'
                         }`}>
                           {task.title}
                         </h4>
                         <PriorityBadge priority={task.priority} />
                       </div>
                       {task.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <p className="text-sm text-light-muted dark:text-dark-muted mb-2">
                           {task.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-3 text-xs text-light-muted dark:text-dark-muted">
                         {task.category && (
-                          <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">
+                          <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded">
                             {task.category}
                           </span>
                         )}

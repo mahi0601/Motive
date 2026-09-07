@@ -7,7 +7,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Work Task',
       icon: <FiBriefcase className="w-5 h-5" />,
-      color: 'indigo',
+      color: 'brand',
       task: {
         category: 'Work',
         priority: 'High',
@@ -17,7 +17,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Personal',
       icon: <FiHeart className="w-5 h-5" />,
-      color: 'purple',
+      color: 'spark',
       task: {
         category: 'Personal',
         priority: 'Medium',
@@ -27,7 +27,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Health',
       icon: <FiActivity className="w-5 h-5" />,
-      color: 'indigo',
+      color: 'brand',
       task: {
         category: 'Health',
         priority: 'Medium',
@@ -37,7 +37,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Finance',
       icon: <FiDollarSign className="w-5 h-5" />,
-      color: 'purple',
+      color: 'spark',
       task: {
         category: 'Finance',
         priority: 'High',
@@ -47,7 +47,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Development',
       icon: <FiCode className="w-5 h-5" />,
-      color: 'indigo',
+      color: 'brand',
       task: {
         category: 'Development',
         priority: 'High',
@@ -57,7 +57,7 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     {
       name: 'Learning',
       icon: <FiBook className="w-5 h-5" />,
-      color: 'purple',
+      color: 'spark',
       task: {
         category: 'Personal',
         priority: 'Low',
@@ -70,9 +70,9 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-md hover:shadow-xl hover:ring-1 hover:ring-indigo-500 transition-all duration-300"
+      className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6 shadow-md hover:shadow-xl hover:ring-1 hover:ring-brand-500 transition-all duration-300"
     >
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Quick Templates</h3>
+      <h3 className="text-lg font-semibold text-light-text dark:text-white mb-4">Quick Templates</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {templates.map((template, index) => (
           <motion.button
@@ -81,19 +81,19 @@ const QuickTaskTemplates = ({ onSelectTemplate }) => {
             whileTap={{ scale: 0.95 }}
             onClick={() => onSelectTemplate(template.task)}
             className={`p-4 rounded-xl border-2 border-dashed transition-all ${
-              template.color === 'indigo'
-                ? 'border-indigo-300 dark:border-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
-                : 'border-purple-300 dark:border-purple-700 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20'
+              template.color === 'brand'
+                ? 'border-brand-300 dark:border-brand-700 hover:border-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20'
+                : 'border-spark-300 dark:border-spark-700 hover:border-spark-500 hover:bg-spark-50 dark:hover:bg-spark-900/20'
             }`}
           >
             <div className={`mb-2 ${
-              template.color === 'indigo' 
-                ? 'text-indigo-600 dark:text-indigo-400' 
-                : 'text-purple-600 dark:text-purple-400'
+              template.color === 'brand'
+                ? 'text-brand-600 dark:text-brand-400'
+                : 'text-spark-600 dark:text-spark-400'
             }`}>
               {template.icon}
             </div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{template.name}</p>
+            <p className="text-sm font-medium text-light-text dark:text-dark-text">{template.name}</p>
           </motion.button>
         ))}
       </div>

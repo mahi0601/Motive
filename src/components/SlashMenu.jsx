@@ -80,7 +80,7 @@ const SlashMenu = ({ query, position, onSelect, onClose }) => {
   return (
     <div
       ref={ref}
-      className="absolute z-50 w-64 max-h-72 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1f1f1f] shadow-xl py-1"
+      className="absolute z-50 w-64 max-h-72 overflow-y-auto rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised shadow-xl py-1"
       style={{ top: position.top, left: position.left }}
     >
       {filtered.map((opt, i) => {
@@ -95,8 +95,8 @@ const SlashMenu = ({ query, position, onSelect, onClose }) => {
             onMouseEnter={() => setActive(i)}
             className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm ${
               i === active
-                ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                : 'text-gray-700 dark:text-gray-200'
+                ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300'
+                : 'text-light-text dark:text-dark-text'
             }`}
           >
             <Icon size={16} className="shrink-0" />
