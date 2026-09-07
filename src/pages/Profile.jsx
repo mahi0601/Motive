@@ -25,23 +25,19 @@ const Profile = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#f9f9f9] dark:bg-[#0d0d0d] text-gray-900 dark:text-gray-100 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 font-inter"
+        className="mx-auto max-w-2xl p-8 font-inter text-light-text dark:text-dark-text"
       >
         <div className="flex justify-between items-center mb-6">
-          <motion.h2
-            whileHover={{ scale: 1.02, color: '#6366f1' }}
-            transition={{ duration: 0.3 }}
-            className="text-3xl font-extrabold tracking-tight flex items-center gap-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300"
-          >
-            <FiUser className="text-indigo-500" />
+          <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+            <FiUser className="text-brand-500" />
             Profile
-          </motion.h2>
+          </h2>
 
           <motion.button
             onClick={() => navigate(-1)}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white dark:hover:text-white transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-light-border/40 dark:bg-dark-raised text-light-text dark:text-dark-muted border border-light-border dark:border-dark-border hover:bg-brand-gradient hover:text-white transition-all duration-300"
           >
             <FiArrowLeft />
             Back
@@ -49,35 +45,29 @@ const Profile = () => {
         </div>
 
         {/* Profile Info Card */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="p-6 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-md hover:shadow-lg hover:ring-1 hover:ring-indigo-500 transition-all duration-300"
-        >
+        <div className="p-6 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-md">
           <div className="flex items-center gap-5 mb-3">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-2xl font-bold flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300">
+            <div className="w-16 h-16 rounded-full bg-brand-gradient text-white text-2xl font-bold flex items-center justify-center shadow-md">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div>
               <h3 className="text-xl font-semibold">{user?.name || 'Unnamed User'}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+              <p className="text-sm text-light-muted dark:text-dark-muted flex items-center gap-2">
                 <FiMail /> {user?.email || 'No email found'}
               </p>
               {loginTime && (
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-2">
+                <p className="text-sm text-light-muted dark:text-dark-muted mt-1 flex items-center gap-2">
                   <FiClock /> Logged in since: {loginTime}
                 </p>
               )}
             </div>
           </div>
-          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-4 text-sm text-light-muted dark:text-dark-muted">
             🔔 <span className="font-medium">Tip:</span> Keep your profile up to date for the best experience.
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="mt-6 p-6 bg-white dark:bg-[#2b2b2b] border border-gray-200 dark:border-gray-600 rounded-xl shadow-md flex justify-between items-center"
-        >
+        <div className="mt-6 p-6 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-md flex justify-between items-center">
           <div className="flex items-center gap-3">
             <FiLogOut className="text-red-500" />
             <h4 className="text-lg font-medium text-red-600 dark:text-red-400">Logout</h4>
@@ -88,7 +78,7 @@ const Profile = () => {
           >
             Confirm Logout
           </button>
-        </motion.div>
+        </div>
       </motion.div>
     </DashboardLayout>
   );

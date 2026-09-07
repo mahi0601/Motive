@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }) => {
   // the login page for already-authenticated users on reload.
   if (bootstrapping) {
     return (
-      <div className="flex h-screen items-center justify-center bg-white dark:bg-[#0e0d12]">
+      <div className="flex h-screen items-center justify-center bg-light-background dark:bg-dark-background">
         <div className="animate-spark-pulse">
           <LogoMark size={48} />
         </div>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0e0d12] transition-colors duration-300">
+    <div className="min-h-screen bg-light-background dark:bg-dark-background transition-colors duration-300">
       <Sidebar />
 
       {/* Offset for the persistent sidebar on desktop; full width on mobile. */}

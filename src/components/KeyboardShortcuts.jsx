@@ -46,21 +46,21 @@ const KeyboardShortcuts = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+              className="bg-light-surface dark:bg-dark-raised rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center">
+              <div className="sticky top-0 bg-light-surface dark:bg-dark-raised border-b border-light-border dark:border-dark-border px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <FiCommand className="w-6 h-6 text-indigo-500" />
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  <FiCommand className="w-6 h-6 text-brand-500" />
+                  <h3 className="text-2xl font-bold text-light-text dark:text-white">
                     Keyboard Shortcuts
                   </h3>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-border rounded-lg transition-colors"
                 >
-                  <FiX className="w-5 h-5 text-gray-500" />
+                  <FiX className="w-5 h-5 text-light-muted" />
                 </button>
               </div>
 
@@ -72,20 +72,20 @@ const KeyboardShortcuts = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-indigo-500 transition-colors"
+                      className="flex items-center justify-between p-4 bg-light-background dark:bg-dark-surface/50 rounded-xl border border-light-border dark:border-dark-border hover:border-brand-500 transition-colors"
                     >
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="text-sm text-light-text dark:text-dark-text">
                         {shortcut.description}
                       </span>
-                      <kbd className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-mono text-gray-800 dark:text-gray-200 shadow-sm">
+                      <kbd className="px-3 py-1.5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-lg text-xs font-mono text-light-text dark:text-dark-text shadow-sm">
                         {shortcut.action}
                       </kbd>
                     </motion.div>
                   ))}
                 </div>
-                <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl">
-                  <p className="text-sm text-indigo-700 dark:text-indigo-300">
-                    💡 Tip: Press <kbd className="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">?</kbd> anytime to open this menu, or <kbd className="px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">Ctrl/Cmd + K</kbd> for the command palette
+                <div className="mt-6 p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl">
+                  <p className="text-sm text-brand-700 dark:text-brand-300">
+                    💡 Tip: Press <kbd className="px-2 py-1 bg-light-surface dark:bg-dark-raised rounded text-xs">?</kbd> anytime to open this menu, or <kbd className="px-2 py-1 bg-light-surface dark:bg-dark-raised rounded text-xs">Ctrl/Cmd + K</kbd> for the command palette
                   </p>
                 </div>
               </div>
@@ -98,7 +98,7 @@ const KeyboardShortcuts = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40"
+        className="fixed bottom-6 right-6 p-3 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40"
         title="Keyboard Shortcuts (?)"
       >
         <FiCommand className="w-5 h-5" />

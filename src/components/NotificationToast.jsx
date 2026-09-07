@@ -14,19 +14,19 @@ const NotificationToast = ({ notifications, onRemove }) => {
             exit={{ opacity: 0, x: 300, scale: 0.8 }}
             className={`min-w-[300px] max-w-md p-4 rounded-xl shadow-lg border ${
               notification.type === 'success'
-                ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'
+                ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800'
                 : notification.type === 'error'
-                ? 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700'
-                : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800'
+                ? 'bg-brand-100 dark:bg-brand-900/30 border-brand-300 dark:border-brand-700'
+                : 'bg-spark-50 dark:bg-spark-900/20 border-spark-200 dark:border-spark-800'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`mt-0.5 ${
                 notification.type === 'success'
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-brand-600 dark:text-brand-400'
                   : notification.type === 'error'
-                  ? 'text-indigo-700 dark:text-indigo-300'
-                  : 'text-purple-600 dark:text-purple-400'
+                  ? 'text-brand-700 dark:text-brand-300'
+                  : 'text-spark-600 dark:text-spark-400'
               }`}>
                 {notification.type === 'success' ? (
                   <FiCheckCircle className="w-5 h-5" />
@@ -39,20 +39,20 @@ const NotificationToast = ({ notifications, onRemove }) => {
               <div className="flex-1">
                 <p className={`text-sm font-medium ${
                   notification.type === 'success'
-                    ? 'text-indigo-800 dark:text-indigo-200'
+                    ? 'text-brand-800 dark:text-brand-200'
                     : notification.type === 'error'
-                    ? 'text-indigo-800 dark:text-indigo-200'
-                    : 'text-purple-800 dark:text-purple-200'
+                    ? 'text-brand-800 dark:text-brand-200'
+                    : 'text-spark-800 dark:text-spark-200'
                 }`}>
                   {notification.title}
                 </p>
                 {notification.message && (
                   <p className={`text-xs mt-1 ${
                     notification.type === 'success'
-                      ? 'text-indigo-700 dark:text-indigo-300'
+                      ? 'text-brand-700 dark:text-brand-300'
                       : notification.type === 'error'
-                      ? 'text-indigo-700 dark:text-indigo-300'
-                      : 'text-purple-700 dark:text-purple-300'
+                      ? 'text-brand-700 dark:text-brand-300'
+                      : 'text-spark-700 dark:text-spark-300'
                   }`}>
                     {notification.message}
                   </p>
@@ -73,7 +73,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                 onClick={() => onRemove(notification.id)}
                 className="p-1 hover:bg-black/10 rounded transition-colors"
               >
-                <FiX className="w-4 h-4 text-gray-500" />
+                <FiX className="w-4 h-4 text-light-muted" />
               </button>
             </div>
           </motion.div>

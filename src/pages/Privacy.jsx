@@ -5,25 +5,25 @@ import { LogoMark } from '../components/Logo';
 
 const Section = ({ title, children }) => (
   <section className="mt-8">
-    <h2 className="font-display text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
-    <div className="mt-2 space-y-2 text-gray-600 dark:text-gray-300">{children}</div>
+    <h2 className="font-display text-xl font-bold text-light-text dark:text-white">{title}</h2>
+    <div className="mt-2 space-y-2 text-light-muted dark:text-dark-muted">{children}</div>
   </section>
 );
 
 const Privacy = () => (
-  <div className="min-h-screen bg-white px-6 py-12 dark:bg-[#0e0d12]">
+  <div className="min-h-screen bg-white px-6 py-12 dark:bg-dark-background">
     <div className="mx-auto max-w-2xl">
-      <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-600 dark:text-gray-400">
+      <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm text-light-muted hover:text-brand-600 dark:text-dark-muted">
         <ArrowLeft size={16} /> Back to Motive
       </Link>
 
       <div className="mb-6 flex items-center gap-3">
         <LogoMark size={36} />
-        <h1 className="font-display text-3xl font-extrabold text-gray-900 dark:text-white">Privacy Policy</h1>
+        <h1 className="font-display text-3xl font-extrabold text-light-text dark:text-white">Privacy Policy</h1>
       </div>
-      <p className="text-sm text-gray-400">Last updated: June 15, 2026</p>
+      <p className="text-sm text-light-muted">Last updated: June 15, 2026</p>
 
-      <p className="mt-6 text-gray-600 dark:text-gray-300">
+      <p className="mt-6 text-light-muted dark:text-dark-muted">
         Motive (“we”, “us”) is a productivity workspace. This policy explains what data we
         collect, how we use it, and the choices you have. By using Motive you agree to this policy.
       </p>
@@ -61,7 +61,7 @@ const Privacy = () => (
         <p>Questions about this policy or your data? Email <a className="text-brand-600 hover:underline dark:text-brand-400" href="mailto:support@motive.app">support@motive.app</a>.</p>
       </Section>
 
-      <p className="mt-10 rounded-lg border border-gray-200 bg-gray-50 p-4 text-xs text-gray-500 dark:border-[#2A2733] dark:bg-[#17151D]">
+      <p className="mt-10 rounded-lg border border-light-border bg-light-border/30 p-4 text-xs text-light-muted dark:border-dark-border dark:bg-dark-surface">
         This policy is provided as a starting template and is not legal advice. Please have it
         reviewed by a qualified professional before relying on it for your jurisdiction.
       </p>

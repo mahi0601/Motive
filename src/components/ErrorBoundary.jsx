@@ -30,12 +30,12 @@ class ErrorBoundary extends React.Component {
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-white px-6 text-center dark:bg-[#0e0d12]">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-light-background px-6 text-center dark:bg-dark-background">
         <LogoMark size={56} animated={false} />
-        <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="font-display text-2xl font-bold text-light-text dark:text-white">
           Something went wrong
         </h1>
-        <p className="max-w-md text-gray-500 dark:text-gray-400">
+        <p className="max-w-md text-light-muted dark:text-dark-muted">
           An unexpected error occurred. Your data is safe — try reloading the page.
         </p>
         <button

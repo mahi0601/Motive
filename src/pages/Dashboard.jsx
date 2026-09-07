@@ -214,7 +214,7 @@ const Dashboard = () => {
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col gap-6 lg:flex-row">
           <div className="flex-1">
-            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl font-extrabold text-gray-900 dark:text-white">
+            <h2 className="mb-4 flex items-center gap-3 font-display text-3xl font-extrabold text-light-text dark:text-dark-text">
               <FiPlusCircle className="text-brand-500" /> Dashboard
             </h2>
             <QuickActions
@@ -234,13 +234,13 @@ const Dashboard = () => {
 
         <div className="mx-auto mb-6 flex max-w-md items-center gap-2">
           <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-3.5 text-gray-400" />
+            <FiSearch className="absolute left-3 top-3.5 text-light-muted dark:text-dark-muted" />
             <input
               type="text"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               placeholder="Filter tasks by title…"
-              className="w-full rounded-lg border border-gray-300 bg-white p-3 pl-10 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+              className="w-full rounded-lg border border-light-border bg-light-surface p-3 pl-10 text-sm text-light-text focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
             />
           </div>
           <button
@@ -248,7 +248,7 @@ const Dashboard = () => {
             className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-3 text-sm font-medium transition ${
               selectMode
                 ? 'border-brand-500 bg-brand-soft text-brand-600'
-                : 'border-gray-300 bg-white text-gray-600 hover:border-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                : 'border-light-border bg-light-surface text-light-muted hover:border-brand-500 dark:border-dark-border dark:bg-dark-raised dark:text-dark-muted'
             }`}
             title="Select multiple tasks"
           >
@@ -258,7 +258,7 @@ const Dashboard = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20 text-gray-400"><Loader2 className="animate-spin" size={28} /></div>
+          <div className="flex justify-center py-20 text-light-muted dark:text-dark-muted"><Loader2 className="animate-spin" size={28} /></div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -268,10 +268,10 @@ const Dashboard = () => {
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="flex min-h-[400px] flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-[#2A2733] dark:bg-[#17151D]"
+                      className="flex min-h-[400px] flex-col rounded-2xl border border-light-border bg-light-surface p-4 shadow-sm dark:border-dark-border dark:bg-dark-surface"
                     >
                       <div className="mb-4 flex items-center justify-between">
-                        <h3 className="font-display text-lg font-semibold text-gray-800 dark:text-white">{category}</h3>
+                        <h3 className="font-display text-lg font-semibold text-light-text dark:text-dark-text">{category}</h3>
                         <button
                           onClick={() => setDrafts((d) => ({ ...d, [category]: { ...d[category], open: !d[category].open } }))}
                           className="rounded-full bg-brand-50 p-1.5 text-brand-600 transition hover:bg-brand-gradient hover:text-white dark:bg-brand-500/10 dark:text-brand-300"
@@ -288,19 +288,19 @@ const Dashboard = () => {
                             placeholder="Title"
                             value={drafts[category].title}
                             onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], title: e.target.value } }))}
-                            className="w-full rounded-lg border border-gray-300 bg-white p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <input
                             type="text"
                             placeholder="Description"
                             value={drafts[category].description}
                             onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], description: e.target.value } }))}
-                            className="w-full rounded-lg border border-gray-300 bg-white p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <select
                             value={drafts[category].priority}
                             onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], priority: e.target.value } }))}
-                            className="w-full rounded-lg border border-gray-300 bg-white p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           >
                             {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
                           </select>
@@ -357,9 +357,9 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+          className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-light-border bg-light-surface px-5 py-3 shadow-xl dark:border-dark-border dark:bg-dark-raised"
         >
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          <span className="text-sm font-medium text-light-text dark:text-dark-text">
             {selectedIds.size} selected
           </span>
           <button

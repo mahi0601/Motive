@@ -66,7 +66,7 @@ const PageView = () => {
   if (!page) {
     return (
       <DashboardLayout>
-        <div className="p-10 text-gray-400">Loading…</div>
+        <div className="p-10 text-light-muted dark:text-dark-muted">Loading…</div>
       </DashboardLayout>
     );
   }
@@ -76,7 +76,7 @@ const PageView = () => {
       <div
         ref={contentRef}
         onMouseMove={(e) => sendCursor(e.clientX, e.clientY)}
-        className="relative mx-auto max-w-3xl px-6 py-10"
+        className="relative mx-auto max-w-3xl rounded-2xl border border-light-border bg-light-surface px-8 py-10 dark:border-dark-border dark:bg-dark-raised"
       >
         {/* Other viewers' live cursors — position is a 0-1 fraction of this container. */}
         {peers.map((p) =>
@@ -103,7 +103,7 @@ const PageView = () => {
               <div
                 key={p.socketId}
                 title={p.user.name}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white dark:border-gray-900"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-light-surface text-xs font-bold text-white dark:border-dark-raised"
                 style={{ backgroundColor: p.color }}
               >
                 {p.user.name?.charAt(0).toUpperCase()}
@@ -112,18 +112,18 @@ const PageView = () => {
           </div>
         )}
 
-        <div className="mb-4 flex items-center gap-3 text-sm text-gray-400">
+        <div className="mb-4 flex items-center gap-3 text-sm text-light-muted dark:text-dark-muted">
           <span className="text-3xl">{page.icon || '📄'}</span>
           <button
             onClick={toggleFavorite}
-            className={`flex items-center gap-1 hover:text-yellow-500 ${
-              page.favorite ? 'text-yellow-500' : ''
+            className={`flex items-center gap-1 hover:text-spark-500 ${
+              page.favorite ? 'text-spark-500' : ''
             }`}
             title="Toggle favorite"
           >
             <Star size={16} fill={page.favorite ? 'currentColor' : 'none'} />
           </button>
-          <button onClick={addSubPage} className="flex items-center gap-1 hover:text-indigo-500">
+          <button onClick={addSubPage} className="flex items-center gap-1 hover:text-brand-500">
             <Plus size={16} /> Sub-page
           </button>
           <button
@@ -142,7 +142,7 @@ const PageView = () => {
           suppressContentEditableWarning
           data-placeholder="Untitled"
           onInput={handleTitleInput}
-          className="mb-6 text-4xl font-bold outline-none text-gray-900 dark:text-white empty:before:content-[attr(data-placeholder)] empty:before:text-gray-300 dark:empty:before:text-gray-600"
+          className="mb-6 text-4xl font-bold outline-none text-light-text dark:text-dark-text empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted"
         />
 
         <BlockEditor pageId={id} />
