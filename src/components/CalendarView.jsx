@@ -39,7 +39,7 @@ const AddForm = ({ draft, setDraft, onSubmit, saving }) => (
       value={draft.title}
       onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
       placeholder="Add an event…"
-      className="min-w-0 flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:border-[#2A2733] dark:bg-[#0e0d12] dark:text-white"
+      className="min-w-0 flex-1 rounded-full border border-light-border bg-light-border/30 px-4 py-2 text-sm outline-none transition focus:border-brand-500 focus:bg-light-surface focus:ring-2 focus:ring-brand-500/20 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
     />
     <div className="flex items-center gap-1">
       {['Low', 'Medium', 'High'].map((p) => (
@@ -49,7 +49,7 @@ const AddForm = ({ draft, setDraft, onSubmit, saving }) => (
           title={p}
           onClick={() => setDraft((d) => ({ ...d, priority: p }))}
           className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
-            draft.priority === p ? 'ring-2 ring-offset-1 ring-brand-400 dark:ring-offset-[#17151D]' : 'opacity-60 hover:opacity-100'
+            draft.priority === p ? 'ring-2 ring-offset-1 ring-brand-400 dark:ring-offset-dark-surface' : 'opacity-60 hover:opacity-100'
           }`}
         >
           <span className={`h-3 w-3 rounded-full ${dotColor(p)}`} />
@@ -80,10 +80,10 @@ const EventRow = ({ t, onDelete, draggable }) => (
     className={`group flex items-center gap-3 py-2.5 ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
   >
     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor(t.priority)}`} />
-    <span className="flex-1 truncate text-sm text-gray-800 dark:text-gray-100">{t.title}</span>
+    <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">{t.title}</span>
     <button
       onClick={() => onDelete(t.id)}
-      className="text-gray-300 opacity-0 transition group-hover:opacity-100 hover:text-red-500"
+      className="text-light-muted dark:text-dark-muted opacity-0 transition group-hover:opacity-100 hover:text-red-500"
       aria-label="Delete event"
     >
       <Trash2 size={15} />
@@ -197,7 +197,7 @@ const CalendarView = () => {
   };
 
   const Toggle = (
-    <div className="inline-flex rounded-full bg-gray-100 p-1 dark:bg-white/5">
+    <div className="inline-flex rounded-full bg-light-border/40 p-1 dark:bg-white/5">
       {[
         { k: 'month', icon: LayoutGrid, label: 'Month' },
         { k: 'agenda', icon: List, label: 'Agenda' },
@@ -206,7 +206,7 @@ const CalendarView = () => {
           key={k}
           onClick={k === 'agenda' ? goAgenda : () => setView('month')}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition ${
-            view === k ? 'bg-white text-brand-600 shadow-sm dark:bg-[#2A2733] dark:text-white' : 'text-gray-500 dark:text-gray-400'
+            view === k ? 'bg-light-surface text-brand-600 shadow-sm dark:bg-dark-raised dark:text-dark-text' : 'text-light-muted dark:text-dark-muted'
           }`}
         >
           <Icon size={14} /> {label}
@@ -219,8 +219,8 @@ const CalendarView = () => {
     <div className="mx-auto max-w-2xl">
       {/* Top bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
-          {format(currentDate, 'MMMM')} <span className="font-medium text-gray-400">{format(currentDate, 'yyyy')}</span>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-light-text dark:text-dark-text sm:text-3xl">
+          {format(currentDate, 'MMMM')} <span className="font-medium text-light-muted dark:text-dark-muted">{format(currentDate, 'yyyy')}</span>
         </h2>
         {Toggle}
       </div>
@@ -231,14 +231,14 @@ const CalendarView = () => {
           <div className="mb-3 flex items-center justify-end gap-1.5">
             <button
               onClick={() => setCurrentDate(new Date())}
-              className="rounded-full px-3 py-1 text-sm font-medium text-gray-500 transition hover:text-brand-600 dark:text-gray-400"
+              className="rounded-full px-3 py-1 text-sm font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted"
             >
               Today
             </button>
-            <button onClick={() => setCurrentDate((d) => subMonths(d, 1))} className="rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-brand-600 dark:hover:bg-white/5" aria-label="Previous month">
+            <button onClick={() => setCurrentDate((d) => subMonths(d, 1))} className="rounded-full p-1.5 text-light-muted dark:text-dark-muted transition hover:bg-light-border/40 hover:text-brand-600 dark:hover:bg-white/5" aria-label="Previous month">
               <ChevronLeft size={18} />
             </button>
-            <button onClick={() => setCurrentDate((d) => addMonths(d, 1))} className="rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-brand-600 dark:hover:bg-white/5" aria-label="Next month">
+            <button onClick={() => setCurrentDate((d) => addMonths(d, 1))} className="rounded-full p-1.5 text-light-muted dark:text-dark-muted transition hover:bg-light-border/40 hover:text-brand-600 dark:hover:bg-white/5" aria-label="Next month">
               <ChevronRight size={18} />
             </button>
           </div>
@@ -246,7 +246,7 @@ const CalendarView = () => {
           {/* Weekday labels */}
           <div className="grid grid-cols-7">
             {WEEKDAYS.map((d, i) => (
-              <div key={i} className="pb-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-300 dark:text-gray-600">
+              <div key={i} className="pb-2 text-center text-xs font-semibold uppercase tracking-wider text-light-muted dark:text-dark-muted">
                 {d}
               </div>
             ))}
@@ -275,7 +275,7 @@ const CalendarView = () => {
                     const id = e.dataTransfer.getData('text/plain');
                     if (id) rescheduleTask(id, day);
                   }}
-                  className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl transition hover:bg-gray-100 dark:hover:bg-white/5 ${
+                  className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl transition hover:bg-light-border/40 dark:hover:bg-white/5 ${
                     isDragOver ? 'bg-brand-soft ring-2 ring-brand-400' : ''
                   }`}
                 >
@@ -283,8 +283,8 @@ const CalendarView = () => {
                     className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition
                       ${today ? 'bg-brand-gradient font-semibold text-white shadow-brand-sm' : ''}
                       ${!today && isSelected ? 'bg-brand-100 font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200' : ''}
-                      ${!today && !isSelected && inMonth ? 'text-gray-700 dark:text-gray-200' : ''}
-                      ${!inMonth ? 'text-gray-300 dark:text-gray-600' : ''}`}
+                      ${!today && !isSelected && inMonth ? 'text-light-text dark:text-dark-text' : ''}
+                      ${!inMonth ? 'text-light-muted dark:text-dark-muted' : ''}`}
                   >
                     {format(day, 'd')}
                   </span>
@@ -299,20 +299,20 @@ const CalendarView = () => {
           </div>
 
           {/* Selected day — flows below the grid (single column) */}
-          <div className="mt-6 border-t border-gray-100 pt-5 dark:border-[#2A2733]">
-            <h3 className="mb-3 font-display text-lg font-bold text-gray-900 dark:text-white">
+          <div className="mt-6 border-t border-light-border pt-5 dark:border-dark-border">
+            <h3 className="mb-3 font-display text-lg font-bold text-light-text dark:text-dark-text">
               {isToday(selected) ? 'Today · ' : ''}
               {format(selected, 'EEEE, MMMM d')}
             </h3>
             <AddForm draft={draft} setDraft={setDraft} onSubmit={handleAdd} saving={saving} />
             {loading ? (
-              <div className="flex justify-center py-8 text-gray-400"><Loader2 className="animate-spin" /></div>
+              <div className="flex justify-center py-8 text-light-muted dark:text-dark-muted"><Loader2 className="animate-spin" /></div>
             ) : selectedTasks.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-400">No events. Add one above.</p>
+              <p className="py-6 text-center text-sm text-light-muted dark:text-dark-muted">No events. Add one above.</p>
             ) : (
               <>
-                <p className="mt-1 text-xs text-gray-400">Drag an event onto another day to reschedule it.</p>
-                <ul className="mt-2 divide-y divide-gray-100 dark:divide-[#2A2733]">
+                <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Drag an event onto another day to reschedule it.</p>
+                <ul className="mt-2 divide-y divide-light-border dark:divide-dark-border">
                   <AnimatePresence initial={false}>
                     {selectedTasks.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} draggable />)}
                   </AnimatePresence>
@@ -326,23 +326,23 @@ const CalendarView = () => {
         <div>
           <div className="mb-5">
             <AddForm draft={draft} setDraft={setDraft} onSubmit={handleAdd} saving={saving} />
-            <p className="mt-1.5 text-xs text-gray-400">Adds to today — switch to Month to pick another date.</p>
+            <p className="mt-1.5 text-xs text-light-muted dark:text-dark-muted">Adds to today — switch to Month to pick another date.</p>
           </div>
           {loading ? (
-            <div className="flex justify-center py-12 text-gray-400"><Loader2 className="animate-spin" /></div>
+            <div className="flex justify-center py-12 text-light-muted dark:text-dark-muted"><Loader2 className="animate-spin" /></div>
           ) : agendaGroups.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="font-medium text-gray-700 dark:text-gray-200">Nothing upcoming</p>
-              <p className="mt-1 text-sm text-gray-400">Add an event above to get started.</p>
+              <p className="font-medium text-light-text dark:text-dark-text">Nothing upcoming</p>
+              <p className="mt-1 text-sm text-light-muted dark:text-dark-muted">Add an event above to get started.</p>
             </div>
           ) : (
             <div className="space-y-6">
               {agendaGroups.map((g) => (
                 <div key={g.key}>
-                  <div className="mb-1 flex items-baseline gap-2 border-b border-gray-100 pb-1 dark:border-[#2A2733]">
-                    <span className="font-display text-sm font-bold text-gray-900 dark:text-white">{groupLabel(g.date)}</span>
+                  <div className="mb-1 flex items-baseline gap-2 border-b border-light-border pb-1 dark:border-dark-border">
+                    <span className="font-display text-sm font-bold text-light-text dark:text-dark-text">{groupLabel(g.date)}</span>
                   </div>
-                  <ul className="divide-y divide-gray-100 dark:divide-[#2A2733]">
+                  <ul className="divide-y divide-light-border dark:divide-dark-border">
                     <AnimatePresence initial={false}>
                       {g.items.map((t) => <EventRow key={t.id} t={t} onDelete={handleDelete} />)}
                     </AnimatePresence>

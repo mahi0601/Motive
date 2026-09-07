@@ -24,41 +24,41 @@ const TimePickerModal = ({ task, onClose, onConfirm }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-md w-full max-w-sm font-[Inter]"
+        className="bg-light-surface dark:bg-dark-raised rounded-xl p-6 shadow-md w-full max-w-sm font-[Inter]"
       >
-        <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-6 text-center">
+        <h2 className="text-lg font-medium text-light-text dark:text-white mb-6 text-center">
           Add <span className="font-semibold">"{task.title}"</span> to Calendar
         </h2>
 
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Select Date</label>
+            <label className="block text-sm font-medium text-light-muted dark:text-dark-text mb-1">Select Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+              className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-surface dark:bg-dark-surface text-light-text dark:text-white"
             />
           </div>
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Start Time</label>
+              <label className="block text-sm font-medium text-light-muted dark:text-dark-text mb-1">Start Time</label>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-surface dark:bg-dark-surface text-light-text dark:text-white"
               />
             </div>
 
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">End Time</label>
+              <label className="block text-sm font-medium text-light-muted dark:text-dark-text mb-1">End Time</label>
               <input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
+                className="w-full px-3 py-2 border border-light-border dark:border-dark-border rounded-lg bg-light-surface dark:bg-dark-surface text-light-text dark:text-white"
               />
             </div>
           </div>
@@ -67,13 +67,13 @@ const TimePickerModal = ({ task, onClose, onConfirm }) => {
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="px-4 py-2 text-sm bg-light-border/40 dark:bg-dark-surface text-light-text dark:text-dark-text rounded-lg hover:bg-light-border dark:hover:bg-dark-border"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-4 py-2 text-sm bg-brand-600 text-white rounded-lg hover:bg-brand-700"
           >
             Add to Calendar
           </button>

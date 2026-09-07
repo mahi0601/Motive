@@ -21,29 +21,29 @@ const TaskAnalytics = ({ tasks = [] }) => {
       label: 'Total Tasks',
       value: stats.total,
       icon: <FiTrendingUp className="w-5 h-5" />,
-      color: 'text-indigo-600 dark:text-indigo-400',
-      bg: 'bg-indigo-50 dark:bg-indigo-900/20'
+      color: 'text-brand-600 dark:text-brand-400',
+      bg: 'bg-brand-50 dark:bg-brand-900/20'
     },
     {
       label: 'Completed',
       value: stats.completed,
       icon: <FiCheckCircle className="w-5 h-5" />,
-      color: 'text-indigo-600 dark:text-indigo-400',
-      bg: 'bg-indigo-50 dark:bg-indigo-900/20'
+      color: 'text-brand-600 dark:text-brand-400',
+      bg: 'bg-brand-50 dark:bg-brand-900/20'
     },
     {
       label: 'Pending',
       value: stats.pending,
       icon: <FiClock className="w-5 h-5" />,
-      color: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-purple-50 dark:bg-purple-900/20'
+      color: 'text-spark-600 dark:text-spark-400',
+      bg: 'bg-spark-50 dark:bg-spark-900/20'
     },
     {
       label: 'Overdue',
       value: stats.overdue,
       icon: <FiAlertCircle className="w-5 h-5" />,
-      color: 'text-indigo-700 dark:text-indigo-300',
-      bg: 'bg-indigo-100 dark:bg-indigo-900/30'
+      color: 'text-brand-700 dark:text-brand-300',
+      bg: 'bg-brand-100 dark:bg-brand-900/30'
     }
   ];
 
@@ -57,23 +57,23 @@ const TaskAnalytics = ({ tasks = [] }) => {
         <motion.div
           key={index}
           whileHover={{ scale: 1.05, y: -4 }}
-          className={`${stat.bg} p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300`}
+          className={`${stat.bg} p-4 rounded-xl border border-light-border dark:border-dark-border shadow-sm hover:shadow-lg transition-all duration-300`}
         >
           <div className="flex items-center justify-between mb-2">
             <div className={`${stat.color}`}>
               {stat.icon}
             </div>
-            <span className="text-2xl font-bold text-gray-800 dark:text-white">
+            <span className="text-2xl font-bold text-light-text dark:text-dark-text">
               {stat.value}
             </span>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
+          <p className="text-sm text-light-muted dark:text-dark-muted">{stat.label}</p>
         </motion.div>
       ))}
 
       <motion.div
         whileHover={{ scale: 1.05, y: -4 }}
-        className="col-span-2 md:col-span-4 bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+        className="col-span-2 md:col-span-4 bg-brand-gradient p-6 rounded-xl shadow-brand-sm hover:shadow-brand transition-all duration-300"
       >
         <div className="flex items-center justify-between mb-2">
           <span className="text-white/90 text-sm font-medium">Completion Rate</span>
@@ -93,4 +93,3 @@ const TaskAnalytics = ({ tasks = [] }) => {
 };
 
 export default TaskAnalytics;
-

@@ -9,7 +9,7 @@ const ThemeToggle = () => {
     <button
       onClick={toggleTheme}
       title="Toggle theme"
-      className="ml-4 !bg-gray-200 dark:!bg-gray-700 text-gray-700 dark:text-white px-3 py-2 rounded-lg transition-all"
+      className="ml-4 !bg-light-border/60 dark:!bg-dark-raised text-light-text dark:text-dark-text px-3 py-2 rounded-lg transition-all"
     >
       {isDark ? <Sun className="inline w-5 h-5" /> : <Moon className="inline w-5 h-5" />}
     </button>

@@ -1,18 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const ProgressRing = ({ progress, size = 60, strokeWidth = 6, color = 'indigo', textColor = 'default' }) => {
+const ProgressRing = ({ progress, size = 60, strokeWidth = 6, color = 'brand', textColor = 'default' }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
 
   const colorClasses = {
-    indigo: 'text-indigo-600 dark:text-indigo-400',
-    purple: 'text-purple-600 dark:text-purple-400',
+    brand: 'text-brand-600 dark:text-brand-400',
+    spark: 'text-spark-600 dark:text-spark-400',
   };
 
   const textColorClasses = {
-    default: colorClasses[color] || colorClasses.indigo,
+    default: colorClasses[color] || colorClasses.brand,
     white: 'text-white',
   };
 
@@ -30,7 +30,7 @@ const ProgressRing = ({ progress, size = 60, strokeWidth = 6, color = 'indigo', 
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="none"
-          className={textColor === 'white' ? 'text-white/20' : 'text-gray-200 dark:text-gray-700'}
+          className={textColor === 'white' ? 'text-white/20' : 'text-light-border dark:text-dark-border'}
         />
         <motion.circle
           cx={size / 2}
@@ -42,7 +42,7 @@ const ProgressRing = ({ progress, size = 60, strokeWidth = 6, color = 'indigo', 
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className={textColor === 'white' ? 'text-white' : (colorClasses[color] || colorClasses.indigo)}
+          className={textColor === 'white' ? 'text-white' : (colorClasses[color] || colorClasses.brand)}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1, ease: "easeOut" }}

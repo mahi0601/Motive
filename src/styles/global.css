@@ -6,17 +6,21 @@
 :root {
   --brand: #7c5cf6;
   --brand-strong: #6b46e8;
-  --brand-soft: #a07dfb;
+  /* Renamed from --brand-soft: that name collided with the unrelated
+     `bg-brand-soft` Tailwind gradient utility in tailwind.config.js.
+     This var was never actually read via var(...) anywhere — kept as a
+     brand-400 reference point, not the gradient. */
+  --brand-tint: #a07dfb;
   --spark: #f5a524;
 
-  /* Light-mode surface tokens. Dark-mode values below match
-     tailwind.config.js's `dark.*` palette exactly, so both live in one
-     place instead of each component hardcoding its own hex. */
-  --surface: #ffffff;
-  --surface-raised: #f4f4f6;
-  --surface-border: #e5e3ea;
-  --text: #2c2a36;
-  --text-muted: #6b7280;
+  /* Light-mode surface tokens — mirror tailwind.config.js's `light.*`
+     palette exactly (warm neutral, not stark white/gray), the same way
+     the dark values below mirror `dark.*`. */
+  --surface: #ffffff; /* light.surface */
+  --surface-raised: #faf6f0; /* light.background, reused as a recessed panel tint */
+  --surface-border: #e7e0d4; /* light.border */
+  --text: #23201b; /* light.text */
+  --text-muted: #8b8479; /* light.muted */
 }
 
 html.dark {
@@ -29,8 +33,8 @@ html.dark {
 
 body {
   font-family: 'Inter', 'Segoe UI', sans-serif;
-  background-color: #fafafa;
-  color: #2c2a36;
+  background-color: #faf6f0; /* light.background */
+  color: var(--text);
   font-size: 16px;
   line-height: 1.7;
   letter-spacing: 0.1px;
@@ -47,14 +51,9 @@ html.dark body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Sora', 'Inter', sans-serif;
   font-weight: 600;
-  color: #1b1924;
+  color: var(--text);
   line-height: 1.3;
   margin-bottom: 0.5rem;
-}
-
-html.dark h1, html.dark h2, html.dark h3,
-html.dark h4, html.dark h5, html.dark h6 {
-  color: #ffffff;
 }
 
 p {
@@ -99,12 +98,16 @@ button.primary {
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
+  /* Keep in sync with tailwind.config.js's `brand-gradient` — plain CSS
+     can't reference a Tailwind theme value directly, so this is a
+     deliberate duplicate, not drift. */
   background-image: linear-gradient(135deg, #7c5cf6 0%, #9b5cff 55%, #c45bd6 100%);
   color: white;
 }
 
 button.primary:hover {
-  box-shadow: 0 8px 24px -6px rgba(124, 92, 246, 0.5);
+  /* Matches tailwind.config.js's `shadow-brand` alpha (0.45) exactly. */
+  box-shadow: 0 8px 24px -6px rgba(124, 92, 246, 0.45);
   transform: translateY(-1px);
 }
 
@@ -121,7 +124,7 @@ button.secondary:hover {
 }
 
 .btn-glow:hover {
-  box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
+  box-shadow: 0 0 8px rgba(124, 92, 246, 0.5);
 }
 
 .card {
@@ -200,7 +203,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::placeholder {
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 ::-webkit-scrollbar {
@@ -274,7 +277,7 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   width: 0%;
   height: 2px;
-  background-color: #818cf8;
+  background-color: var(--brand);
   transition: width 0.3s ease-in-out;
 }
 

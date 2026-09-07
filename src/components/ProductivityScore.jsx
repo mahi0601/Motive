@@ -25,7 +25,7 @@ const ProductivityScore = ({ tasks = [] }) => {
 
   const getScoreColor = (score) => {
     if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-indigo-600 dark:text-indigo-400';
+    if (score >= 60) return 'text-brand-600 dark:text-brand-400';
     if (score >= 40) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
   };
@@ -41,7 +41,7 @@ const ProductivityScore = ({ tasks = [] }) => {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+      className="bg-brand-gradient rounded-2xl p-8 shadow-brand hover:shadow-2xl transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -51,7 +51,7 @@ const ProductivityScore = ({ tasks = [] }) => {
           </h3>
           <p className="text-white/80 text-sm">Your overall performance metric</p>
         </div>
-        <ProgressRing progress={productivityScore} size={100} color="indigo" textColor="white" />
+        <ProgressRing progress={productivityScore} size={100} color="brand" textColor="white" />
       </div>
 
       <div className="grid grid-cols-3 gap-4 mt-6">

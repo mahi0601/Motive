@@ -15,8 +15,8 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
         className={`group flex items-center gap-1 rounded-md px-2 py-1 text-sm cursor-pointer
           ${
             String(currentId) === String(page.id)
-              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+              ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/50 dark:text-brand-300'
+              : 'text-light-text dark:text-dark-muted hover:bg-light-border/40 dark:hover:bg-white/5'
           }`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={() => navigate(`/page/${page.id}`)}
@@ -26,7 +26,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
             e.stopPropagation();
             setOpen((o) => !o);
           }}
-          className="shrink-0 text-gray-400"
+          className="shrink-0 text-light-muted dark:text-dark-muted"
         >
           {hasChildren ? (
             open ? (
@@ -45,7 +45,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
             e.stopPropagation();
             onAdd(page.id);
           }}
-          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-indigo-500"
+          className="opacity-0 group-hover:opacity-100 text-light-muted dark:text-dark-muted hover:text-brand-500"
           title="Add sub-page"
         >
           <Plus size={14} />
@@ -55,7 +55,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
             e.stopPropagation();
             onDelete(page.id);
           }}
-          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500"
+          className="opacity-0 group-hover:opacity-100 text-light-muted dark:text-dark-muted hover:text-red-500"
           title="Delete page"
         >
           <Trash2 size={14} />
@@ -111,18 +111,18 @@ const PageTree = ({ onNavigate }) => {
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between px-2 mb-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Pages</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-light-muted dark:text-dark-muted">Pages</span>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => go('/templates')}
-            className="text-gray-400 hover:text-brand-500"
+            className="text-light-muted dark:text-dark-muted hover:text-brand-500"
             title="New from template"
           >
             <LayoutTemplate size={15} />
           </button>
           <button
             onClick={() => handleAdd(null)}
-            className="text-gray-400 hover:text-brand-500"
+            className="text-light-muted dark:text-dark-muted hover:text-brand-500"
             title="New blank page"
           >
             <Plus size={16} />
@@ -133,7 +133,7 @@ const PageTree = ({ onNavigate }) => {
         {roots.length === 0 ? (
           <button
             onClick={() => handleAdd(null)}
-            className="px-2 py-1 text-sm text-gray-400 hover:text-indigo-500"
+            className="px-2 py-1 text-sm text-light-muted dark:text-dark-muted hover:text-brand-500"
           >
             + New page
           </button>

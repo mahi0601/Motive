@@ -42,7 +42,7 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
     <button
       onClick={() => onUse(tpl)}
       disabled={busy}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-[#2A2733] bg-white dark:bg-[#17151D] text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand-400 hover:shadow-brand disabled:opacity-60"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand-400 hover:shadow-brand disabled:opacity-60"
     >
       {/* Thumbnail */}
       <div className={`relative h-28 w-full bg-gradient-to-br ${accent.grad} p-4`}>
@@ -61,7 +61,7 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
       {/* Body */}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">
-          <h4 className="font-display font-semibold text-gray-900 dark:text-white">{tpl.name}</h4>
+          <h4 className="font-display font-semibold text-light-text dark:text-dark-text">{tpl.name}</h4>
           {!tpl.builtIn && (
             <span
               role="button"
@@ -70,18 +70,18 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
                 e.stopPropagation();
                 onDelete(tpl);
               }}
-              className="text-gray-400 hover:text-red-500"
+              className="text-light-muted dark:text-dark-muted hover:text-red-500"
               title="Delete template"
             >
               <Trash2 size={15} />
             </span>
           )}
         </div>
-        <p className="mt-1 line-clamp-2 flex-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 line-clamp-2 flex-1 text-sm text-light-muted dark:text-dark-muted">
           {tpl.description}
         </p>
-        <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300">
+        <div className="mt-3 flex items-center gap-2 text-xs text-light-muted dark:text-dark-muted">
+          <span className="rounded-full bg-light-border/40 px-2 py-0.5 font-medium text-light-muted dark:bg-white/5 dark:text-dark-text">
             {tpl.category}
           </span>
           <span>· {tpl.blockCount} blocks</span>
@@ -92,11 +92,11 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
 };
 
 const CardSkeleton = () => (
-  <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-[#2A2733]">
-    <div className="h-28 w-full animate-pulse bg-gray-100 dark:bg-white/5" />
+  <div className="overflow-hidden rounded-2xl border border-light-border dark:border-dark-border">
+    <div className="h-28 w-full animate-pulse bg-light-border/40 dark:bg-white/5" />
     <div className="space-y-2 p-4">
-      <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-white/5" />
-      <div className="h-3 w-full animate-pulse rounded bg-gray-100 dark:bg-white/5" />
+      <div className="h-4 w-1/2 animate-pulse rounded bg-light-border/40 dark:bg-white/5" />
+      <div className="h-3 w-full animate-pulse rounded bg-light-border/40 dark:bg-white/5" />
     </div>
   </div>
 );
@@ -161,12 +161,12 @@ const TemplateGallery = ({ onUse }) => {
       {/* Controls */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-light-muted dark:text-dark-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search templates…"
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-[#2A2733] dark:bg-[#17151D] dark:text-white"
+            className="w-full rounded-lg border border-light-border bg-light-surface py-2 pl-9 pr-3 text-sm text-light-text outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -177,7 +177,7 @@ const TemplateGallery = ({ onUse }) => {
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 cat === c
                   ? 'bg-brand-gradient text-white shadow-brand-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10'
+                  : 'bg-light-border/40 text-light-muted hover:bg-light-border dark:bg-white/5 dark:text-dark-text dark:hover:bg-white/10'
               }`}
             >
               {c}
@@ -194,10 +194,10 @@ const TemplateGallery = ({ onUse }) => {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 dark:border-[#2A2733] py-16 text-center">
-          <FileStack className="mb-3 text-gray-300 dark:text-gray-600" size={40} />
-          <p className="font-medium text-gray-700 dark:text-gray-200">No templates found</p>
-          <p className="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-light-border dark:border-dark-border py-16 text-center">
+          <FileStack className="mb-3 text-light-muted dark:text-dark-muted" size={40} />
+          <p className="font-medium text-light-text dark:text-dark-text">No templates found</p>
+          <p className="mt-1 max-w-sm text-sm text-light-muted dark:text-dark-muted">
             Try a different search or category — or open any page and choose “Save as template”.
           </p>
         </div>

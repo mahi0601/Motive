@@ -39,11 +39,11 @@ const AttachmentUploader = ({ onUpload }) => {
       className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
         isDragging
           ? 'border-brand-500 bg-brand-soft'
-          : 'border-gray-300 hover:border-brand-400 dark:border-gray-600'
+          : 'border-light-border hover:border-brand-400 dark:border-dark-border'
       }`}
     >
-      <FiUploadCloud className={`h-8 w-8 ${isDragging ? 'text-brand-500' : 'text-gray-400'}`} />
-      <span className="text-sm text-gray-500 dark:text-gray-400">
+      <FiUploadCloud className={`h-8 w-8 ${isDragging ? 'text-brand-500' : 'text-light-muted'}`} />
+      <span className="text-sm text-light-muted dark:text-dark-muted">
         Drag a file here, or <span className="font-medium text-brand-500">browse</span>
       </span>
       <input

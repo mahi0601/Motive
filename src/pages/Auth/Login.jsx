@@ -46,8 +46,8 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
-      <p className="mt-2 mb-8 text-gray-500 dark:text-gray-400">Log in to your Motive workspace.</p>
+      <h2 className="font-display text-3xl font-bold text-light-text dark:text-white">Welcome back</h2>
+      <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Log in to your Motive workspace.</p>
 
       {serverError && (
         <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
@@ -86,7 +86,7 @@ const Login = () => {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Don’t have an account?{' '}
         <Link to="/register" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
           Sign up
