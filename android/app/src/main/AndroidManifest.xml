@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep-link callback for native Google Sign-In (see
+                 useNativeOAuthCallback.js / auth.controller.js#googleCallback):
+                 the system browser redirects here with com.motive.app://oauth-callback?code=... -->
+            <intent-filter android:label="oauth_callback">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.motive.app" android:host="oauth-callback" />
+            </intent-filter>
+
         </activity>
 
         <provider
