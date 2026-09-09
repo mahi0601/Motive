@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+
+// Only upload source maps when a Sentry auth token is actually configured —
+// keeps local dev and any CI run that hasn't set this up completely
+// unaffected (no network calls, no org/project validation, no sourcemap
+// emitted at all). Set SENTRY_AUTH_TOKEN + SENTRY_ORG + SENTRY_PROJECT in the
+// Netlify build environment to turn this on.
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 
 export default defineConfig({
   plugins: [
@@ -56,5 +64,24 @@ export default defineConfig({
         enabled: false, // keep the SW out of dev so HMR is unaffected
       },
     }),
+    // Uploads this build's source maps to Sentry so production stack traces
+    // are readable, then deletes the .map files from dist so raw source
+    // isn't shipped publicly. `disable` makes this a complete no-op (no
+    // network calls, no required org/project) when authToken is unset.
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: sentryAuthToken,
+      disable: !sentryAuthToken,
+      sourcemaps: {
+        filesToDeleteAfterUpload: ['dist/**/*.map'],
+      },
+    }),
   ],
+  build: {
+    // Needed for the plugin above to have anything to upload. Only emitted
+    // when actually uploading (see filesToDeleteAfterUpload) — an unconfigured
+    // build stays exactly as before, with no sourcemaps in the output.
+    sourcemap: !!sentryAuthToken,
+  },
 })
