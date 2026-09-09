@@ -6,3 +6,8 @@ import api from './api';
 // paymentService currency options in Settings for why this matters.
 export const createCheckoutSession = (currency = 'usd') =>
   api.post('/api/payments/create-checkout-session', { currency });
+
+// Fallback for the success-redirect: confirms (and backfills if needed) isPro
+// directly from Stripe, in case the webhook was delayed or dropped — e.g. UPI
+// and other delayed-notification payment methods.
+export const reconcileCheckoutSession = (sessionId) => api.get(`/api/payments/session/${sessionId}`);
