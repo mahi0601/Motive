@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      # One PR per week for routine patch/minor bumps instead of one per
+      # package.
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["patch", "minor"]
+      development-dependencies:
+        dependency-type: "development"
+        update-types: ["patch", "minor"]
