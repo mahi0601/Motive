@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, AlertCircle } from 'lucide-react';
-import AuthLayout from '../../layout/AuthLayout';
-import AuthField from '../../components/AuthField';
+import AuthField from '../../components/ui/AuthField';
+import GoogleSignInButton from '../../components/ui/GoogleSignInButton';
 import { register as registerRequest } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
@@ -61,7 +61,7 @@ const Register = () => {
   const s = strength(form.password);
 
   return (
-    <AuthLayout>
+    <>
       <h2 className="font-display text-3xl font-bold text-light-text dark:text-white">
         Create your account
       </h2>
@@ -128,13 +128,20 @@ const Register = () => {
         </button>
       </form>
 
+      <div className="my-6 flex items-center gap-3 text-xs text-light-muted dark:text-dark-muted">
+        <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
+        or
+        <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
+      </div>
+      <GoogleSignInButton />
+
       <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Already have an account?{' '}
         <Link to="/login" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
           Log in
         </Link>
       </p>
-    </AuthLayout>
+    </>
   );
 };
 
