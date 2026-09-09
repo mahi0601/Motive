@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService';
+import { getAllTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
 // Shared task-list state + CRUD — previously Dashboard.jsx and
 // CalendarView.jsx each independently fetched/created/updated/deleted tasks
@@ -14,8 +14,10 @@ export function useTasks() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await getTasks({ limit: 200 });
-      const items = data.items || [];
+      // Full list, not a single capped page — Dashboard's category grouping
+      // and the `?edit=` deep-link lookup both need the complete set (see
+      // taskService.js#getAllTasks for why a single request isn't enough).
+      const items = await getAllTasks();
       setTasks(items);
       return items;
     } catch (e) {
