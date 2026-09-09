@@ -1,9 +1,13 @@
 import React from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
+import { Outlet } from 'react-router-dom';
+import Header from '../components/layout/Header';
+import Sidebar from '../components/layout/Sidebar';
 import { motion } from 'framer-motion';
 
-const DashboardLayout = ({ children }) => {
+// A layout ROUTE (see routes/AppRoutes.jsx) — renders the shared shell once
+// and an <Outlet/> for whichever protected page matched, instead of every
+// page individually importing and wrapping itself in <DashboardLayout>.
+const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-light-background dark:bg-dark-background transition-colors duration-300">
       <Sidebar />
@@ -24,7 +28,7 @@ const DashboardLayout = ({ children }) => {
           transition={{ duration: 0.4, delay: 0.05 }}
           className="flex-grow overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
-          {children}
+          <Outlet />
         </motion.main>
       </div>
     </div>

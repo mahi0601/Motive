@@ -22,8 +22,10 @@ export const NotificationSocketProvider = ({ children }) => {
     if (bootstrapping || !isAuthenticated) return;
     (async () => {
       try {
+        // Server-reported `unreadCount` covers ALL of a user's notifications,
+        // not just whatever fits on the first paginated page.
         const { data } = await getNotifications();
-        setUnreadCount((data.notifications || []).filter((n) => !n.read).length);
+        setUnreadCount(data.unreadCount || 0);
       } catch {
         /* badge just stays at 0 */
       }
@@ -42,6 +44,12 @@ export const NotificationSocketProvider = ({ children }) => {
     socket.on('notification:new', (notification) => {
       setUnreadCount((c) => c + 1);
       toast?.notify('info', notification.title, notification.message);
+      // Also surface as a native OS notification if the user granted
+      // permission in Settings — otherwise "Enable Alerts" would request
+      // permission for nothing.
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification(notification.title, { body: notification.message });
+      }
     });
 
     return () => {

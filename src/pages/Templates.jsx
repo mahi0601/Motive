@@ -1,14 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import DashboardLayout from '../layout/DashboardLayout';
-import TemplateGallery from '../components/TemplateGallery';
+import TemplateGallery from '../components/editor/TemplateGallery';
 
 const Templates = () => {
   const navigate = useNavigate();
 
   return (
-    <DashboardLayout>
       <div className="mx-auto max-w-5xl px-2 py-6">
         {/* Hero */}
         <div className="relative mb-8 overflow-hidden rounded-2xl bg-brand-gradient p-8 text-white">
@@ -30,7 +28,6 @@ const Templates = () => {
 
         <TemplateGallery onUse={(page) => page && navigate(`/page/${page.id}`)} />
       </div>
-    </DashboardLayout>
   );
 };
 
