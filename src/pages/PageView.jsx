@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, Plus, LayoutTemplate, Check } from 'lucide-react';
-import DashboardLayout from '../layout/DashboardLayout';
-import BlockEditor from '../components/BlockEditor';
+import BlockEditor from '../components/editor/BlockEditor';
 import { getPage } from '../services/pageService';
 import { saveTemplate } from '../services/templateService';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -22,7 +21,7 @@ const PageView = () => {
     let mounted = true;
     (async () => {
       const { data } = await getPage(id);
-      if (mounted) setPage(data);
+      if (mounted) setPage(data.page);
     })();
     return () => {
       mounted = false;
@@ -64,15 +63,10 @@ const PageView = () => {
   };
 
   if (!page) {
-    return (
-      <DashboardLayout>
-        <div className="p-10 text-light-muted dark:text-dark-muted">Loading…</div>
-      </DashboardLayout>
-    );
+    return <div className="p-10 text-light-muted dark:text-dark-muted">Loading…</div>;
   }
 
   return (
-    <DashboardLayout>
       <div
         ref={contentRef}
         onMouseMove={(e) => sendCursor(e.clientX, e.clientY)}
@@ -147,7 +141,6 @@ const PageView = () => {
 
         <BlockEditor pageId={id} />
       </div>
-    </DashboardLayout>
   );
 };
 

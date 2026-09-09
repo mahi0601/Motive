@@ -2,28 +2,27 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion } from 'framer-motion';
-import { FiPlusCircle, FiSearch, FiCheckSquare, FiX } from 'react-icons/fi';
-import { Loader2 } from 'lucide-react';
-import DashboardLayout from '../layout/DashboardLayout';
-import EnhancedTaskCard from '../components/EnhancedTaskCard';
-import TaskForm from '../components/TaskForm';
-import QuickActions from '../components/QuickActions';
-import TaskAnalytics from '../components/TaskAnalytics';
-import ActivityFeed from '../components/ActivityFeed';
-import KeyboardShortcuts from '../components/KeyboardShortcuts';
-import WelcomeModal, { hasSeenWelcome } from '../components/WelcomeModal';
+import { CheckSquare, Loader2, PlusCircle, Search, X } from 'lucide-react';
+import EnhancedTaskCard from '../components/tasks/EnhancedTaskCard';
+import TaskForm from '../components/tasks/TaskForm';
+import QuickActions from '../components/tasks/QuickActions';
+import TaskAnalytics from '../components/tasks/TaskAnalytics';
+import ActivityFeed from '../components/collab/ActivityFeed';
+import DailyDigest from '../components/tasks/DailyDigest';
+import KeyboardShortcuts from '../components/app/KeyboardShortcuts';
+import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
 import { useToast } from '../context/ToastContext';
-import { getTasks, createTask, updateTask, deleteTask } from '../services/taskService';
+import { useTasks } from '../hooks/useTasks';
+import { TASK_CATEGORIES as CATEGORIES } from '../utils/constants';
+import { parseQuickAdd } from '../utils/quickAddParser';
 
-const CATEGORIES = ['Personal', 'Finance', 'Health', 'Development'];
 const PRIORITIES = ['High', 'Medium', 'Low'];
 
 // Map a persisted task to the shape the card/analytics components expect.
 const toView = (t) => ({ ...t, completed: t.status === 'done', tags: t.tags || [] });
 
 const Dashboard = () => {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tasks, setTasks, loading, create, patch, remove } = useTasks();
   const [filterText, setFilterText] = useState('');
   const [drafts, setDrafts] = useState(
     CATEGORIES.reduce((acc, c) => ({ ...acc, [c]: { title: '', description: '', priority: 'Medium', open: false } }), {})
@@ -37,22 +36,14 @@ const Dashboard = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
 
+  // Only for a genuinely new, empty account — not just "never dismissed in
+  // this browser" (that would also fire for an existing user on a fresh
+  // device/incognito window). `loading` flips false exactly once, right
+  // after the shared hook's initial fetch resolves.
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await getTasks({ limit: 200 });
-        setTasks(data.items || []);
-        // Only for a genuinely new, empty account — not just "never
-        // dismissed in this browser" (that would also fire for an existing
-        // user on a fresh device/incognito window).
-        if ((data.items || []).length === 0 && !hasSeenWelcome()) setShowWelcome(true);
-      } catch (e) {
-        console.error('Failed to load tasks', e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    if (!loading && tasks.length === 0 && !hasSeenWelcome()) setShowWelcome(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // The command palette's "New task" action lands here as ?new=task.
   useEffect(() => {
@@ -84,20 +75,35 @@ const Dashboard = () => {
 
   const addTask = async (category, data) => {
     const payload = data
-      ? { title: data.title, description: data.description, priority: data.priority, category: data.category || category }
+      ? { title: data.title, description: data.description, priority: data.priority, category: data.category || category, dueDate: data.dueDate, tags: data.tags, recurrence: data.recurrence }
       : drafts[category];
     if (!payload.title?.trim()) return;
+
+    // Quick-add shorthand ("water plants tomorrow high priority") only —
+    // the full task modal already has explicit priority/date controls, so
+    // parsing there risks clobbering a deliberate choice that happens to
+    // share a word with a date/priority phrase.
+    let { title, priority, dueDate } = payload;
+    if (!data) {
+      const parsed = parseQuickAdd(payload.title);
+      title = parsed.title;
+      priority = parsed.priority || payload.priority;
+      dueDate = parsed.dueDate || payload.dueDate;
+    }
+
     try {
-      const { data: res } = await createTask({
-        title: payload.title,
+      const created = await create({
+        title,
         description: payload.description || '',
-        priority: payload.priority || 'Medium',
+        priority: priority || 'Medium',
         category: payload.category || category,
+        dueDate: dueDate || null,
+        tags: payload.tags || [],
+        recurrence: payload.recurrence || null,
       });
-      setTasks((prev) => [...prev, res.task]);
       if (!data) setDrafts((d) => ({ ...d, [category]: { title: '', description: '', priority: 'Medium', open: false } }));
       setShowTaskForm(false);
-      notify('success', 'Task created', res.task.title);
+      notify('success', 'Task created', created.title);
     } catch (e) {
       notify('error', 'Could not create task');
       console.error(e);
@@ -106,14 +112,16 @@ const Dashboard = () => {
 
   const editTask = async (data) => {
     try {
-      const { data: res } = await updateTask(editingTask.id, {
+      const updated = await patch(editingTask.id, {
         title: data.title,
         description: data.description,
         priority: data.priority,
         category: data.category,
+        dueDate: data.dueDate || null,
+        tags: data.tags || [],
+        recurrence: data.recurrence || null,
       });
-      setTasks((prev) => prev.map((t) => (t.id === editingTask.id ? res.task : t)));
-      notify('success', 'Task updated', res.task.title);
+      notify('success', 'Task updated', updated.title);
     } catch (e) {
       notify('error', 'Could not update task');
       console.error(e);
@@ -129,7 +137,7 @@ const Dashboard = () => {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
     let undone = false;
     const timer = setTimeout(() => {
-      if (!undone) deleteTask(task.id).catch((e) => console.error(e));
+      if (!undone) remove(task.id).catch((e) => console.error(e));
     }, 5000);
     notify('info', 'Task deleted', task.title, {
       label: 'Undo',
@@ -143,8 +151,7 @@ const Dashboard = () => {
 
   const toggleComplete = async (task) => {
     const status = task.completed ? 'todo' : 'done';
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status } : t)));
-    await updateTask(task.id, { status }).catch((e) => console.error(e));
+    await patch(task.id, { status }).catch((e) => console.error(e));
   };
 
   const toggleSelect = (id) => {
@@ -163,9 +170,12 @@ const Dashboard = () => {
 
   const bulkComplete = async () => {
     const ids = [...selectedIds];
-    setTasks((prev) => prev.map((t) => (ids.includes(t.id) ? { ...t, status: 'done' } : t)));
     exitSelectMode();
-    await Promise.all(ids.map((id) => updateTask(id, { status: 'done' }).catch((e) => console.error(e))));
+    // Per-task optimistic update + rollback-on-failure (via the shared
+    // hook), rather than one blanket optimistic pass with no rollback —
+    // a task whose update actually fails no longer silently drifts out of
+    // sync with the server.
+    await Promise.all(ids.map((id) => patch(id, { status: 'done' }).catch((e) => console.error(e))));
     notify('success', `Completed ${ids.length} task${ids.length === 1 ? '' : 's'}`);
   };
 
@@ -177,7 +187,7 @@ const Dashboard = () => {
     exitSelectMode();
     let undone = false;
     const timer = setTimeout(() => {
-      if (!undone) ids.forEach((id) => deleteTask(id).catch((e) => console.error(e)));
+      if (!undone) ids.forEach((id) => remove(id).catch((e) => console.error(e)));
     }, 5000);
     notify('info', `Deleted ${ids.length} task${ids.length === 1 ? '' : 's'}`, '', {
       label: 'Undo',
@@ -192,8 +202,9 @@ const Dashboard = () => {
   const onDragEnd = ({ destination, source, draggableId }) => {
     if (!destination || destination.droppableId === source.droppableId) return;
     const category = destination.droppableId;
-    setTasks((prev) => prev.map((t) => (t.id === draggableId ? { ...t, category } : t)));
-    updateTask(draggableId, { category }).catch((e) => console.error(e));
+    // `patch` rolls back on failure — previously a failed category change
+    // here left the board silently out of sync with the server.
+    patch(draggableId, { category }).catch((e) => console.error(e));
   };
 
   const grouped = useMemo(() => {
@@ -210,12 +221,12 @@ const Dashboard = () => {
   const analyticsTasks = useMemo(() => tasks.map(toView), [tasks]);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col gap-6 lg:flex-row">
           <div className="flex-1">
             <h2 className="mb-4 flex items-center gap-3 font-display text-3xl font-extrabold text-light-text dark:text-dark-text">
-              <FiPlusCircle className="text-brand-500" /> Dashboard
+              <PlusCircle className="text-brand-500" /> Dashboard
             </h2>
             <QuickActions
               onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
@@ -225,7 +236,8 @@ const Dashboard = () => {
               onStats={() => navigate('/stats')}
             />
           </div>
-          <div className="lg:w-80">
+          <div className="lg:w-80 space-y-6">
+            <DailyDigest onFocusTask={(t) => { setEditingTask(toView(t)); setShowTaskForm(true); }} />
             <ActivityFeed limit={3} />
           </div>
         </div>
@@ -234,7 +246,7 @@ const Dashboard = () => {
 
         <div className="mx-auto mb-6 flex max-w-md items-center gap-2">
           <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-3.5 text-light-muted dark:text-dark-muted" />
+            <Search className="absolute left-3 top-3.5 text-light-muted dark:text-dark-muted" />
             <input
               type="text"
               value={filterText}
@@ -252,7 +264,7 @@ const Dashboard = () => {
             }`}
             title="Select multiple tasks"
           >
-            {selectMode ? <FiX /> : <FiCheckSquare />}
+            {selectMode ? <X /> : <CheckSquare />}
             {selectMode ? 'Cancel' : 'Select'}
           </button>
         </div>
@@ -277,7 +289,7 @@ const Dashboard = () => {
                           className="rounded-full bg-brand-50 p-1.5 text-brand-600 transition hover:bg-brand-gradient hover:text-white dark:bg-brand-500/10 dark:text-brand-300"
                           aria-label={`Add task to ${category}`}
                         >
-                          <FiPlusCircle className="text-lg" />
+                          <PlusCircle className="text-lg" />
                         </button>
                       </div>
 
@@ -285,7 +297,7 @@ const Dashboard = () => {
                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-4 space-y-2">
                           <input
                             type="text"
-                            placeholder="Title"
+                            placeholder='Title — try "tomorrow" or "high priority"'
                             value={drafts[category].title}
                             onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], title: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
@@ -376,7 +388,7 @@ const Dashboard = () => {
           </button>
         </motion.div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

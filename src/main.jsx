@@ -1,7 +1,8 @@
+import './sentry'; // must run before anything else, to catch init-time errors too
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import './index.css';
 import './styles/global.css';
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import DashboardLayout from '../layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { FiUser, FiMail, FiLogOut, FiArrowLeft, FiClock } from 'react-icons/fi';
+import { ArrowLeft, Clock, LogOut, Mail, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,7 +19,6 @@ const Profile = () => {
   };
 
   return (
-    <DashboardLayout>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -29,7 +27,7 @@ const Profile = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-            <FiUser className="text-brand-500" />
+            <User className="text-brand-500" />
             Profile
           </h2>
 
@@ -39,7 +37,7 @@ const Profile = () => {
             transition={{ duration: 0.3 }}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-light-border/40 dark:bg-dark-raised text-light-text dark:text-dark-muted border border-light-border dark:border-dark-border hover:bg-brand-gradient hover:text-white transition-all duration-300"
           >
-            <FiArrowLeft />
+            <ArrowLeft />
             Back
           </motion.button>
         </div>
@@ -53,11 +51,11 @@ const Profile = () => {
             <div>
               <h3 className="text-xl font-semibold">{user?.name || 'Unnamed User'}</h3>
               <p className="text-sm text-light-muted dark:text-dark-muted flex items-center gap-2">
-                <FiMail /> {user?.email || 'No email found'}
+                <Mail /> {user?.email || 'No email found'}
               </p>
               {loginTime && (
                 <p className="text-sm text-light-muted dark:text-dark-muted mt-1 flex items-center gap-2">
-                  <FiClock /> Logged in since: {loginTime}
+                  <Clock /> Logged in since: {loginTime}
                 </p>
               )}
             </div>
@@ -69,7 +67,7 @@ const Profile = () => {
 
         <div className="mt-6 p-6 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-md flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <FiLogOut className="text-red-500" />
+            <LogOut className="text-red-500" />
             <h4 className="text-lg font-medium text-red-600 dark:text-red-400">Logout</h4>
           </div>
           <button
@@ -80,7 +78,6 @@ const Profile = () => {
           </button>
         </div>
       </motion.div>
-    </DashboardLayout>
   );
 };
 
