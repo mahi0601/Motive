@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid,
 } from 'recharts';
 import { Award, BarChart2, Clock, Target, TrendingUp, Zap } from 'lucide-react';
-import { getTasks } from '../services/taskService';
+import { getAllTasks } from '../services/taskService';
 import { getStats } from '../services/statsService';
 import { useTheme } from '../context/ThemeContext';
 import { CHART_PRIMARY, SPARK, BRAND, chartAxisColor, chartGridColor } from '../utils/chartColors';
@@ -27,8 +27,10 @@ const Statistics = () => {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await getTasks({ limit: 200 });
-        setTasks(data.items || []);
+        // Full list, not a single capped page — streaks/avgCompletionTime
+        // below need every task, not just the first 100 (see
+        // taskService.js#getAllTasks).
+        setTasks(await getAllTasks());
       } catch (err) {
         console.error('Error loading tasks:', err);
       }
