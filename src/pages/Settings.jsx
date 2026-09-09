@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import DashboardLayout from '../layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { FiSettings, FiMoon, FiBell, FiLogOut, FiMail, FiUser, FiTrash2, FiAlertTriangle, FiStar, FiCheckCircle, FiUsers } from 'react-icons/fi';
+import { AlertTriangle, Bell, CheckCircle, LogOut, Mail, Moon, Settings as SettingsIcon, Star, Trash2, User, Users } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
-import { createCheckoutSession } from '../services/paymentService';
+import { createCheckoutSession, reconcileCheckoutSession } from '../services/paymentService';
 import { inviteMember } from '../services/workspaceService';
 
 const Settings = () => {
@@ -23,9 +22,15 @@ const Settings = () => {
   const [inviteStatus, setInviteStatus] = useState(null); // { type: 'success'|'error', message }
   const [inviting, setInviting] = useState(false);
 
+  // Mirrors the backend's FREE_MEMBER_LIMIT (workspace.service.js) — purely a
+  // UI hint for showing the upgrade nudge before submitting; the backend is
+  // the actual source of truth/enforcement.
+  const FREE_MEMBER_LIMIT = 2;
+  const atMemberCap = !user?.isPro && (workspace?.members?.length || 0) >= FREE_MEMBER_LIMIT;
+
   const handleInvite = async (e) => {
     e.preventDefault();
-    if (!inviteEmail.trim()) return;
+    if (!inviteEmail.trim() || atMemberCap) return;
     if (!workspace?.id) {
       // Workspace loads async on app start; this only happens if the user
       // clicks Invite in that brief window. Silently no-op'ing here (the
@@ -59,13 +64,22 @@ const Settings = () => {
   const [upgradeError, setUpgradeError] = useState('');
   const upgradeStatus = searchParams.get('upgrade'); // 'success' | 'cancelled' | null
 
-  // Coming back from Stripe Checkout — re-fetch the profile so `isPro` reflects
-  // the webhook's update, then drop the query param so a refresh doesn't re-trigger it.
+  // Coming back from Stripe Checkout — reconcile directly against Stripe first
+  // (covers UPI/delayed-notification methods, and a webhook that was ever
+  // delayed or dropped: without this, isPro could stay false forever even
+  // though the payment succeeded), then re-fetch the profile so `isPro`
+  // reflects the confirmed state, then drop the query params.
   useEffect(() => {
     if (upgradeStatus !== 'success') return;
-    refreshUser().finally(() => {
-      setSearchParams({}, { replace: true });
-    });
+    const sessionId = searchParams.get('session_id');
+    (sessionId ? reconcileCheckoutSession(sessionId) : Promise.resolve())
+      .catch((e) => console.error('Failed to reconcile checkout session', e))
+      .finally(() => {
+        refreshUser().finally(() => {
+          setSearchParams({}, { replace: true });
+        });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [upgradeStatus, refreshUser, setSearchParams]);
 
   const handleUpgrade = async () => {
@@ -108,12 +122,25 @@ const Settings = () => {
     logout(); // revokes refresh token, clears cookie + access token, redirects
   };
 
-  const handleEmailAlert = () => {
-    alert('📩 Email notifications enabled successfully!');
+  // Previously a bare `alert('Email notifications enabled successfully!')`
+  // that did nothing — no request, no persisted setting. There's no email
+  // notification pipeline to wire this to yet (see the backend's dead
+  // emailService.js), so the honest fix is to make the button do the one
+  // real thing available today: request OS/browser notification permission,
+  // which is what actually gates whether a `notification:new` socket push
+  // can also show as a native browser notification.
+  const [notifPermission, setNotifPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+
+  const handleEnableAlerts = async () => {
+    if (typeof Notification === 'undefined') return;
+    const result = await Notification.requestPermission();
+    setNotifPermission(result);
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex justify-end px-4">
         <Menu as="div" className="relative inline-block text-left z-50">
           <Menu.Button className="rounded-full w-10 h-10 bg-brand-gradient text-white flex items-center justify-center transition duration-300 shadow-brand-sm hover:shadow-brand">
@@ -122,7 +149,7 @@ const Settings = () => {
                 {user.name.charAt(0).toUpperCase()}
               </div>
             ) : (
-              <FiUser className="text-xl" />
+              <User className="text-xl" />
             )}
           </Menu.Button>
           <Menu.Items className="absolute right-0 mt-2 w-44 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-xl py-1 text-sm">
@@ -166,7 +193,7 @@ const Settings = () => {
         className="text-light-text dark:text-dark-text p-8 rounded-2xl shadow-lg transition-all duration-300 border border-light-border dark:border-dark-border font-inter"
       >
         <h2 className="text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3 text-light-text dark:text-dark-text">
-          <FiSettings className="text-brand-500 animate-spin-slow" />
+          <SettingsIcon className="text-brand-500 animate-spin-slow" />
           Settings
         </h2>
 
@@ -178,7 +205,7 @@ const Settings = () => {
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FiMoon className="text-brand-500" />
+                <Moon className="text-brand-500" />
                 <h4 className="text-lg font-semibold">Theme Settings</h4>
               </div>
               <div
@@ -199,44 +226,63 @@ const Settings = () => {
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FiBell className="text-brand-500" />
+                <Bell className="text-brand-500" />
                 <h4 className="text-lg font-semibold">Notifications</h4>
               </div>
-              <button
-                onClick={handleEmailAlert}
-                className="px-4 py-2 text-sm rounded-lg font-medium bg-light-surface dark:bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-gradient hover:text-white hover:border-transparent transition-all duration-300 shadow-sm hover:shadow-md dark:text-white dark:border-white"
-              >
-                <FiMail className="inline-block mr-1" /> Enable Alerts
-              </button>
+              {notifPermission === 'granted' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  <CheckCircle /> Enabled
+                </span>
+              ) : (
+                <button
+                  onClick={handleEnableAlerts}
+                  disabled={notifPermission === 'denied' || notifPermission === 'unsupported'}
+                  className="px-4 py-2 text-sm rounded-lg font-medium bg-light-surface dark:bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-gradient hover:text-white hover:border-transparent transition-all duration-300 shadow-sm hover:shadow-md dark:text-white dark:border-white disabled:opacity-60 disabled:hover:bg-light-surface disabled:hover:text-brand-600 dark:disabled:hover:bg-transparent"
+                >
+                  <Mail className="inline-block mr-1" /> Enable Alerts
+                </button>
+              )}
             </div>
-            <p className="text-sm text-light-muted dark:text-dark-muted mt-2">Enable email alerts and notifications.</p>
+            <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
+              {notifPermission === 'denied'
+                ? 'Blocked in your browser settings — allow notifications for this site to enable.'
+                : notifPermission === 'unsupported'
+                ? 'Not supported in this browser.'
+                : 'Show a desktop notification when Motive notifies you (comments, mentions).'}
+            </p>
           </div>
 
           {/* Workspace members — the only way another person becomes @mentionable */}
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-2">
-              <FiUsers className="text-brand-500" />
+              <Users className="text-brand-500" />
               <h4 className="text-lg font-semibold">Workspace</h4>
             </div>
             <p className="text-sm text-light-muted dark:text-dark-muted mb-3">
               Invite a teammate by email — they'll be able to comment and be @mentioned on your tasks.
             </p>
-            <form onSubmit={handleInvite} className="flex gap-2">
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="teammate@example.com"
-                className="flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
-              />
-              <button
-                type="submit"
-                disabled={inviting}
-                className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
-              >
-                {inviting ? 'Inviting…' : 'Invite'}
-              </button>
-            </form>
+            {atMemberCap ? (
+              <p className="text-sm rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 px-3 py-2">
+                Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Motive Pro below to invite more.
+              </p>
+            ) : (
+              <form onSubmit={handleInvite} className="flex gap-2">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="teammate@example.com"
+                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
+                />
+                <button
+                  type="submit"
+                  disabled={inviting}
+                  className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
+                >
+                  {inviting ? 'Inviting…' : 'Invite'}
+                </button>
+              </form>
+            )}
             {inviteStatus && (
               <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
                 {inviteStatus.message}
@@ -260,12 +306,12 @@ const Settings = () => {
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
-                <FiStar className="text-brand-500" />
+                <Star className="text-brand-500" />
                 <h4 className="text-lg font-semibold">Motive Pro</h4>
               </div>
               {user?.isPro && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  <FiCheckCircle /> You're a Pro member
+                  <CheckCircle /> You're a Pro member
                 </span>
               )}
             </div>
@@ -316,7 +362,7 @@ const Settings = () => {
           {/* Danger Zone — delete account */}
           <div className="p-5 rounded-xl border border-red-300 dark:border-red-900/60 bg-red-50/60 dark:bg-red-900/10">
             <div className="flex items-center gap-3">
-              <FiAlertTriangle className="text-red-500" />
+              <AlertTriangle className="text-red-500" />
               <h4 className="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h4>
             </div>
             <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
@@ -329,7 +375,7 @@ const Settings = () => {
                 onClick={() => setConfirming(true)}
                 className="mt-4 inline-flex items-center gap-2 rounded-lg !bg-red-600 px-4 py-2 text-sm font-semibold text-white !border-0 transition hover:!bg-red-700"
               >
-                <FiTrash2 /> Delete account
+                <Trash2 /> Delete account
               </button>
             ) : (
               <div className="mt-4 space-y-3">
@@ -372,7 +418,7 @@ const Settings = () => {
           </div>
         </div>
       </motion.div>
-    </DashboardLayout>
+    </>
   );
 };
 
