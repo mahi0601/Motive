@@ -5,7 +5,11 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  // `android/` is Capacitor's generated native project — it mirrors the
+  // built web assets (including the minified service worker) into
+  // android/app/src/main/assets/public on every `cap sync`, which isn't
+  // source and shouldn't be linted.
+  { ignores: ['dist', 'android'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -34,6 +38,14 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    // Build-tool config files run under Node, not the browser — they need
+    // `process`/`import.meta` Node globals instead of `globals.browser`.
+    files: ['vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ]
