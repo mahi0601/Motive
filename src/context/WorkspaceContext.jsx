@@ -15,7 +15,7 @@ export const WorkspaceProvider = ({ children }) => {
     setLoading(true);
     try {
       const { data } = await getPages();
-      setPages(data);
+      setPages(data.pages);
     } catch (e) {
       console.error('Failed to load pages', e);
     } finally {
@@ -26,7 +26,7 @@ export const WorkspaceProvider = ({ children }) => {
   const loadWorkspace = useCallback(async () => {
     try {
       const { data } = await getWorkspaces();
-      setWorkspace(data[0] || null);
+      setWorkspace(data.workspaces[0] || null);
     } catch (e) {
       console.error('Failed to load workspace', e);
     }
@@ -46,14 +46,14 @@ export const WorkspaceProvider = ({ children }) => {
 
   const addPage = async (payload = {}) => {
     const { data } = await createPage(payload);
-    setPages((prev) => [...prev, data]);
-    return data;
+    setPages((prev) => [...prev, data.page]);
+    return data.page;
   };
 
   const editPage = async (id, payload) => {
     const { data } = await updatePage(id, payload);
-    setPages((prev) => prev.map((p) => (p.id === id ? data : p)));
-    return data;
+    setPages((prev) => prev.map((p) => (p.id === id ? data.page : p)));
+    return data.page;
   };
 
   const removePage = async (id) => {

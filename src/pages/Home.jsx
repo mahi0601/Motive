@@ -2,8 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiArrowRight, FiSearch, FiFolderPlus } from 'react-icons/fi';
-import { LogoMark } from '../components/Logo';
+import { ArrowRight, FolderPlus, Search } from 'lucide-react';
+import { LogoMark } from '../components/ui/Logo';
 
 const templates = [
   {
@@ -81,7 +81,7 @@ const Home = () => {
               to="/register"
               className="px-6 py-3 rounded-xl bg-brand-gradient text-white font-semibold transition duration-300 text-sm flex items-center gap-2 shadow-brand-sm hover:shadow-brand"
             >
-              Get Started <FiArrowRight />
+              Get Started <ArrowRight />
             </Link>
           </motion.div>
         </div>
@@ -92,7 +92,7 @@ const Home = () => {
           transition={{ delay: 0.6, duration: 0.6 }}
           className="relative max-w-xl mx-auto"
         >
-          <FiSearch className="absolute top-3.5 left-4 text-light-muted dark:text-dark-muted text-base" />
+          <Search className="absolute top-3.5 left-4 text-light-muted dark:text-dark-muted text-base" />
           <input
             type="text"
             placeholder="Search templates or ideas..."
@@ -113,7 +113,7 @@ const Home = () => {
               className="bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl p-6 shadow hover:shadow-xl hover:ring-1 hover:ring-brand-500 transition-all duration-300 flex flex-col gap-3 group"
             >
               <div className="flex items-center gap-3">
-                <FiFolderPlus className="text-brand-500 text-lg group-hover:scale-110 transition-transform duration-300" />
+                <FolderPlus className="text-brand-500 text-lg group-hover:scale-110 transition-transform duration-300" />
                 <h3 className="text-lg font-semibold text-light-text dark:text-dark-text">{template.title}</h3>
               </div>
               <p className="text-sm text-light-muted dark:text-dark-muted">

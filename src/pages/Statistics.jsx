@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import DashboardLayout from '../layout/DashboardLayout';
-import ProgressRing from '../components/ProgressRing';
+import ProgressRing from '../components/ui/ProgressRing';
+import ProductivityScore from '../components/app/ProductivityScore';
 import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid,
 } from 'recharts';
-import { FiBarChart2, FiTrendingUp, FiClock, FiTarget, FiAward, FiZap } from 'react-icons/fi';
-import api from '../services/api';
+import { Award, BarChart2, Clock, Target, TrendingUp, Zap } from 'lucide-react';
 import { getTasks } from '../services/taskService';
+import { getStats } from '../services/statsService';
 import { useTheme } from '../context/ThemeContext';
 import { CHART_PRIMARY, SPARK, BRAND, chartAxisColor, chartGridColor } from '../utils/chartColors';
 
@@ -19,6 +19,7 @@ const Statistics = () => {
   const { isDark } = useTheme();
   const [taskData, setTaskData] = useState([]);
   const [priorityData, setPriorityData] = useState([]);
+  const [taskCounts, setTaskCounts] = useState({ total: 0, completed: 0 });
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('week');
   const [tasks, setTasks] = useState([]);
@@ -36,11 +37,15 @@ const Statistics = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await api.get('/api/stats'); // token attached + silent refresh by interceptor
-      const { taskStats, priorityStats } = res.data;
+      // `range` is honored server-side now — previously the Week/Month/Year
+      // buttons changed this component's state but the request never
+      // carried it.
+      const res = await getStats(timeRange);
+      const { taskStats, priorityStats, taskCounts: counts } = res.data;
 
       setTaskData(taskStats || []);
       setPriorityData(priorityStats || []);
+      setTaskCounts(counts || { total: 0, completed: 0 });
       setLoading(false);
     } catch (err) {
       console.error('Error fetching statistics:', err);
@@ -50,28 +55,38 @@ const Statistics = () => {
 
   useEffect(() => {
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRange]);
 
-  const totalTasks = priorityData.reduce((acc, item) => acc + item.value, 0);
-  const completedTasks = tasks.filter((t) => t.status === 'done').length;
+  // Both counts now come from the same server-side, uncapped source — previously
+  // `completedTasks` came from a 200-item-capped task list while `totalTasks`
+  // came from an uncapped priority breakdown, so the rate could exceed 100%.
+  const { total: totalTasks, completed: completedTasks } = taskCounts;
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   const doneTasks = tasks.filter((t) => t.status === 'done');
+  // `completedAt` (added alongside the stats fixes) is the real completion
+  // moment; `updatedAt` falls back only for tasks completed before that
+  // field existed.
   const avgCompletionTime = doneTasks.length
     ? (
-        doneTasks.reduce((sum, t) => sum + (new Date(t.updatedAt) - new Date(t.createdAt)), 0) /
+        doneTasks.reduce((sum, t) => sum + (new Date(t.completedAt || t.updatedAt) - new Date(t.createdAt)), 0) /
         doneTasks.length /
         (1000 * 60 * 60 * 24)
       ).toFixed(1)
     : null;
 
   const dayKey = (d) => new Date(d).toDateString();
-  const completedDays = new Set(doneTasks.map((t) => dayKey(t.updatedAt)));
+  const completedDays = new Set(doneTasks.map((t) => dayKey(t.completedAt || t.updatedAt)));
   let streakDays = 0;
   for (let d = new Date(); ; d.setDate(d.getDate() - 1)) {
     if (!completedDays.has(dayKey(d))) break;
     streakDays += 1;
   }
+
+  // ProductivityScore expects a `completed` boolean (mirrors Dashboard.jsx's
+  // own `toView` mapping of the same raw task shape).
+  const scoreTasks = tasks.map((t) => ({ ...t, completed: t.status === 'done' }));
 
   // Highlight the single best day in the weekly bar chart with the spark
   // accent instead of cycling through an arbitrary rainbow of hex values.
@@ -97,7 +112,6 @@ const Statistics = () => {
   };
 
   return (
-    <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -106,7 +120,7 @@ const Statistics = () => {
         >
           <div>
             <h2 className="text-3xl font-extrabold text-light-text dark:text-dark-text mb-1 flex items-center gap-3">
-              <FiTrendingUp className="text-brand-500" /> Statistics & Insights
+              <TrendingUp className="text-brand-500" /> Statistics & Insights
             </h2>
             <p className="text-light-muted dark:text-dark-muted">Track your productivity and task completion trends</p>
           </div>
@@ -143,7 +157,7 @@ const Statistics = () => {
                 className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6"
               >
                 <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center text-brand-600 dark:text-brand-400 mb-3">
-                  <FiTarget className="w-4.5 h-4.5" />
+                  <Target className="w-4.5 h-4.5" />
                 </div>
                 <p className="text-3xl font-bold text-light-text dark:text-dark-text leading-none">{totalTasks}</p>
                 <p className="text-sm text-light-muted dark:text-dark-muted mt-2">total tasks</p>
@@ -157,7 +171,7 @@ const Statistics = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center text-brand-600 dark:text-brand-400 mb-3">
-                    <FiTrendingUp className="w-4.5 h-4.5" />
+                    <TrendingUp className="w-4.5 h-4.5" />
                   </div>
                   <ProgressRing progress={completionRate} size={40} strokeWidth={4} color="brand" />
                 </div>
@@ -172,7 +186,7 @@ const Statistics = () => {
                 className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6"
               >
                 <div className="w-9 h-9 rounded-lg bg-spark-50 dark:bg-spark-900/20 flex items-center justify-center text-spark-600 dark:text-spark-400 mb-3">
-                  <FiZap className="w-4.5 h-4.5" />
+                  <Zap className="w-4.5 h-4.5" />
                 </div>
                 <p className="text-3xl font-bold text-light-text dark:text-dark-text leading-none">
                   {streakDays} day{streakDays === 1 ? '' : 's'}
@@ -180,6 +194,8 @@ const Statistics = () => {
                 <p className="text-sm text-light-muted dark:text-dark-muted mt-2">current streak</p>
               </motion.div>
             </div>
+
+            <ProductivityScore tasks={scoreTasks} />
 
             {/* Single chart + a compact priority legend, instead of a
                 second full chart card. */}
@@ -191,11 +207,11 @@ const Statistics = () => {
             >
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                 <h3 className="text-lg font-semibold text-light-text dark:text-dark-text flex items-center gap-2">
-                  <FiBarChart2 className="text-brand-500" /> Weekly activity
+                  <BarChart2 className="text-brand-500" /> Tasks completed this {timeRange}
                 </h3>
                 <div className="flex items-center gap-4 text-sm text-light-muted dark:text-dark-muted">
                   {avgCompletionTime != null && (
-                    <span className="flex items-center gap-1.5"><FiClock className="w-4 h-4" /> {avgCompletionTime}d avg. to complete</span>
+                    <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {avgCompletionTime}d avg. to complete</span>
                   )}
                   {priorityData.length > 0 && (
                     <span className="flex items-center gap-3">
@@ -232,12 +248,12 @@ const Statistics = () => {
               className="bg-light-surface dark:bg-dark-raised rounded-xl border border-light-border dark:border-dark-border p-6"
             >
               <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4 flex items-center gap-2">
-                <FiAward className="text-brand-500" /> Achievements
+                <Award className="text-brand-500" /> Achievements
               </h3>
               <div className="divide-y divide-light-border dark:divide-dark-border">
                 <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="w-9 h-9 rounded-lg bg-spark-50 dark:bg-spark-900/20 flex items-center justify-center text-spark-600 dark:text-spark-400 flex-shrink-0">
-                    <FiZap className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-light-text dark:text-dark-text">
@@ -248,7 +264,7 @@ const Statistics = () => {
                 </div>
                 <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                   <div className="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center text-brand-600 dark:text-brand-400 flex-shrink-0">
-                    <FiTarget className="w-4 h-4" />
+                    <Target className="w-4 h-4" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-light-text dark:text-dark-text">Task Master</p>
@@ -260,7 +276,6 @@ const Statistics = () => {
           </>
         )}
       </div>
-    </DashboardLayout>
   );
 };
 

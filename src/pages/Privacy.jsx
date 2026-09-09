@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { LogoMark } from '../components/Logo';
+import { LogoMark } from '../components/ui/Logo';
 
 const Section = ({ title, children }) => (
   <section className="mt-8">
@@ -21,7 +21,7 @@ const Privacy = () => (
         <LogoMark size={36} />
         <h1 className="font-display text-3xl font-extrabold text-light-text dark:text-white">Privacy Policy</h1>
       </div>
-      <p className="text-sm text-light-muted">Last updated: June 15, 2026</p>
+      <p className="text-sm text-light-muted">Last updated: September 8, 2026</p>
 
       <p className="mt-6 text-light-muted dark:text-dark-muted">
         Motive (“we”, “us”) is a productivity workspace. This policy explains what data we
@@ -42,7 +42,7 @@ const Privacy = () => (
       </Section>
 
       <Section title="Where your data is stored">
-        <p>Your data is stored in a managed MongoDB database (MongoDB Atlas) hosted in the cloud. Data is transmitted over encrypted HTTPS connections.</p>
+        <p>Your data is stored in a managed PostgreSQL database (Neon) hosted in the cloud. Data is transmitted over encrypted HTTPS connections.</p>
       </Section>
 
       <Section title="Cookies">
