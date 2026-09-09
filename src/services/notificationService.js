@@ -1,6 +1,9 @@
 import api from './api';
 
-export const getNotifications = () => api.get('/api/notifications');
+// `/api/notifications` is paginated (`{ items, pagination, unreadCount }`) —
+// pass `{ limit }` etc. through `params` if a caller ever needs more than
+// the default page.
+export const getNotifications = (params) => api.get('/api/notifications', { params });
 
 export const markNotificationRead = (id) => api.put(`/api/notifications/${id}/read`);
 
