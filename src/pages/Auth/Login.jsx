@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
-import AuthLayout from '../../layout/AuthLayout';
-import AuthField from '../../components/AuthField';
+import AuthField from '../../components/ui/AuthField';
+import GoogleSignInButton from '../../components/ui/GoogleSignInButton';
 import { login as loginRequest } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState('');
+  const [searchParams] = useSearchParams();
+  // Google's OAuth flow reports failure via a redirect back to /login?error=google
+  // (see motive-backend's auth.controller.js#googleCallback) rather than a
+  // normal AJAX error, since the whole flow is top-level navigations.
+  const [serverError, setServerError] = useState(
+    searchParams.get('error') === 'google' ? 'Google sign-in failed. Please try again.' : ''
+  );
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login: setAuthUser } = useAuth();
@@ -45,7 +51,7 @@ const Login = () => {
   };
 
   return (
-    <AuthLayout>
+    <>
       <h2 className="font-display text-3xl font-bold text-light-text dark:text-white">Welcome back</h2>
       <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Log in to your Motive workspace.</p>
 
@@ -76,6 +82,11 @@ const Login = () => {
           onChange={setField('password')}
           error={errors.password}
         />
+        <div className="text-right -mt-2">
+          <Link to="/forgot-password" className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"
@@ -86,13 +97,20 @@ const Login = () => {
         </button>
       </form>
 
+      <div className="my-6 flex items-center gap-3 text-xs text-light-muted dark:text-dark-muted">
+        <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
+        or
+        <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
+      </div>
+      <GoogleSignInButton />
+
       <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Don’t have an account?{' '}
         <Link to="/register" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
           Sign up
         </Link>
       </p>
-    </AuthLayout>
+    </>
   );
 };
 
