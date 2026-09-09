@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Zap, Layers } from 'lucide-react';
-import { LogoMark } from '../components/Logo';
+import { LogoMark } from '../components/ui/Logo';
 
 const points = [
   { icon: Layers, text: 'Block-based pages — write, plan, and organize in one place.' },
@@ -11,10 +11,11 @@ const points = [
 ];
 
 /**
- * Full-bleed split-panel auth shell: brand story on the left, form on the right.
- * Pages pass their form as children.
+ * Full-bleed split-panel auth shell: brand story on the left, form on the
+ * right. A layout ROUTE (see routes/AppRoutes.jsx) — renders once, with an
+ * <Outlet/> for whichever auth page matched.
  */
-const AuthLayout = ({ children }) => (
+const AuthLayout = () => (
   <div className="flex min-h-screen w-full bg-light-surface dark:bg-dark-background">
     {/* Brand panel (hidden on small screens) */}
     <div className="relative hidden w-1/2 overflow-hidden bg-brand-gradient lg:flex lg:flex-col lg:justify-between p-12 text-white">
@@ -73,7 +74,7 @@ const AuthLayout = ({ children }) => (
             Motive
           </span>
         </Link>
-        {children}
+        <Outlet />
         <p className="mt-8 text-center text-xs text-light-muted dark:text-dark-muted">
           <Link to="/privacy" className="hover:text-brand-600 dark:hover:text-brand-400">
             Privacy Policy
