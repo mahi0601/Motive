@@ -15,7 +15,7 @@ const STEPS = [
   {
     icon: CheckSquare,
     title: 'Organize tasks your way',
-    body: 'Drag tasks between Personal, Work, Health, and Development boards. Track priority, due dates, and completion at a glance.',
+    body: 'Drag tasks between Personal, Finance, Health, and Development boards. Track priority, due dates, and completion at a glance.',
   },
   {
     icon: FileText,
@@ -76,7 +76,10 @@ const WelcomeModal = ({ onClose }) => {
           </div>
 
           <div className="p-6">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-gradient text-white">
+            {/* Tonal, not gradient — this is a decorative step icon, not the
+                action; "Next"/"Get started" below is the one CTA this
+                screen spends its gradient on (see PLAN §4). */}
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
               <Icon className="h-6 w-6" />
             </div>
             <h3 className="mb-2 text-xl font-bold" style={{ color: 'var(--text)' }}>{title}</h3>

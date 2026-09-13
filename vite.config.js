@@ -18,7 +18,7 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['motive.svg'],
       manifest: {
-        name: 'Motive — Think. Plan. Move.',
+        name: 'Motive — Turn intent into momentum.',
         short_name: 'Motive',
         description: 'A calm, fast workspace to capture ideas, organize pages, and get things done.',
         id: '/',

@@ -6,7 +6,7 @@ import Register from '../pages/Auth/Register';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import Calendar from '../pages/Calendar';
-import Statistics from '../pages/Statistics';
+import Momentum from '../pages/Momentum';
 import Settings from '../pages/Settings';
 import Home from '../pages/Home';
 import Profile from '../pages/Profile';
@@ -25,12 +25,18 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/privacy" element={<Privacy />} />
+      {/* Permanent alias: "Statistics" was renamed to "Momentum" (see
+          config/nav.js). Kept indefinitely, not just "one release" — an
+          installed PWA can keep an old service-worker-cached shell for a
+          long time, and any bookmark/external link to /stats should still
+          land somewhere. */}
+      <Route path="/stats" element={<Navigate to="/momentum" replace />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/stats" element={<Statistics />} />
+          <Route path="/momentum" element={<Momentum />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/templates" element={<Templates />} />
