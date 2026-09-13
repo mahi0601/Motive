@@ -12,8 +12,8 @@ const templates = [
     link: '/login',
   },
   {
-    title: 'Team Projects',
-    description: 'Collaborate with your team, assign priorities, and manage progress.',
+    title: 'Development',
+    description: 'Ship client work and side projects — track scope, deadlines, and progress without the overhead.',
     link: '/login',
   },
   {

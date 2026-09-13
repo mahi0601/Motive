@@ -52,7 +52,7 @@ const Login = () => {
 
   return (
     <>
-      <h2 className="font-display text-3xl font-bold text-light-text dark:text-white">Welcome back</h2>
+      <h2 className="font-display text-display font-bold text-light-text dark:text-white">Welcome back</h2>
       <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Log in to your Motive workspace.</p>
 
       {serverError && (
