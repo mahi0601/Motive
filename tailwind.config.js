@@ -23,8 +23,6 @@ export default {
       colors: {
         // Brand tokens
         brand: violet,
-        // Remap `indigo` to the brand violet so existing components rebrand automatically
-        indigo: violet,
         spark: {
           50: '#FFF8EB',
           100: '#FFEFCC',
@@ -59,6 +57,18 @@ export default {
         display: ['Sora', 'Inter', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
         inter: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      // A deliberate scale, not the Tailwind defaults — so a stat tile's
+      // number and a task card's title differ on purpose instead of by
+      // accident (see PLAN §4). Pair with `font-display` (Sora) only at
+      // `display-xl`/`display`/`title`; everything else stays Inter.
+      fontSize: {
+        'display-xl': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
+        display: ['1.875rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        title: ['1.25rem', { lineHeight: '1.35' }],
+        body: ['0.9375rem', { lineHeight: '1.65' }],
+        label: ['0.8125rem', { lineHeight: '1.4', letterSpacing: '0.01em' }],
+        caption: ['0.75rem', { lineHeight: '1.4' }],
       },
       backgroundImage: {
         'brand-gradient': 'linear-gradient(135deg, #7C5CF6 0%, #9B5CFF 55%, #C45BD6 100%)',

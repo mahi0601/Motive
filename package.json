@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "motive",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/clean-sourcemaps.mjs",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "android": "vite build && cap sync && cap open android",
     "apk": "vite build && cap sync android && cd android && ./gradlew assembleRelease && echo '\\nAPK: android/app/build/outputs/apk/release/app-release.apk'"
@@ -36,6 +37,8 @@
     "@eslint/js": "^9.21.0",
     "@sentry/vite-plugin": "^5.4.0",
     "@tailwindcss/postcss": "^4.0.15",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.21.0",
@@ -43,10 +46,12 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.3",
     "sharp": "^0.35.1",
     "tailwindcss": "3.4",
     "vite": "^6.2.0",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.0"
   }
 }

@@ -7,7 +7,7 @@ import { LogoMark } from '../components/ui/Logo';
 const points = [
   { icon: Layers, text: 'Block-based pages — write, plan, and organize in one place.' },
   { icon: CheckCircle2, text: 'Tasks, boards, and calendar that stay in sync.' },
-  { icon: Zap, text: 'Fast, real-time, and built to scale with your team.' },
+  { icon: Zap, text: 'Fast and real-time, so it keeps up with how you actually work.' },
 ];
 
 /**
