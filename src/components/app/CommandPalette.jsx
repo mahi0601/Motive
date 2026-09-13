@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart2, Calendar, CheckSquare, FileText, Home, Layout, PlusCircle, Search, Settings } from 'lucide-react';
+import { CheckSquare, FileText, PlusCircle, Search } from 'lucide-react';
 import { useCommandPalette } from '../../context/CommandPaletteContext';
 import { searchPages } from '../../services/pageService';
 import { searchTasks } from '../../services/taskService';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { PRIMARY_NAV, SECONDARY_NAV } from '../../config/nav';
 
+// Derived from the same nav config the Sidebar reads, so a rename there
+// (see config/nav.js) can never drift out of sync with what the palette
+// offers — this used to hardcode its own copy ("Go to Statistics" vs. the
+// sidebar's "Statistics" vs. the button's "Analytics", all for one page).
 const QUICK_ACTIONS = [
-  { id: 'nav-dashboard', label: 'Go to Dashboard', icon: Home, path: '/dashboard' },
-  { id: 'nav-calendar', label: 'Go to Calendar', icon: Calendar, path: '/calendar' },
-  { id: 'nav-stats', label: 'Go to Statistics', icon: BarChart2, path: '/stats' },
-  { id: 'nav-templates', label: 'Go to Templates', icon: Layout, path: '/templates' },
-  { id: 'nav-settings', label: 'Go to Settings', icon: Settings, path: '/settings' },
+  ...[...PRIMARY_NAV, ...SECONDARY_NAV].map((item) => ({
+    id: `nav-${item.id}`,
+    label: `Go to ${item.label}`,
+    icon: item.Icon,
+    path: item.path,
+  })),
   { id: 'new-task', label: 'New task', icon: PlusCircle, path: '/dashboard?new=task' },
   { id: 'new-page', label: 'New page', icon: FileText, path: null }, // handled specially in choose()
 ];

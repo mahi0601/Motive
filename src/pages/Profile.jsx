@@ -26,7 +26,7 @@ const Profile = () => {
         className="mx-auto max-w-2xl p-8 font-inter text-light-text dark:text-dark-text"
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+          <h2 className="font-display text-display font-extrabold tracking-tight flex items-center gap-3">
             <User className="text-brand-500" />
             Profile
           </h2>
@@ -35,7 +35,7 @@ const Profile = () => {
             onClick={() => navigate(-1)}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-light-border/40 dark:bg-dark-raised text-light-text dark:text-dark-muted border border-light-border dark:border-dark-border hover:bg-brand-gradient hover:text-white transition-all duration-300"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-light-border/40 dark:bg-dark-raised text-light-text dark:text-dark-muted border border-light-border dark:border-dark-border hover:bg-brand-600 hover:text-white hover:border-transparent transition-all duration-300"
           >
             <ArrowLeft />
             Back
@@ -45,7 +45,7 @@ const Profile = () => {
         {/* Profile Info Card */}
         <div className="p-6 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-md">
           <div className="flex items-center gap-5 mb-3">
-            <div className="w-16 h-16 rounded-full bg-brand-gradient text-white text-2xl font-bold flex items-center justify-center shadow-md">
+            <div className="w-16 h-16 rounded-full bg-brand-500 text-white text-2xl font-bold flex items-center justify-center shadow-sm">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div>

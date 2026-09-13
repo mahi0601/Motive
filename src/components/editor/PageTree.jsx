@@ -111,7 +111,7 @@ const PageTree = ({ onNavigate }) => {
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between px-2 mb-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-light-muted dark:text-dark-muted">Pages</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-light-muted dark:text-dark-muted">Docs</span>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => go('/templates')}

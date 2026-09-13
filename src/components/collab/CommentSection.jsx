@@ -115,7 +115,7 @@ const CommentSection = ({ taskId }) => {
 
       <form onSubmit={handleSubmit} className="relative mb-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-bold text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 font-bold text-white">
             {(user?.name || '?').charAt(0).toUpperCase()}
           </div>
           <div className="flex-1">
@@ -172,7 +172,7 @@ const CommentSection = ({ taskId }) => {
               className="rounded-xl border border-light-border bg-light-border/30 p-4 dark:border-dark-border dark:bg-dark-raised/50"
             >
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient font-bold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 font-bold text-white">
                   {(c.user?.name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
