@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 
 // ── In-memory access token ──────────────────────────────
 // Kept in a module variable, NEVER in localStorage → not reachable by XSS.
@@ -56,13 +57,27 @@ api.interceptors.response.use(
         await refreshPromise;
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original); // replay the original request
-      } catch {
+      } catch (refreshError) {
+        // Was a fully silent `catch {}` — a real refresh failure (network
+        // error, expired session, server down) had zero trace anywhere.
+        logger.warn('Silent token refresh failed — redirecting to login', {
+          status: refreshError.response?.status,
+        });
         clearAccessToken();
         if (window.location.pathname !== '/login') {
           window.location.assign('/login');
         }
       }
     }
+    // The single chokepoint for every other API failure (403/404/422/5xx,
+    // network/timeout/CORS) — previously logged nowhere. This is what
+    // covers the overwhelming majority of what used to be ~40 individual
+    // per-call-site console.error calls scattered across the app.
+    logger.error('API request failed', error, {
+      method: original?.method,
+      url: original?.url,
+      status,
+    });
     return Promise.reject(error);
   }
 );

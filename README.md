@@ -14,7 +14,7 @@ npm run dev                # http://localhost:5173
 
 Get the backend running first (see its own README) — this app has nothing to talk to without it. `VITE_SENTRY_DSN` is optional; everything else in `.env.example` (`SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`) is a **build-time-only** Netlify setting, not something you need locally — see the Sentry section below.
 
-No test suite exists yet. `npm run lint` and `npm run build` are the current guardrails; both must pass clean before deploying.
+`npm run lint` (ESLint flat config, `eslint.config.js`) — mainly enforcing `no-console`: everything logs through `src/utils/logger.js` instead (see "Logging" below), so a stray `console.log` fails lint rather than silently shipping. `npm run test` runs the Vitest suite (unit tests for the trickier pure logic — quick-add parsing, Momentum's client-side date math, etc.; nothing end-to-end). `npm run build` must also stay clean. All three are the guardrails that must pass before deploying.
 
 ## Deploying (Netlify)
 
@@ -24,6 +24,12 @@ Set in the Netlify dashboard (Site settings → Environment variables):
 - `VITE_API_BASE_URL` — your deployed API's origin (`https://<your-api-host>`).
 - `VITE_SENTRY_DSN` — optional, a Sentry project (React platform).
 - `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` — optional. Deliberately *not* prefixed `VITE_`, so unlike the two above these never end up in the shipped bundle. Set all three to enable production source-map upload (`vite.config.js`) — without them the build is unaffected, no sourcemaps generated, no network calls attempted.
+
+Nothing to set for `VITE_APP_VERSION` — `vite.config.js` derives it automatically at build time (Netlify's `COMMIT_REF`, falling back to the local git SHA) and inlines it into the bundle, so every Sentry event is tagged with the exact release the uploaded sourcemaps belong to.
+
+### Logging
+
+`src/utils/logger.js` wraps `src/sentry.js`: `logger.warn(message, context)` is dev-console only (nothing shipped), `logger.error(message, error, context)` also reports to Sentry when `VITE_SENTRY_DSN` is configured. Only two call sites use `.error` — `services/api.js`'s response interceptor (every API failure, one central place) and `components/ui/ErrorBoundary.jsx` (React render crashes, which never go through an API call) — every other call site uses `.warn`, deliberately, so a single failure is never reported to Sentry twice. `context` is always a small explicit object (a status code, a task id), never a raw error or response body — those can carry comment text, task titles, and page content that shouldn't go to a third-party service unscrubbed.
 
 **One env var lives on the other repo but affects this one**: the backend's `FRONTEND_URL` must point at this app's real deployed origin — it feeds the CORS allow-list, the Stripe checkout redirect, and password-reset email links. Update it in Render whenever this app's URL changes.
 
