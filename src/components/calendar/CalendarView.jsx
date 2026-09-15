@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, LayoutGrid, List } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
+import { logger } from '../../utils/logger';
 import { getPriorityDotClass } from '../../utils/priorityColors';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -148,7 +149,7 @@ const CalendarView = () => {
       await create({ title, priority: draft.priority, dueDate: due.toISOString() });
       setDraft({ title: '', priority: 'Medium' });
     } catch (err) {
-      console.error('Failed to add event', err);
+      logger.warn('Failed to add event', { error: err.message });
     } finally {
       setSaving(false);
     }
@@ -160,12 +161,12 @@ const CalendarView = () => {
     const next = new Date(day);
     next.setHours(12, 0, 0, 0);
     const nextIso = next.toISOString();
-    await patch(id, { dueDate: nextIso }).catch(() => {});
+    await patch(id, { dueDate: nextIso }).catch((e) => logger.warn('Task reschedule failed', { taskId: id, error: e.message }));
   };
 
   const handleDelete = async (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    await remove(id).catch((e) => console.error(e));
+    await remove(id).catch((e) => logger.warn('Calendar event delete failed', { taskId: id, error: e.message }));
   };
 
   const goAgenda = () => {

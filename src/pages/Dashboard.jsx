@@ -13,6 +13,7 @@ import KeyboardShortcuts from '../components/app/KeyboardShortcuts';
 import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
+import { logger } from '../utils/logger';
 import { TASK_CATEGORIES as CATEGORIES } from '../utils/constants';
 import { parseQuickAdd } from '../utils/quickAddParser';
 
@@ -167,7 +168,7 @@ const Dashboard = () => {
       notify('success', 'Task created', created.title);
     } catch (e) {
       notify('error', 'Could not create task');
-      console.error(e);
+      logger.warn('Task create failed', { error: e.message });
     }
   };
 
@@ -185,7 +186,7 @@ const Dashboard = () => {
       notify('success', 'Task updated', updated.title);
     } catch (e) {
       notify('error', 'Could not update task');
-      console.error(e);
+      logger.warn('Task update failed', { taskId: editingTask?.id, error: e.message });
     } finally {
       setEditingTask(null);
       setShowTaskForm(false);
@@ -198,7 +199,7 @@ const Dashboard = () => {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
     let undone = false;
     const timer = setTimeout(() => {
-      if (!undone) remove(task.id).catch((e) => console.error(e));
+      if (!undone) remove(task.id).catch((e) => logger.warn('Task delete failed', { taskId: task.id, error: e.message }));
     }, 5000);
     notify('info', 'Task deleted', task.title, {
       label: 'Undo',
@@ -212,7 +213,7 @@ const Dashboard = () => {
 
   const toggleComplete = async (task) => {
     const status = task.completed ? 'todo' : 'done';
-    await patch(task.id, { status }).catch((e) => console.error(e));
+    await patch(task.id, { status }).catch((e) => logger.warn('Task complete-toggle failed', { taskId: task.id, error: e.message }));
   };
 
   const toggleSelect = (id) => {
@@ -236,7 +237,7 @@ const Dashboard = () => {
     // hook), rather than one blanket optimistic pass with no rollback —
     // a task whose update actually fails no longer silently drifts out of
     // sync with the server.
-    await Promise.all(ids.map((id) => patch(id, { status: 'done' }).catch((e) => console.error(e))));
+    await Promise.all(ids.map((id) => patch(id, { status: 'done' }).catch((e) => logger.warn('Bulk complete failed for a task', { taskId: id, error: e.message }))));
     notify('success', `Completed ${ids.length} task${ids.length === 1 ? '' : 's'}`);
   };
 
@@ -248,7 +249,7 @@ const Dashboard = () => {
     exitSelectMode();
     let undone = false;
     const timer = setTimeout(() => {
-      if (!undone) ids.forEach((id) => remove(id).catch((e) => console.error(e)));
+      if (!undone) ids.forEach((id) => remove(id).catch((e) => logger.warn('Bulk delete failed for a task', { taskId: id, error: e.message })));
     }, 5000);
     notify('info', `Deleted ${ids.length} task${ids.length === 1 ? '' : 's'}`, '', {
       label: 'Undo',
@@ -265,7 +266,7 @@ const Dashboard = () => {
     const category = destination.droppableId;
     // `patch` rolls back on failure — previously a failed category change
     // here left the board silently out of sync with the server.
-    patch(draggableId, { category }).catch((e) => console.error(e));
+    patch(draggableId, { category }).catch((e) => logger.warn('Drag-drop category change failed', { taskId: draggableId, category, error: e.message }));
   };
 
   const grouped = useMemo(() => {
