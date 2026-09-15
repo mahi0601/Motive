@@ -38,7 +38,17 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // Everything now goes through src/utils/logger.js — see that file's
+      // header comment — so a stray console.* fails lint instead of quietly
+      // shipping an untracked, unstructured log line.
+      'no-console': 'error',
     },
+  },
+  {
+    // The one file actually allowed to talk to the real console — it's what
+    // every other module's console.* call was replaced with.
+    files: ['src/utils/logger.js'],
+    rules: { 'no-console': 'off' },
   },
   {
     // Build-tool config files run under Node, not the browser — they need

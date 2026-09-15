@@ -6,6 +6,7 @@ import { getPage } from '../services/pageService';
 import { saveTemplate } from '../services/templateService';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { usePageSocket } from '../hooks/usePageSocket';
+import { logger } from '../utils/logger';
 
 const PageView = () => {
   const { id } = useParams();
@@ -58,7 +59,7 @@ const PageView = () => {
       setSavedTpl(true);
       setTimeout(() => setSavedTpl(false), 2500);
     } catch (e) {
-      console.error('Failed to save template', e);
+      logger.warn('Failed to save template', { pageId: id, error: e.message });
     }
   };
 
