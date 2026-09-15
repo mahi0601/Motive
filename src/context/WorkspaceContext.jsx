@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { getPages, createPage, updatePage, deletePage } from '../services/pageService';
 import { getWorkspaces } from '../services/workspaceService';
 import { useAuth } from './AuthContext';
+import { logger } from '../utils/logger';
 
 const WorkspaceContext = createContext();
 
@@ -17,7 +18,7 @@ export const WorkspaceProvider = ({ children }) => {
       const { data } = await getPages();
       setPages(data.pages);
     } catch (e) {
-      console.error('Failed to load pages', e);
+      logger.warn('Failed to load pages', { error: e.message });
     } finally {
       setLoading(false);
     }
@@ -28,7 +29,7 @@ export const WorkspaceProvider = ({ children }) => {
       const { data } = await getWorkspaces();
       setWorkspace(data.workspaces[0] || null);
     } catch (e) {
-      console.error('Failed to load workspace', e);
+      logger.warn('Failed to load workspace', { error: e.message });
     }
   }, []);
 

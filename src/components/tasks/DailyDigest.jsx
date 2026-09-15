@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Calendar, Sunrise, Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getDailyDigest } from '../../services/digestService';
+import { logger } from '../../utils/logger';
 
 // Rules-based summary (see digest.service.js on the backend) — not an LLM
 // call, so this loads instantly and costs nothing per view.
@@ -18,7 +19,7 @@ const DailyDigest = ({ onFocusTask }) => {
         const { data } = await getDailyDigest();
         setDigest(data.digest);
       } catch (e) {
-        console.error('Failed to load daily digest', e);
+        logger.warn('Failed to load daily digest', { error: e.message });
       } finally {
         setLoading(false);
       }

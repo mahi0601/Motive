@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import Block from './Block';
 import SlashMenu from './SlashMenu';
+import { logger } from '../../utils/logger';
 import {
   getBlocks,
   createBlock,
@@ -44,7 +45,7 @@ const BlockEditor = ({ pageId }) => {
   const scheduleSave = useCallback((id, patch) => {
     clearTimeout(saveTimers.current[id]);
     saveTimers.current[id] = setTimeout(() => {
-      updateBlock(id, patch).catch((e) => console.error('save block failed', e));
+      updateBlock(id, patch).catch((e) => logger.warn('Block autosave failed', { blockId: id, error: e.message }));
     }, 500);
   }, []);
 
@@ -105,7 +106,7 @@ const BlockEditor = ({ pageId }) => {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
     if (idx > 0) setFocusId(siblings[idx - 1].id);
     else if (block.parentBlockId) setFocusId(block.parentBlockId); // last child — focus the toggle itself
-    await deleteBlock(id).catch((e) => console.error(e));
+    await deleteBlock(id).catch((e) => logger.warn('Block delete failed', { blockId: id, error: e.message }));
   };
 
   // Table/embed carry a different content shape than the plain-text blocks —
@@ -119,7 +120,7 @@ const BlockEditor = ({ pageId }) => {
   const handleConvert = (id, type) => {
     const content = defaultContentFor(type);
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, type, content } : b)));
-    updateBlock(id, { type, content }).catch((e) => console.error(e));
+    updateBlock(id, { type, content }).catch((e) => logger.warn('Block type-convert failed', { blockId: id, type, error: e.message }));
     setFocusId(id);
   };
 
@@ -128,7 +129,7 @@ const BlockEditor = ({ pageId }) => {
       prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, checked } } : b))
     );
     updateBlock(id, { content: { ...blocks.find((b) => b.id === id)?.content, checked } }).catch(
-      (e) => console.error(e)
+      (e) => logger.warn('Checkbox toggle failed', { blockId: id, error: e.message })
     );
   };
 
@@ -137,7 +138,7 @@ const BlockEditor = ({ pageId }) => {
     if (!block) return;
     const collapsed = !block.content?.collapsed;
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, collapsed } } : b)));
-    updateBlock(id, { content: { ...block.content, collapsed } }).catch((e) => console.error(e));
+    updateBlock(id, { content: { ...block.content, collapsed } }).catch((e) => logger.warn('Toggle collapse-state save failed', { blockId: id, error: e.message }));
   };
 
   // Tab: indent under the immediately preceding top-level sibling, but only
@@ -152,7 +153,7 @@ const BlockEditor = ({ pageId }) => {
     const kids = childrenOf(prevSibling.id);
     const position = kids.length;
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, parentBlockId: prevSibling.id, position } : b)));
-    updateBlock(id, { parentBlockId: prevSibling.id, position }).catch((e) => console.error(e));
+    updateBlock(id, { parentBlockId: prevSibling.id, position }).catch((e) => logger.warn('Block indent failed', { blockId: id, error: e.message }));
     // Expand the toggle so the just-indented block is actually visible.
     if (prevSibling.content?.collapsed) handleToggleCollapse(prevSibling.id);
   };
@@ -164,7 +165,7 @@ const BlockEditor = ({ pageId }) => {
     const parentIdx = topLevel.findIndex((b) => b.id === block.parentBlockId);
     const position = parentIdx + 1;
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, parentBlockId: null, position } : b)));
-    updateBlock(id, { parentBlockId: null, position }).catch((e) => console.error(e));
+    updateBlock(id, { parentBlockId: null, position }).catch((e) => logger.warn('Block outdent failed', { blockId: id, error: e.message }));
     persistOrderFor(null, [...topLevel.slice(0, position), block, ...topLevel.slice(position)]);
   };
 
