@@ -76,7 +76,7 @@ const Header = () => {
               className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-light-border/40 dark:hover:bg-white/5"
               title="Profile"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-gradient text-sm font-bold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">
                 {initial}
               </span>
               <span className="hidden max-w-[120px] truncate text-sm font-medium text-light-text dark:text-dark-text sm:inline">
@@ -100,9 +100,16 @@ const Header = () => {
             >
               Login
             </Link>
+            {/* Tonal, not gradient, for consistency with the rest of the
+                gradient-budget pass (PLAN §4) — chrome/nav elements read as
+                secondary to whatever a screen's one primary action is. (This
+                whole `!user` branch is currently unreachable: Header only
+                renders inside DashboardLayout, which sits behind
+                ProtectedRoute, so it never renders logged-out — worth
+                knowing if Header is ever reused outside that layout.) */}
             <Link
               to="/register"
-              className="rounded-lg bg-brand-gradient px-3 py-1.5 text-sm font-medium text-white shadow-brand-sm transition hover:shadow-brand"
+              className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700"
             >
               Sign Up
             </Link>

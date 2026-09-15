@@ -19,7 +19,7 @@ const Privacy = () => (
 
       <div className="mb-6 flex items-center gap-3">
         <LogoMark size={36} />
-        <h1 className="font-display text-3xl font-extrabold text-light-text dark:text-white">Privacy Policy</h1>
+        <h1 className="font-display text-display font-extrabold text-light-text dark:text-white">Privacy Policy</h1>
       </div>
       <p className="text-sm text-light-muted">Last updated: September 8, 2026</p>
 

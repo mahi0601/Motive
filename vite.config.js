@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -10,7 +13,31 @@ import { sentryVitePlugin } from '@sentry/vite-plugin'
 // Netlify build environment to turn this on.
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 
+// A release identifier shared by two things that otherwise have no reason
+// to agree: the client's `Sentry.init({ release })` (so an error event is
+// tagged with the build that produced it) and this same plugin's uploaded
+// sourcemaps (so Sentry can actually match a minified stack trace back to
+// source for that release). Netlify sets COMMIT_REF automatically; falling
+// back to the local git SHA covers `npm run build` on a dev machine, and
+// package.json's version is the last resort (e.g. no .git present at all).
+function resolveRelease() {
+  if (process.env.COMMIT_REF) return process.env.COMMIT_REF.slice(0, 12);
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8'));
+    return pkg.version;
+  }
+}
+const release = resolveRelease();
+
 export default defineConfig({
+  // Inlined into the client bundle (see src/sentry.js) — deliberately NOT a
+  // real .env var, since it has to be exactly the same string this file
+  // hands the Sentry plugin below, not something set independently.
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(release),
+  },
   plugins: [
     react(),
     VitePWA({
@@ -18,7 +45,7 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['motive.svg'],
       manifest: {
-        name: 'Motive — Think. Plan. Move.',
+        name: 'Motive — Turn intent into momentum.',
         short_name: 'Motive',
         description: 'A calm, fast workspace to capture ideas, organize pages, and get things done.',
         id: '/',
@@ -73,6 +100,9 @@ export default defineConfig({
       project: process.env.SENTRY_PROJECT,
       authToken: sentryAuthToken,
       disable: !sentryAuthToken,
+      release: {
+        name: release,
+      },
       sourcemaps: {
         filesToDeleteAfterUpload: ['dist/**/*.map'],
       },

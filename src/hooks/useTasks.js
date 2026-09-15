@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getAllTasks, createTask, updateTask, deleteTask } from '../services/taskService';
+import { logger } from '../utils/logger';
 
 // Shared task-list state + CRUD — previously Dashboard.jsx and
 // CalendarView.jsx each independently fetched/created/updated/deleted tasks
@@ -21,7 +22,7 @@ export function useTasks() {
       setTasks(items);
       return items;
     } catch (e) {
-      console.error('Failed to load tasks', e);
+      logger.warn('Failed to load tasks', { error: e.message });
       return [];
     } finally {
       setLoading(false);
@@ -56,7 +57,10 @@ export function useTasks() {
       setTasks((prev) => prev.map((t) => (t.id === id ? data.task : t)));
       return data.task;
     } catch (e) {
-      console.error('Failed to update task', e);
+      // Not logged here — rethrown to the caller, which is always the one
+      // that actually knows what this patch was for (toggle/bulk/drag) and
+      // already logs it with that context (see Dashboard.jsx). Logging here
+      // too would just duplicate the same failure under a generic message.
       if (previous) setTasks((prev) => prev.map((t) => (t.id === id ? previous : t)));
       throw e;
     }

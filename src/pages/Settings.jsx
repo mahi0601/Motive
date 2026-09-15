@@ -9,6 +9,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
 import { createCheckoutSession, reconcileCheckoutSession } from '../services/paymentService';
 import { inviteMember } from '../services/workspaceService';
+import { logger } from '../utils/logger';
 
 const Settings = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -73,7 +74,7 @@ const Settings = () => {
     if (upgradeStatus !== 'success') return;
     const sessionId = searchParams.get('session_id');
     (sessionId ? reconcileCheckoutSession(sessionId) : Promise.resolve())
-      .catch((e) => console.error('Failed to reconcile checkout session', e))
+      .catch((e) => logger.warn('Failed to reconcile checkout session', { error: e.message }))
       .finally(() => {
         refreshUser().finally(() => {
           setSearchParams({}, { replace: true });
@@ -143,7 +144,7 @@ const Settings = () => {
     <>
       <div className="flex justify-end px-4">
         <Menu as="div" className="relative inline-block text-left z-50">
-          <Menu.Button className="rounded-full w-10 h-10 bg-brand-gradient text-white flex items-center justify-center transition duration-300 shadow-brand-sm hover:shadow-brand">
+          <Menu.Button className="rounded-full w-10 h-10 bg-brand-500 text-white flex items-center justify-center transition duration-300 hover:bg-brand-600">
             {user ? (
               <div className="w-full h-full rounded-full bg-brand-500 flex items-center justify-center text-sm font-bold">
                 {user.name.charAt(0).toUpperCase()}
@@ -192,7 +193,7 @@ const Settings = () => {
         transition={{ duration: 0.5 }}
         className="text-light-text dark:text-dark-text p-8 rounded-2xl shadow-lg transition-all duration-300 border border-light-border dark:border-dark-border font-inter"
       >
-        <h2 className="text-3xl font-extrabold tracking-tight mb-6 flex items-center gap-3 text-light-text dark:text-dark-text">
+        <h2 className="font-display text-display font-extrabold tracking-tight mb-6 flex items-center gap-3 text-light-text dark:text-dark-text">
           <SettingsIcon className="text-brand-500 animate-spin-slow" />
           Settings
         </h2>
@@ -237,7 +238,7 @@ const Settings = () => {
                 <button
                   onClick={handleEnableAlerts}
                   disabled={notifPermission === 'denied' || notifPermission === 'unsupported'}
-                  className="px-4 py-2 text-sm rounded-lg font-medium bg-light-surface dark:bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-gradient hover:text-white hover:border-transparent transition-all duration-300 shadow-sm hover:shadow-md dark:text-white dark:border-white disabled:opacity-60 disabled:hover:bg-light-surface disabled:hover:text-brand-600 dark:disabled:hover:bg-transparent"
+                  className="px-4 py-2 text-sm rounded-lg font-medium bg-light-surface dark:bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-600 hover:text-white hover:border-transparent transition-all duration-300 shadow-sm hover:shadow-md dark:text-white dark:border-white disabled:opacity-60 disabled:hover:bg-light-surface disabled:hover:text-brand-600 dark:disabled:hover:bg-transparent"
                 >
                   <Mail className="inline-block mr-1" /> Enable Alerts
                 </button>
@@ -277,7 +278,7 @@ const Settings = () => {
                 <button
                   type="submit"
                   disabled={inviting}
-                  className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white shadow-sm hover:shadow-md transition-all disabled:opacity-60"
+                  className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-60"
                 >
                   {inviting ? 'Inviting…' : 'Invite'}
                 </button>
@@ -321,6 +322,22 @@ const Settings = () => {
                 : 'Unlock Pro features with a single one-time payment, no subscription.'}
             </p>
 
+            {/* Naming what Pro actually unlocks — was previously left
+                implicit (just "Pro features"), which is a bad look when
+                there's more than one gate to be honest about. */}
+            {!user?.isPro && (
+              <ul className="mt-3 space-y-1.5 text-sm text-light-text dark:text-dark-text">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 shrink-0 text-brand-500" />
+                  Month and quarter views on Momentum, not just this week
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 shrink-0 text-brand-500" />
+                  Invite more than {FREE_MEMBER_LIMIT} workspace members
+                </li>
+              </ul>
+            )}
+
             {!user?.isPro && (
               <>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -343,6 +360,10 @@ const Settings = () => {
                 <p className="text-xs text-light-muted dark:text-dark-muted mt-2">
                   Actual methods shown at checkout depend on what's enabled for this Stripe account — this is just what each currency makes possible.
                 </p>
+                {/* The one gradient on this screen — the highest-value action
+                    here, so it's the one that keeps the spotlight (see
+                    PLAN §4). Avatar badge / Enable Alerts / Invite above are
+                    all tonal now for that reason. */}
                 <button
                   onClick={handleUpgrade}
                   disabled={upgrading}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Trash2, Search, FileStack } from 'lucide-react';
 import { getTemplates, createPageFromTemplate, deleteTemplate } from '../../services/templateService';
+import { logger } from '../../utils/logger';
 
 // Accent → thumbnail gradient + marker color (Tailwind classes).
 const ACCENTS = {
@@ -114,7 +115,7 @@ const TemplateGallery = ({ onUse }) => {
       const { data: res } = await getTemplates();
       setData({ builtIn: res.builtIn || [], custom: res.custom || [] });
     } catch (e) {
-      console.error('Failed to load templates', e);
+      logger.warn('Failed to load templates', { error: e.message });
     } finally {
       setLoading(false);
     }
@@ -130,7 +131,7 @@ const TemplateGallery = ({ onUse }) => {
       const { data: res } = await createPageFromTemplate(tpl.id);
       onUse?.(res.page);
     } catch (e) {
-      console.error('Failed to use template', e);
+      logger.warn('Failed to use template', { templateId: tpl.id, error: e.message });
     } finally {
       setBusyId(null);
     }
@@ -138,7 +139,7 @@ const TemplateGallery = ({ onUse }) => {
 
   const handleDelete = async (tpl) => {
     if (!window.confirm(`Delete template "${tpl.name}"?`)) return;
-    await deleteTemplate(tpl.id).catch((e) => console.error(e));
+    await deleteTemplate(tpl.id).catch((e) => logger.warn('Failed to delete template', { templateId: tpl.id, error: e.message }));
     load();
   };
 

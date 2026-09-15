@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { setAccessToken, clearAccessToken, refreshSession } from '../services/api';
 import { logout as logoutRequest } from '../services/authService';
 import { getProfile } from '../services/userService';
+import { logger } from '../utils/logger';
 
 const AuthContext = createContext();
 
@@ -32,7 +33,13 @@ export const AuthProvider = ({ children }) => {
       try {
         const { user: restored } = await refreshSession();
         if (active) setUser(restored);
-      } catch {
+      } catch (err) {
+        // Routine for a logged-out visitor (no refresh cookie yet) — warn,
+        // not error, so this doesn't report to Sentry on every anonymous
+        // page load. Was fully silent before; this at least makes a
+        // genuinely unexpected bootstrap failure (not just "no cookie")
+        // visible in dev.
+        logger.warn('Session bootstrap refresh failed', { status: err.response?.status });
         if (active) setUser(null);
       } finally {
         if (active) setBootstrapping(false);
