@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Clock, Edit, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getActivity } from '../../services/activityService';
+import { logger } from '../../utils/logger';
 
 const ActivityFeed = ({ limit = 5 }) => {
   const { bootstrapping, isAuthenticated } = useAuth();
@@ -20,7 +21,7 @@ const ActivityFeed = ({ limit = 5 }) => {
         const { data } = await getActivity({ limit });
         setActivities(data.items || []);
       } catch (e) {
-        console.error('Failed to load activity', e);
+        logger.warn('Failed to load activity', { error: e.message });
       } finally {
         setLoading(false);
       }

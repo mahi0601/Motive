@@ -181,7 +181,7 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
                   onClick={() => setFormData({ ...formData, category: cat })}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     formData.category === cat
-                      ? 'bg-brand-gradient text-white shadow-md'
+                      ? 'bg-brand-600 text-white shadow-sm'
                       : 'bg-light-border/40 dark:bg-dark-raised text-light-text dark:text-dark-text hover:bg-light-border dark:hover:bg-dark-border'
                   }`}
                 >

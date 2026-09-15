@@ -18,15 +18,15 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, LayoutGrid, List } from 'lucide-react';
 import { useTasks } from '../../hooks/useTasks';
+import { logger } from '../../utils/logger';
+import { getPriorityDotClass } from '../../utils/priorityColors';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-const PRIORITY = {
-  High: 'bg-rose-500',
-  Medium: 'bg-spark-500',
-  Low: 'bg-brand-500',
-};
-const dotColor = (p) => PRIORITY[p] || PRIORITY.Low;
+// Was its own divergent map here (High: rose, Medium: spark, Low: brand) —
+// semantically inverted against priorityColors.js (High=spark/attention,
+// Medium=brand, Low=neutral) and `rose` isn't in the design system at all.
+const dotColor = (p) => getPriorityDotClass(p);
 
 const dayKey = (d) => format(d, 'yyyy-MM-dd');
 const groupLabel = (d) =>
@@ -149,7 +149,7 @@ const CalendarView = () => {
       await create({ title, priority: draft.priority, dueDate: due.toISOString() });
       setDraft({ title: '', priority: 'Medium' });
     } catch (err) {
-      console.error('Failed to add event', err);
+      logger.warn('Failed to add event', { error: err.message });
     } finally {
       setSaving(false);
     }
@@ -161,12 +161,12 @@ const CalendarView = () => {
     const next = new Date(day);
     next.setHours(12, 0, 0, 0);
     const nextIso = next.toISOString();
-    await patch(id, { dueDate: nextIso }).catch(() => {});
+    await patch(id, { dueDate: nextIso }).catch((e) => logger.warn('Task reschedule failed', { taskId: id, error: e.message }));
   };
 
   const handleDelete = async (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    await remove(id).catch((e) => console.error(e));
+    await remove(id).catch((e) => logger.warn('Calendar event delete failed', { taskId: id, error: e.message }));
   };
 
   const goAgenda = () => {
@@ -259,7 +259,7 @@ const CalendarView = () => {
                 >
                   <span
                     className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition
-                      ${today ? 'bg-brand-gradient font-semibold text-white shadow-brand-sm' : ''}
+                      ${today ? 'bg-brand-600 font-semibold text-white' : ''}
                       ${!today && isSelected ? 'bg-brand-100 font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200' : ''}
                       ${!today && !isSelected && inMonth ? 'text-light-text dark:text-dark-text' : ''}
                       ${!inMonth ? 'text-light-muted dark:text-dark-muted' : ''}`}

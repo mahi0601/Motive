@@ -94,11 +94,17 @@ const KeyboardShortcuts = () => {
         )}
       </AnimatePresence>
 
+      {/* Tonal, not gradient — a "?" help FAB is a low-priority utility, not
+          a screen's primary action, so it shouldn't outrank whatever real
+          CTA is on screen (see PLAN §4). Also a candidate for `hidden
+          lg:block` once mobile has its own bottom-tab-bar FAB (PLAN §5,
+          Phase 4) — this button already sits in that exact bottom-right
+          slot. */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-3 bg-brand-gradient text-white rounded-full shadow-lg hover:shadow-xl transition-all z-40"
+        className="fixed bottom-6 right-6 p-3 rounded-full border border-light-border bg-light-surface text-light-text shadow-md transition-all hover:border-brand-500 hover:text-brand-600 dark:border-dark-border dark:bg-dark-raised dark:text-dark-text z-40"
         title="Keyboard Shortcuts (?)"
       >
         <Command className="w-5 h-5" />

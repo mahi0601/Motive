@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { CheckSquare, Plus } from 'lucide-react';
 import SubtaskItem from './SubtaskItem';
 import { getSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../../services/subtaskService';
+import { logger } from '../../utils/logger';
 
 const SubtaskList = ({ taskId }) => {
   const [subtasks, setSubtasks] = useState([]);
@@ -16,7 +17,7 @@ const SubtaskList = ({ taskId }) => {
         const { data } = await getSubtasks(taskId);
         setSubtasks(data.subtasks || []);
       } catch (e) {
-        console.error('Failed to load subtasks', e);
+        logger.warn('Failed to load subtasks', { taskId, error: e.message });
       } finally {
         setLoading(false);
       }
@@ -31,7 +32,7 @@ const SubtaskList = ({ taskId }) => {
       setSubtasks((prev) => [...prev, data.subtask]);
       setTitle('');
     } catch (e) {
-      console.error('Failed to add subtask', e);
+      logger.warn('Failed to add subtask', { taskId, error: e.message });
     }
   };
 
@@ -41,7 +42,7 @@ const SubtaskList = ({ taskId }) => {
     try {
       await updateSubtask(subtask.id, { done: next });
     } catch (e) {
-      console.error('Failed to update subtask', e);
+      logger.warn('Failed to update subtask', { subtaskId: subtask.id, error: e.message });
       setSubtasks((prev) => prev.map((s) => (s.id === subtask.id ? { ...s, done: !next } : s))); // roll back
     }
   };
@@ -51,7 +52,7 @@ const SubtaskList = ({ taskId }) => {
     try {
       await deleteSubtask(subtask.id);
     } catch (e) {
-      console.error('Failed to delete subtask', e);
+      logger.warn('Failed to delete subtask', { subtaskId: subtask.id, error: e.message });
       setSubtasks((prev) => [...prev, subtask]); // roll back
     }
   };
@@ -67,8 +68,11 @@ const SubtaskList = ({ taskId }) => {
 
       {!loading && subtasks.length > 0 && (
         <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-light-border dark:bg-dark-border">
+          {/* Solid, not gradient — this renders nested inside TaskForm's
+              modal, which already spends its one gradient on the
+              Create/Update Task submit button (see PLAN §4). */}
           <div
-            className="h-full rounded-full bg-brand-gradient transition-all"
+            className="h-full rounded-full bg-brand-500 transition-all"
             style={{ width: `${(doneCount / subtasks.length) * 100}%` }}
           />
         </div>

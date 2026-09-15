@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { BarChart2, Calendar, Grid, Home, Menu, Settings, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { PRIMARY_NAV, SECONDARY_NAV } from '../../config/nav';
 import PageTree from '../editor/PageTree';
 import Logo from '../ui/Logo';
 
@@ -8,14 +9,6 @@ const Sidebar = () => {
   // Drawer state only matters on mobile; on lg+ the sidebar is always visible.
   const [isOpen, setIsOpen] = useState(false);
   const closeOnMobile = () => setIsOpen(false);
-
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <Home /> },
-    { name: 'Calendar', path: '/calendar', icon: <Calendar /> },
-    { name: 'Statistics', path: '/stats', icon: <BarChart2 /> },
-    { name: 'Templates', path: '/templates', icon: <Grid /> },
-    { name: 'Settings', path: '/settings', icon: <Settings /> },
-  ];
 
   return (
     <>
@@ -60,7 +53,7 @@ const Sidebar = () => {
         </div>
 
         <ul className="space-y-1.5">
-          {navItems.map((item) => (
+          {PRIMARY_NAV.map((item) => (
             <li key={item.path}>
               <NavLink
                 to={item.path}
@@ -69,20 +62,45 @@ const Sidebar = () => {
                   `flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition
                   ${
                     isActive
-                      ? 'bg-brand-gradient text-white shadow-brand-sm'
-                      : 'text-light-text hover:bg-light-border/40 dark:text-dark-muted dark:hover:bg-white/5'
+                      ? 'border-l-2 border-brand-500 bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                      : 'border-l-2 border-transparent text-light-text hover:bg-light-border/40 dark:text-dark-muted dark:hover:bg-white/5'
                   }`
                 }
               >
-                {item.icon}
-                {item.name}
+                <item.Icon className="h-[18px] w-[18px]" />
+                {item.label}
               </NavLink>
             </li>
           ))}
         </ul>
 
-        {/* Notion-style nested page tree */}
+        {/* Notion-style nested page tree ("Docs") */}
         <PageTree onNavigate={closeOnMobile} />
+
+        {/* Occasional destinations — deliberately de-emphasized (smaller,
+            muted, no active-gradient treatment) so they read as secondary
+            to the primary nav above. See config/nav.js. */}
+        <ul className="mt-auto space-y-1 border-t border-light-border pt-3 dark:border-dark-border">
+          {SECONDARY_NAV.map((item) => (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                onClick={closeOnMobile}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 rounded-lg px-4 py-2 text-xs font-medium transition
+                  ${
+                    isActive
+                      ? 'text-brand-600 dark:text-brand-400'
+                      : 'text-light-muted hover:text-light-text dark:text-dark-muted dark:hover:text-dark-text'
+                  }`
+                }
+              >
+                <item.Icon className="h-4 w-4" />
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </aside>
     </>
   );

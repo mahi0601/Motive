@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { File, Paperclip, X } from 'lucide-react';
 import AttachmentUploader from './AttachmentUploader';
 import { getTaskFiles, uploadFile, deleteFile } from '../../services/fileUploadService';
+import { logger } from '../../utils/logger';
 
 const AttachmentList = ({ taskId }) => {
   const [files, setFiles] = useState([]);
@@ -16,7 +17,7 @@ const AttachmentList = ({ taskId }) => {
         const { data } = await getTaskFiles(taskId);
         setFiles(data.files || []);
       } catch (e) {
-        console.error('Failed to load attachments', e);
+        logger.warn('Failed to load attachments', { taskId, error: e.message });
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ const AttachmentList = ({ taskId }) => {
     try {
       await deleteFile(file.id);
     } catch (e) {
-      console.error('Failed to delete attachment', e);
+      logger.warn('Failed to delete attachment', { fileId: file.id, error: e.message });
       setFiles((prev) => [file, ...prev]); // roll back
     }
   };
