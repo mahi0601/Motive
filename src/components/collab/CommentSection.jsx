@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import { getComments, addComment } from '../../services/commentService';
 import { getWorkspaces } from '../../services/workspaceService';
 import { useAuth } from '../../context/AuthContext';
+import { logger } from '../../utils/logger';
 
 // Mentions are authored inline as @[Display Name](userId) and rendered back
 // as a highlighted chip — same token format the backend parses to decide
@@ -43,7 +44,7 @@ const CommentSection = ({ taskId }) => {
         const { data } = await getComments(taskId);
         setComments(data.comments || []);
       } catch (e) {
-        console.error('Failed to load comments', e);
+        logger.warn('Failed to load comments', { taskId, error: e.message });
       } finally {
         setLoading(false);
       }
@@ -57,7 +58,7 @@ const CommentSection = ({ taskId }) => {
         const all = (data.workspaces[0]?.members || []).map((m) => m.user).filter(Boolean);
         setMembers(all);
       } catch (e) {
-        console.error('Failed to load workspace members', e);
+        logger.warn('Failed to load workspace members', { error: e.message });
       }
     })();
   }, [taskId]);
@@ -99,7 +100,7 @@ const CommentSection = ({ taskId }) => {
       setComments((prev) => [...prev, data.comment]);
       setText('');
     } catch (e) {
-      console.error('Failed to add comment', e);
+      logger.warn('Failed to add comment', { taskId, error: e.message });
     }
   };
 

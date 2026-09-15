@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Bell, CheckCircle, Info, MessageSquare, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getNotifications, markNotificationRead, clearNotifications } from '../../services/notificationService';
+import { logger } from '../../utils/logger';
 
 const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
   const { bootstrapping, isAuthenticated } = useAuth();
@@ -23,7 +24,7 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
       setUnreadCountState(data.unreadCount || 0);
       onUnreadChange?.(data.unreadCount || 0);
     } catch (e) {
-      console.error('Failed to load notifications', e);
+      logger.warn('Failed to load notifications', { error: e.message });
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
     try {
       await markNotificationRead(id);
     } catch (e) {
-      console.error('Failed to mark notification read', e);
+      logger.warn('Failed to mark notification read', { notificationId: id, error: e.message });
     }
   };
 
@@ -62,7 +63,7 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
     try {
       await clearNotifications();
     } catch (e) {
-      console.error('Failed to clear notifications', e);
+      logger.warn('Failed to clear notifications', { error: e.message });
       setNotifications(prev); // roll back on failure
       setUnreadCountState(prevUnread);
       onUnreadChange?.(prevUnread);

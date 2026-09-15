@@ -13,6 +13,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { CHART_PRIMARY, SPARK, chartAxisColor } from '../utils/chartColors';
 import { fadeUp, staggerDelay } from '../utils/motion';
+import { logger } from '../utils/logger';
 
 // Keep in sync with PRO_ONLY_PERIODS in motive-backend/src/services/momentum.service.js
 // — the backend is the real gate (it downgrades the request and returns
@@ -133,7 +134,7 @@ const Momentum = () => {
     getMomentum(period)
       .then((res) => { if (active) setData(res.data); })
       .catch((err) => {
-        console.error('Error fetching momentum:', err);
+        logger.warn('Failed to fetch momentum', { period, error: err.message });
         if (active) setError(true);
       })
       .finally(() => { if (active) setLoading(false); });

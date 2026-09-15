@@ -1,6 +1,6 @@
 import React from 'react';
 import { LogoMark } from './Logo';
-import { Sentry, isSentryEnabled } from '../../sentry';
+import { logger } from '../../utils/logger';
 
 /**
  * Global error boundary — catches any render/runtime error in the React tree
@@ -18,10 +18,10 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('Uncaught UI error:', error, info?.componentStack);
-    if (isSentryEnabled) {
-      Sentry.captureException(error, { extra: { componentStack: info?.componentStack } });
-    }
+    // The one case in this app where logger.error is exactly right at the
+    // call site (not just via the api.js chokepoint) — a React render crash
+    // never goes through an API call, so nothing else reports it to Sentry.
+    logger.error('Uncaught UI error', error, { componentStack: info?.componentStack });
   }
 
   handleReload = () => {

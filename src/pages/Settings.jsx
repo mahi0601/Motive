@@ -9,6 +9,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
 import { createCheckoutSession, reconcileCheckoutSession } from '../services/paymentService';
 import { inviteMember } from '../services/workspaceService';
+import { logger } from '../utils/logger';
 
 const Settings = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -73,7 +74,7 @@ const Settings = () => {
     if (upgradeStatus !== 'success') return;
     const sessionId = searchParams.get('session_id');
     (sessionId ? reconcileCheckoutSession(sessionId) : Promise.resolve())
-      .catch((e) => console.error('Failed to reconcile checkout session', e))
+      .catch((e) => logger.warn('Failed to reconcile checkout session', { error: e.message }))
       .finally(() => {
         refreshUser().finally(() => {
           setSearchParams({}, { replace: true });
