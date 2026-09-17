@@ -58,6 +58,8 @@ Set in the Netlify dashboard (Site settings → Environment variables):
 
 Nothing to set for `VITE_APP_VERSION` — `vite.config.js` derives it automatically from Netlify's `COMMIT_REF` (falling back to the local git SHA) and inlines it into the bundle, so every Sentry event is tagged with the exact release the uploaded sourcemaps belong to.
 
+There's also a live Vercel deployment of this repo (linked at the top of this README) connected via Vercel's dashboard GitHub integration, outside any committed config — it auto-deploys on every push same as Netlify does. It currently has no `VITE_API_BASE_URL` set, so anything that talks to the API (login, tasks, etc.) won't work there yet; treat Netlify as the canonical, fully-configured deployment until that's set.
+
 **One env var lives on the other repo but affects this one**: the backend's `FRONTEND_URL` must point at this app's real deployed origin — it feeds the CORS allow-list, the Stripe checkout redirect, and password-reset email links.
 
 ### Logging
