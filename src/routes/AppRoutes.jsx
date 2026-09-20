@@ -13,6 +13,7 @@ import Profile from '../pages/Profile';
 import Templates from '../pages/Templates';
 import PageView from '../pages/PageView';
 import Privacy from '../pages/Privacy';
+import Invite from '../pages/Invite';
 import ProtectedRoute from './ProtectedRoute';
 import DashboardLayout from '../layout/DashboardLayout';
 import AuthLayout from '../layout/AuthLayout';
@@ -25,6 +26,10 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/privacy" element={<Privacy />} />
+      {/* Deliberately outside ProtectedRoute and AuthLayout — it has to work
+          for someone with no account yet, and handles its own
+          authenticated/unauthenticated branching (see Invite.jsx). */}
+      <Route path="/invite/:token" element={<Invite />} />
       {/* Permanent alias: "Statistics" was renamed to "Momentum" (see
           config/nav.js). Kept indefinitely, not just "one release" — an
           installed PWA can keep an old service-worker-cached shell for a

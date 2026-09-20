@@ -483,7 +483,7 @@ const Dashboard = () => {
           </button>
           <button
             onClick={bulkDelete}
-            className="rounded-full border border-red-300 px-4 py-1.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+            className="rounded-full border border-semantic-danger-200 px-4 py-1.5 text-sm font-medium text-semantic-danger-500 hover:bg-semantic-danger-50 dark:border-semantic-danger-500/40 dark:text-semantic-danger-dark dark:hover:bg-semantic-danger-500/10"
           >
             Delete
           </button>

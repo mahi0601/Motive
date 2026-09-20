@@ -72,7 +72,7 @@ const AttachmentList = ({ taskId }) => {
               </a>
               <button
                 onClick={() => handleDelete(f)}
-                className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-red-500 group-hover:opacity-100 dark:hover:bg-dark-border"
+                className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark group-hover:opacity-100 dark:hover:bg-dark-border"
                 aria-label="Remove attachment"
               >
                 <X className="h-4 w-4" />
@@ -84,7 +84,7 @@ const AttachmentList = ({ taskId }) => {
 
       <AttachmentUploader onUpload={handleUpload} />
       {uploading && <p className="mt-1 text-xs text-light-muted">Uploading…</p>}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
     </div>
   );
 };

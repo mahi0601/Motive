@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { User, Mail, Lock, AlertCircle } from 'lucide-react';
 import AuthField from '../../components/ui/AuthField';
 import GoogleSignInButton from '../../components/ui/GoogleSignInButton';
@@ -21,7 +21,10 @@ const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong'];
 const STRENGTH_COLOR = ['', 'bg-semantic-danger-500', 'bg-semantic-warning-500', 'bg-brand-400', 'bg-semantic-success-500'];
 
 const Register = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [searchParams] = useSearchParams();
+  // Arriving from an invite link prefills the email it was sent to — see
+  // Invite.jsx, which builds this URL.
+  const [form, setForm] = useState({ name: '', email: searchParams.get('email') || '', password: '' });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,7 +56,10 @@ const Register = () => {
       const { data } = await registerRequest(form);
       // Backend returns an access token on register → log the user straight in.
       setAuthUser(data.user, data.accessToken);
-      navigate('/dashboard', { replace: true });
+      // Same hand-off as Login.jsx: let Invite.jsx do the actual accept once
+      // this person is authenticated, rather than duplicating that here.
+      const inviteToken = searchParams.get('invite');
+      navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard', { replace: true });
     } catch (err) {
       setServerError(err?.response?.data?.message || 'Could not create your account.');
     } finally {

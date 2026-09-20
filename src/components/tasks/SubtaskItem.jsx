@@ -27,7 +27,7 @@ const SubtaskItem = ({ subtask, onToggle, onDelete }) => {
       {onDelete && (
         <button
           onClick={onDelete}
-          className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-red-500 group-hover:opacity-100 dark:hover:bg-dark-raised"
+          className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark group-hover:opacity-100 dark:hover:bg-dark-raised"
           aria-label="Delete subtask"
         >
           <X className="h-4 w-4" />

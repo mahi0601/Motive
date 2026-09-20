@@ -7,6 +7,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { useNotificationSocket } from '../../context/NotificationSocketContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import NotificationCenter from '../notifications/NotificationCenter';
 
 const Header = () => {
@@ -15,6 +16,7 @@ const Header = () => {
   const { canInstall, promptInstall } = useInstallPrompt();
   const [notifOpen, setNotifOpen] = useState(false);
   const { unreadCount, setUnreadCount } = useNotificationSocket();
+  const { workspace, workspaces, switchWorkspace } = useWorkspace();
 
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
@@ -28,9 +30,27 @@ const Header = () => {
       className="z-30 flex w-full items-center justify-between border-b border-light-border bg-light-surface pb-3 pl-16 pr-4 pt-[calc(0.75rem+env(safe-area-inset-top))] dark:border-dark-border dark:bg-dark-surface sm:pr-6 lg:pl-6"
     >
       {/* pl-16 on mobile leaves room for the floating menu button */}
-      <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
-        <Logo size={28} />
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
+          <Logo size={28} />
+        </Link>
+        {/* Only appears once it's actually needed — a solo user never sees
+            it. See WorkspaceContext.jsx#switchWorkspace: without this, a
+            workspace joined via invite would be created correctly on the
+            backend and then never be reachable in the UI. */}
+        {workspaces.length > 1 && (
+          <select
+            value={workspace?.id || ''}
+            onChange={(e) => switchWorkspace(e.target.value)}
+            className="hidden max-w-[160px] truncate rounded-lg border border-light-border bg-light-surface px-2 py-1.5 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text sm:block"
+            aria-label="Switch workspace"
+          >
+            {workspaces.map((w) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
 
       <nav className="flex items-center gap-2 sm:gap-3">
         {canInstall && (
@@ -85,7 +105,7 @@ const Header = () => {
             </Link>
             <button
               onClick={logout}
-              className="rounded-lg p-2 text-light-muted transition hover:bg-light-border/40 hover:text-red-500 dark:text-dark-muted dark:hover:bg-white/5"
+              className="rounded-lg p-2 text-light-muted transition hover:bg-light-border/40 hover:text-light-text dark:text-dark-muted dark:hover:bg-white/5 dark:hover:text-dark-text"
               title="Log out"
               aria-label="Log out"
             >

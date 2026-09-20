@@ -55,7 +55,7 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
             e.stopPropagation();
             onDelete(page.id);
           }}
-          className="opacity-0 group-hover:opacity-100 text-light-muted dark:text-dark-muted hover:text-red-500"
+          className="opacity-0 group-hover:opacity-100 text-light-muted dark:text-dark-muted hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark"
           title="Delete page"
         >
           <Trash2 size={14} />

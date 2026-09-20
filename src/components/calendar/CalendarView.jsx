@@ -91,7 +91,7 @@ const EventRow = ({ t, onDelete, draggable }) => (
     <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">{t.title}</span>
     <button
       onClick={() => onDelete(t.id)}
-      className="text-light-muted dark:text-dark-muted opacity-0 transition group-hover:opacity-100 hover:text-red-500"
+      className="text-light-muted dark:text-dark-muted opacity-0 transition group-hover:opacity-100 hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark"
       aria-label="Delete event"
     >
       <Trash2 size={15} />

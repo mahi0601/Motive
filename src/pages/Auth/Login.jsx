@@ -42,7 +42,12 @@ const Login = () => {
     try {
       const { data } = await loginRequest(form);
       setAuthUser(data.user, data.accessToken);
-      navigate('/dashboard', { replace: true });
+      // Came here from an invite link ("I already have an account") — send
+      // them back to it now authenticated, so Invite.jsx's own accept flow
+      // (and its wrong-email handling) takes over, instead of duplicating
+      // that logic here.
+      const inviteToken = searchParams.get('invite');
+      navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard', { replace: true });
     } catch (err) {
       setServerError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {

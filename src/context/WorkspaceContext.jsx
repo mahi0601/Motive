@@ -6,9 +6,32 @@ import { logger } from '../utils/logger';
 
 const WorkspaceContext = createContext();
 
+// Per-viewer convenience only (which workspace to default to on reload) —
+// never a source of truth. Wrapped in try/catch since a private window or
+// blocked site data can make localStorage throw.
+const ACTIVE_WORKSPACE_KEY = 'motive_active_workspace_id';
+const getSavedWorkspaceId = () => {
+  try {
+    return localStorage.getItem(ACTIVE_WORKSPACE_KEY);
+  } catch {
+    return null;
+  }
+};
+const saveWorkspaceId = (id) => {
+  try {
+    localStorage.setItem(ACTIVE_WORKSPACE_KEY, id);
+  } catch {
+    // ignore — worst case, the next reload just falls back to workspaces[0]
+  }
+};
+
 export const WorkspaceProvider = ({ children }) => {
   const { isAuthenticated, bootstrapping } = useAuth();
   const [workspace, setWorkspace] = useState(null);
+  // Full list, not just the active one — needed so accepting an invite into
+  // a second workspace is actually visible in the UI instead of silently
+  // staying on workspaces[0] forever (see loadWorkspace below).
+  const [workspaces, setWorkspaces] = useState([]);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -27,10 +50,26 @@ export const WorkspaceProvider = ({ children }) => {
   const loadWorkspace = useCallback(async () => {
     try {
       const { data } = await getWorkspaces();
-      setWorkspace(data.workspaces[0] || null);
+      setWorkspaces(data.workspaces);
+      const savedId = getSavedWorkspaceId();
+      const active = data.workspaces.find((w) => w.id === savedId) || data.workspaces[0] || null;
+      setWorkspace(active);
     } catch (e) {
       logger.warn('Failed to load workspace', { error: e.message });
     }
+  }, []);
+
+  // For the workspace switcher — no re-fetch needed, just changes which
+  // already-loaded workspace is active, and remembers the choice.
+  const switchWorkspace = useCallback((id) => {
+    setWorkspaces((current) => {
+      const next = current.find((w) => w.id === id);
+      if (next) {
+        setWorkspace(next);
+        saveWorkspaceId(id);
+      }
+      return current;
+    });
   }, []);
 
   // Wait for the auth bootstrap to finish, then load (or clear) workspace data.
@@ -41,6 +80,7 @@ export const WorkspaceProvider = ({ children }) => {
       refreshPages();
     } else {
       setWorkspace(null);
+      setWorkspaces([]);
       setPages([]);
     }
   }, [bootstrapping, isAuthenticated, loadWorkspace, refreshPages]);
@@ -73,7 +113,19 @@ export const WorkspaceProvider = ({ children }) => {
 
   return (
     <WorkspaceContext.Provider
-      value={{ workspace, pages, loading, refreshPages, loadWorkspace, addPage, editPage, removePage, restorePage }}
+      value={{
+        workspace,
+        workspaces,
+        switchWorkspace,
+        pages,
+        loading,
+        refreshPages,
+        loadWorkspace,
+        addPage,
+        editPage,
+        removePage,
+        restorePage,
+      }}
     >
       {children}
     </WorkspaceContext.Provider>

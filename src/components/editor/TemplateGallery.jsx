@@ -75,7 +75,7 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
                 e.stopPropagation();
                 onDelete(tpl);
               }}
-              className="text-light-muted dark:text-dark-muted hover:text-red-500"
+              className="text-light-muted dark:text-dark-muted hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark"
               title="Delete template"
             >
               <Trash2 size={15} />

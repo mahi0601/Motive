@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Bell, CheckCircle, Mail, Moon, Settings as SettingsIcon, Star, Trash2, User, Users } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, Mail, Moon, RefreshCw, Settings as SettingsIcon, Star, Trash2, User, Users, X } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
 import { createCheckoutSession, reconcileCheckoutSession } from '../services/paymentService';
-import { inviteMember } from '../services/workspaceService';
+import { createInvite, listInvites, resendInvite, revokeInvite, updateMemberRole, removeMember } from '../services/workspaceService';
 import { logger } from '../utils/logger';
 
 const Settings = () => {
@@ -19,15 +19,33 @@ const Settings = () => {
 
   // Invite a teammate into the workspace — this is the only way another real
   // person ever becomes @mentionable (there's no other sharing mechanism).
+  // Unlike the old inviteMember, the invitee no longer needs an existing
+  // account — see workspace.service.js#createInvite.
+  const isOwner = !!workspace && workspace.ownerId === user?.id;
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('editor');
   const [inviteStatus, setInviteStatus] = useState(null); // { type: 'success'|'error', message }
   const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState([]);
+  const [invitesLoading, setInvitesLoading] = useState(false);
 
   // Mirrors the backend's FREE_MEMBER_LIMIT (workspace.service.js) — purely a
   // UI hint for showing the upgrade nudge before submitting; the backend is
   // the actual source of truth/enforcement.
   const FREE_MEMBER_LIMIT = 2;
   const atMemberCap = !user?.isPro && (workspace?.members?.length || 0) >= FREE_MEMBER_LIMIT;
+
+  // Pending invites only matter to someone who can act on them.
+  useEffect(() => {
+    if (!isOwner || !workspace?.id) { setPendingInvites([]); return; }
+    let active = true;
+    setInvitesLoading(true);
+    listInvites(workspace.id)
+      .then(({ data }) => { if (active) setPendingInvites(data.invites); })
+      .catch((e) => logger.warn('Failed to load pending invites', { error: e.message }))
+      .finally(() => { if (active) setInvitesLoading(false); });
+    return () => { active = false; };
+  }, [isOwner, workspace?.id]);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -43,15 +61,56 @@ const Settings = () => {
     setInviting(true);
     setInviteStatus(null);
     try {
-      await inviteMember(workspace.id, inviteEmail.trim());
-      setInviteStatus({ type: 'success', message: `Added ${inviteEmail.trim()} to your workspace.` });
+      const { data } = await createInvite(workspace.id, inviteEmail.trim(), inviteRole);
+      setInviteStatus({ type: 'success', message: `Invited ${inviteEmail.trim()} — they'll get an email to join.` });
       setInviteEmail('');
-      loadWorkspace(); // refresh so the new member shows up immediately
+      setPendingInvites((prev) => [data.invite, ...prev.filter((i) => i.email !== data.invite.email)]);
     } catch (err) {
       setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not invite that user.' });
     } finally {
       setInviting(false);
     }
+  };
+
+  const handleResendInvite = async (inviteId) => {
+    try {
+      await resendInvite(workspace.id, inviteId);
+      setInviteStatus({ type: 'success', message: 'Invite resent.' });
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not resend that invite.' });
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId) => {
+    try {
+      await revokeInvite(workspace.id, inviteId);
+      setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not revoke that invite.' });
+    }
+  };
+
+  const handleRoleChange = async (memberUserId, role) => {
+    try {
+      await updateMemberRole(workspace.id, memberUserId, role);
+      loadWorkspace();
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || "Could not change that member's role." });
+    }
+  };
+
+  const handleRemoveMember = async (memberUserId) => {
+    try {
+      await removeMember(workspace.id, memberUserId);
+      loadWorkspace();
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not remove that member.' });
+    }
+  };
+
+  const daysAgo = (iso) => {
+    const days = Math.floor((Date.now() - new Date(iso).getTime()) / (24 * 60 * 60 * 1000));
+    return days <= 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
   };
 
   // Upgrade flow — the buyer picks a currency, which decides which payment
@@ -253,52 +312,123 @@ const Settings = () => {
             </p>
           </div>
 
-          {/* Workspace members — the only way another person becomes @mentionable */}
+          {/* Members — invite lifecycle. The invitee no longer needs an
+              existing account (see workspace.service.js#createInvite); only
+              the owner can invite, change roles, or remove someone, same
+              authorization the backend enforces. */}
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-2">
               <Users className="text-brand-500" />
-              <h4 className="text-lg font-semibold">Workspace</h4>
+              <h4 className="text-lg font-semibold">Members</h4>
             </div>
             <p className="text-sm text-light-muted dark:text-dark-muted mb-3">
-              Invite a teammate by email — they'll be able to comment and be @mentioned on your tasks.
+              Invite a teammate by email — they'll get a link to join, whether or not they have a Motive account yet.
             </p>
-            {atMemberCap ? (
-              <p className="text-sm rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 px-3 py-2">
-                Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Motive Pro below to invite more.
-              </p>
-            ) : (
-              <form onSubmit={handleInvite} className="flex gap-2">
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="teammate@example.com"
-                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
-                />
-                <button
-                  type="submit"
-                  disabled={inviting}
-                  className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-60"
-                >
-                  {inviting ? 'Inviting…' : 'Invite'}
-                </button>
-              </form>
+
+            {isOwner && (
+              atMemberCap ? (
+                <p className="text-sm rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 px-3 py-2">
+                  Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Motive Pro below to invite more.
+                </p>
+              ) : (
+                <form onSubmit={handleInvite} className="flex flex-wrap gap-2">
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="teammate@example.com"
+                    className="min-w-0 flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
+                  />
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="px-2 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
+                  >
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={inviting}
+                    className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-60"
+                  >
+                    {inviting ? 'Inviting…' : 'Invite'}
+                  </button>
+                </form>
+              )
             )}
             {inviteStatus && (
               <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-semantic-danger-500 dark:text-semantic-danger-dark' : 'text-semantic-success-500 dark:text-semantic-success-dark'}`}>
                 {inviteStatus.message}
               </p>
             )}
+
             {workspace?.members?.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 divide-y divide-light-border dark:divide-dark-border">
                 {workspace.members.map((m) => (
-                  <span
-                    key={m.id}
-                    className="px-2 py-1 text-xs rounded-full bg-light-border/40 dark:bg-dark-surface text-light-muted dark:text-dark-muted"
-                  >
-                    {m.user?.name} {m.role === 'owner' ? '(you)' : ''}
-                  </span>
+                  <div key={m.id} className="flex items-center gap-3 py-2">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
+                      {(m.user?.name || '?').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">
+                      {m.user?.name} {m.userId === user?.id ? '(you)' : ''}
+                    </span>
+                    {m.role === 'owner' ? (
+                      <span className="rounded-lg bg-brand-soft px-2 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Owner</span>
+                    ) : isOwner ? (
+                      <>
+                        <select
+                          value={m.role}
+                          onChange={(e) => handleRoleChange(m.userId, e.target.value)}
+                          className="rounded-lg border border-light-border bg-light-surface px-2 py-1 text-xs dark:border-dark-border dark:bg-dark-raised"
+                        >
+                          <option value="editor">Editor</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                        <button
+                          onClick={() => handleRemoveMember(m.userId)}
+                          className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
+                          aria-label={`Remove ${m.user?.name}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs capitalize text-light-muted dark:text-dark-muted">{m.role}</span>
+                    )}
+                  </div>
                 ))}
+              </div>
+            )}
+
+            {isOwner && !invitesLoading && pendingInvites.length > 0 && (
+              <div className="mt-4 border-t border-light-border pt-3 dark:border-dark-border">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-light-muted dark:text-dark-muted">Pending invites</p>
+                <div className="divide-y divide-light-border dark:divide-dark-border">
+                  {pendingInvites.map((inv) => (
+                    <div key={inv.id} className="flex items-center gap-3 py-2">
+                      <span className="flex-1 truncate text-sm text-light-muted dark:text-dark-muted">
+                        {inv.email} <span className="text-xs">· invited {daysAgo(inv.createdAt)}</span>
+                      </span>
+                      <button
+                        onClick={() => handleResendInvite(inv.id)}
+                        className="rounded-lg p-1.5 text-light-muted transition hover:text-brand-600 dark:text-dark-muted"
+                        aria-label={`Resend invite to ${inv.email}`}
+                        title="Resend"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRevokeInvite(inv.id)}
+                        className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
+                        aria-label={`Revoke invite to ${inv.email}`}
+                        title="Revoke"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -380,11 +510,16 @@ const Settings = () => {
             )}
           </div>
 
-          {/* Danger Zone — delete account */}
-          <div className="p-5 rounded-xl border border-red-300 dark:border-red-900/60 bg-red-50/60 dark:bg-red-900/10">
+          {/* Danger Zone — delete account. Red stays here deliberately (this
+              is genuinely destructive, unlike Logout — see Header.jsx and
+              Profile.jsx), now routed through the semantic-danger tokens
+              instead of stock Tailwind red so it's the exact same hue as
+              every other "danger" in the app, not a second, slightly
+              different red. */}
+          <div className="p-5 rounded-xl border border-semantic-danger-200 dark:border-semantic-danger-500/30 bg-semantic-danger-50/60 dark:bg-semantic-danger-500/10">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="text-red-500" />
-              <h4 className="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h4>
+              <AlertTriangle className="text-semantic-danger-500 dark:text-semantic-danger-dark" />
+              <h4 className="text-lg font-semibold text-semantic-danger-500 dark:text-semantic-danger-dark">Danger Zone</h4>
             </div>
             <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
               Permanently delete your account and <strong>all</strong> of your pages, tasks, and data.
@@ -394,7 +529,7 @@ const Settings = () => {
             {!confirming ? (
               <button
                 onClick={() => setConfirming(true)}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg !bg-red-600 px-4 py-2 text-sm font-semibold text-white !border-0 transition hover:!bg-red-700"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-semantic-danger-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
               >
                 <Trash2 /> Delete account
               </button>
@@ -411,14 +546,14 @@ const Settings = () => {
                     setDeleteError('');
                   }}
                   placeholder="Your password"
-                  className="w-full max-w-xs rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised px-3 py-2 text-sm text-light-text dark:text-dark-text outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/30"
+                  className="w-full max-w-xs rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised px-3 py-2 text-sm text-light-text dark:text-dark-text outline-none focus:border-semantic-danger-500 focus:ring-2 focus:ring-semantic-danger-200 dark:focus:ring-semantic-danger-500/30"
                 />
-                {deleteError && <p className="text-xs text-red-500">{deleteError}</p>}
+                {deleteError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{deleteError}</p>}
                 <div className="flex gap-3">
                   <button
                     onClick={handleDeleteAccount}
                     disabled={deleting}
-                    className="rounded-lg !bg-red-600 px-4 py-2 text-sm font-semibold text-white !border-0 transition hover:!bg-red-700 disabled:opacity-60"
+                    className="rounded-lg bg-semantic-danger-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                   >
                     {deleting ? 'Deleting…' : 'Permanently delete'}
                   </button>

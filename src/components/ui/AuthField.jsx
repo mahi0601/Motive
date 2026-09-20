@@ -25,7 +25,7 @@ const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
             ${Icon ? 'pl-10' : 'pl-3.5'} ${isPassword ? 'pr-10' : 'pr-3.5'}
             ${
               error
-                ? 'border-red-400 focus:ring-2 focus:ring-red-300'
+                ? 'border-semantic-danger-200 dark:border-semantic-danger-500/40 focus:ring-2 focus:ring-semantic-danger-200 dark:focus:ring-semantic-danger-500/30'
                 : 'border-light-border focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-dark-border'
             }`}
           {...props}
@@ -42,7 +42,7 @@ const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
     </div>
   );
 };
