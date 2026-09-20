@@ -2,15 +2,17 @@ import React, { useId } from 'react';
 
 /**
  * Motive brand mark.
- * The glyph is a checkmark capped by an amber "spark" — tasks completed, motivation
- * ignited. Pure SVG: crisp at any size, theme-aware.
+ * A checkmark on a petrol squircle — deliberately quiet (see PLAN "Petrol &
+ * Ink"): the old mark's amber "spark" dot was a second brand accent
+ * competing with amber's other job in this app, meaning "at risk." The mark
+ * carries the brand alone now; state is never expressed here.
  *
  * Props:
  *   size      – icon size in px (default 32)
  *   showText  – render the wordmark next to the icon (default true)
  *   className – wrapper classes
  */
-export const LogoMark = ({ size = 32, animated = true }) => {
+export const LogoMark = ({ size = 32 }) => {
   // Unique gradient id per instance — prevents collisions when multiple logos
   // render (a shared id can resolve to a display:none copy and render unfilled).
   const gradId = `motiveGrad-${useId()}`;
@@ -26,9 +28,8 @@ export const LogoMark = ({ size = 32, animated = true }) => {
   >
     <defs>
       <linearGradient id={gradId} x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#7C5CF6" />
-        <stop offset="0.55" stopColor="#9B5CFF" />
-        <stop offset="1" stopColor="#C45BD6" />
+        <stop stopColor="#0E4C5C" />
+        <stop offset="1" stopColor="#1B7A8C" />
       </linearGradient>
     </defs>
 
@@ -43,16 +44,6 @@ export const LogoMark = ({ size = 32, animated = true }) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       fill="none"
-    />
-
-    {/* spark — motivation */}
-    <circle
-      cx="37.5"
-      cy="13"
-      r="2.8"
-      fill="#FFC04D"
-      className={animated ? 'animate-spark-pulse' : ''}
-      style={{ transformOrigin: '37.5px 13px' }}
     />
   </svg>
   );

@@ -21,9 +21,9 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
         selected
           ? 'border-brand-500 ring-2 ring-brand-400'
           : task.completed
-          ? 'border-brand-200 dark:border-brand-800 opacity-75'
+          ? 'border-semantic-success-200 dark:border-semantic-success-500/30 opacity-75'
           : isOverdue
-          ? 'border-brand-400 dark:border-brand-600 ring-2 ring-brand-300 dark:ring-brand-800'
+          ? 'border-semantic-danger-200 dark:border-semantic-danger-500/40 ring-2 ring-semantic-danger-200 dark:ring-semantic-danger-500/30'
           : 'border-light-border dark:border-dark-border hover:border-brand-500 hover:ring-1 hover:ring-brand-500'
       }`}
     >
@@ -41,7 +41,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
 
       {task.completed && (
         <div className="absolute top-4 right-4">
-          <CheckCircle className="w-6 h-6 text-green-500" />
+          <CheckCircle className="w-6 h-6 text-semantic-success-500 dark:text-semantic-success-dark" />
         </div>
       )}
 
@@ -99,9 +99,9 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
       {task.dueDate && (
         <div className={`flex items-center gap-2 mb-3 text-sm ${
           isOverdue
-            ? 'text-brand-700 dark:text-brand-300 font-medium'
+            ? 'text-semantic-danger-500 dark:text-semantic-danger-dark font-medium'
             : daysUntilDue !== null && daysUntilDue <= 3
-            ? 'text-spark-600 dark:text-spark-400'
+            ? 'text-semantic-warning-500 dark:text-semantic-warning-dark'
             : 'text-light-muted dark:text-dark-muted'
         }`}>
           <Calendar className="w-4 h-4" />
@@ -149,7 +149,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           {onEdit && (
             <button
               onClick={() => onEdit(task)}
-              className="p-2 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border hover:border-spark-500 dark:hover:border-spark-500 text-spark-600 dark:text-spark-400 rounded-lg transition-all shadow-sm hover:shadow-md"
+              className="p-2 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border hover:border-brand-500 dark:hover:border-brand-500 text-brand-600 dark:text-brand-400 rounded-lg transition-all shadow-sm hover:shadow-md"
               title="Edit task"
             >
               <Edit className="w-4 h-4" />

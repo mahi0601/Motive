@@ -17,7 +17,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                 ? 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800'
                 : notification.type === 'error'
                 ? 'bg-brand-100 dark:bg-brand-900/30 border-brand-300 dark:border-brand-700'
-                : 'bg-spark-50 dark:bg-spark-900/20 border-spark-200 dark:border-spark-800'
+                : 'bg-semantic-info-50 dark:bg-semantic-info-500/10 border-semantic-info-200 dark:border-semantic-info-500/30'
             }`}
           >
             <div className="flex items-start gap-3">
@@ -26,7 +26,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                   ? 'text-brand-600 dark:text-brand-400'
                   : notification.type === 'error'
                   ? 'text-brand-700 dark:text-brand-300'
-                  : 'text-spark-600 dark:text-spark-400'
+                  : 'text-semantic-info-500 dark:text-semantic-info-dark'
               }`}>
                 {notification.type === 'success' ? (
                   <CheckCircle className="w-5 h-5" />
@@ -42,7 +42,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                     ? 'text-brand-800 dark:text-brand-200'
                     : notification.type === 'error'
                     ? 'text-brand-800 dark:text-brand-200'
-                    : 'text-spark-800 dark:text-spark-200'
+                    : 'text-semantic-info-500 dark:text-semantic-info-dark'
                 }`}>
                   {notification.title}
                 </p>
@@ -52,7 +52,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                       ? 'text-brand-700 dark:text-brand-300'
                       : notification.type === 'error'
                       ? 'text-brand-700 dark:text-brand-300'
-                      : 'text-spark-700 dark:text-spark-300'
+                      : 'text-semantic-info-500 dark:text-semantic-info-dark'
                   }`}>
                     {notification.message}
                   </p>

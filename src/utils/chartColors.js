@@ -1,30 +1,24 @@
 // recharts (and raw SVG gradients) need literal hex values, not Tailwind
-// classes, so this mirrors the brand/spark scale from tailwind.config.js
-// for chart series instead of each chart hardcoding stock Tailwind hex
-// (#6366f1, #8b5cf6, #a855f7, #c084fc — indigo/violet/purple-500/400,
-// none of which is actually the brand color).
+// classes, so this mirrors the brand scale from tailwind.config.js for chart
+// series instead of each chart hardcoding stock Tailwind hex (#6366f1,
+// #8b5cf6, #a855f7, #c084fc — indigo/violet/purple-500/400, none of which is
+// actually the brand color).
 
-// Brand violet scale (tailwind.config.js `brand`)
+// Brand petrol scale (tailwind.config.js `brand`) — see PLAN "Petrol & Ink".
 export const BRAND = {
-  300: '#BFA9FF',
-  400: '#A07DFB',
-  500: '#7C5CF6',
-  600: '#6B46E8',
-  700: '#5A37C9',
+  300: '#7FBDCB',
+  400: '#4A9DB1',
+  500: '#1B7A8C',
+  600: '#166575',
+  700: '#0E4C5C',
 };
 
-// Spark amber scale (tailwind.config.js `spark`)
-export const SPARK = {
-  300: '#FFC966',
-  400: '#FFC04D',
-  500: '#F5A524',
-  600: '#DB8A0E',
-};
-
-// Ordered series palette for multi-bar/pie charts: violet does most of the
-// work, spark marks the one series that should stand out (e.g. today's bar,
-// the top-priority slice).
-export const CHART_SERIES = [BRAND[500], BRAND[300], SPARK[500], BRAND[700]];
+// Ordered series palette for multi-bar/pie charts — a monochrome petrol ramp
+// by design. Anything that needs to mean a delivery STATE (shipped/at
+// risk/overdue/etc.) must come from statusColors.js instead, never from
+// here: brand hue is reserved for "this is Motive," never for "this needs
+// attention."
+export const CHART_SERIES = [BRAND[500], BRAND[300], BRAND[700], BRAND[400]];
 
 // Single-series bar/line fill.
 export const CHART_PRIMARY = BRAND[500];
@@ -32,10 +26,10 @@ export const CHART_PRIMARY = BRAND[500];
 // Axis/grid colors — recharts reads `stroke`/`tick.fill` as presentation
 // attributes, not classes, so a `dark:` utility class silently does nothing
 // here (confirmed in Statistics.jsx). Pass isDark from useTheme() instead.
-export const chartAxisColor = (isDark) => (isDark ? '#9C99A8' : '#8B8479'); // dark.muted / light.muted
-export const chartGridColor = (isDark) => (isDark ? '#2A2733' : '#E7E0D4'); // dark.border / light.border
+export const chartAxisColor = (isDark) => (isDark ? '#8CA0AA' : '#5E6E77'); // dark.muted / light.muted
+export const chartGridColor = (isDark) => (isDark ? '#23343C' : '#DDE4E7'); // dark.border / light.border
 export const chartTooltipStyle = (isDark) => ({
-  backgroundColor: isDark ? '#211E29' : '#FFFFFF', // dark.raised / light.surface
-  border: `1px solid ${isDark ? '#2A2733' : '#E7E0D4'}`,
-  color: isDark ? '#E9E7EF' : '#23201B',
+  backgroundColor: isDark ? '#17272F' : '#FFFFFF', // dark.raised / light.surface
+  border: `1px solid ${isDark ? '#23343C' : '#DDE4E7'}`,
+  color: isDark ? '#E6EDF0' : '#0F1A20',
 });

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Zap, Layers } from 'lucide-react';
+import { Link2, AlertTriangle, Users } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
+import { BRAND, VALUE_PROPS } from '../config/brand';
 
-const points = [
-  { icon: Layers, text: 'Block-based pages — write, plan, and organize in one place.' },
-  { icon: CheckCircle2, text: 'Tasks, boards, and calendar that stay in sync.' },
-  { icon: Zap, text: 'Fast and real-time, so it keeps up with how you actually work.' },
-];
+// Same three value props as Home.jsx (both now read from config/brand.js),
+// paired with icons here since the icon choice is presentational, not
+// copy — see brand.js's own note on why this consolidation exists.
+const points = VALUE_PROPS.map((p, i) => ({
+  icon: [Link2, AlertTriangle, Users][i],
+  text: p.body,
+}));
 
 /**
  * Full-bleed split-panel auth shell: brand story on the left, form on the
@@ -24,7 +27,7 @@ const AuthLayout = () => (
 
       <div className="relative flex items-center gap-3">
         <LogoMark size={40} />
-        <span className="font-display text-2xl font-bold">Motive</span>
+        <span className="font-display text-2xl font-bold">{BRAND.name}</span>
       </div>
 
       <div className="relative">
@@ -34,10 +37,10 @@ const AuthLayout = () => (
           transition={{ duration: 0.5 }}
           className="font-display text-4xl font-extrabold leading-tight"
         >
-          Turn intent into momentum.
+          {BRAND.tagline}
         </motion.h1>
         <p className="mt-4 max-w-md text-white/80">
-          A calm, fast workspace where your notes, tasks, and plans finally live together.
+          {BRAND.subhead}
         </p>
 
         <ul className="mt-10 space-y-4">
@@ -56,7 +59,7 @@ const AuthLayout = () => (
         </ul>
       </div>
 
-      <p className="relative text-xs text-white/60">© {new Date().getFullYear()} Motive</p>
+      <p className="relative text-xs text-white/60">© {new Date().getFullYear()} {BRAND.name}</p>
     </div>
 
     {/* Form panel */}

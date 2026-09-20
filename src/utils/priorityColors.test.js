@@ -6,20 +6,25 @@ import { getPriorityBadgeClasses, getPriorityDotClass, getPriorityBorderClass } 
 // than inventing new coverage. This is also the exact source of truth
 // CalendarView.jsx was fixed to use instead of its own divergent (and
 // semantically inverted) priority-color map, so it's worth locking down.
+//
+// Priority is expressed by WEIGHT in the brand petrol ramp, not by a
+// separate hue (see PLAN "Petrol & Ink") — hue is reserved exclusively for
+// delivery STATE (statusColors.js), so a High-priority task never collides
+// visually with an At-risk one.
 describe('priorityColors', () => {
-  test('High is spark (amber/energy), not brand or a stock Tailwind color', () => {
-    expect(getPriorityDotClass('High')).toBe('bg-spark-500');
-    expect(getPriorityBadgeClasses('High')).toContain('spark');
+  test('High is the darkest brand weight, not a semantic status color', () => {
+    expect(getPriorityDotClass('High')).toContain('brand-700');
+    expect(getPriorityBadgeClasses('High')).not.toContain('semantic');
   });
 
-  test('Medium is brand (violet)', () => {
-    expect(getPriorityDotClass('Medium')).toBe('bg-brand-500');
+  test('Medium is a lighter brand weight than High', () => {
+    expect(getPriorityDotClass('Medium')).toBe('bg-brand-400');
     expect(getPriorityBadgeClasses('Medium')).toContain('brand');
   });
 
-  test('Low is neutral, not brand or spark — deliberately doesn\'t compete visually', () => {
+  test('Low is neutral, not brand or a semantic status color — deliberately doesn\'t compete visually', () => {
     const dot = getPriorityDotClass('Low');
-    expect(dot).not.toContain('spark');
+    expect(dot).not.toContain('semantic');
     expect(dot).not.toContain('brand');
   });
 

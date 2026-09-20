@@ -3,13 +3,17 @@ import { Trash2, Search, FileStack } from 'lucide-react';
 import { getTemplates, createPageFromTemplate, deleteTemplate } from '../../services/templateService';
 import { logger } from '../../utils/logger';
 
-// Accent → thumbnail gradient + marker color (Tailwind classes).
+// Accent → thumbnail gradient + marker color (Tailwind classes). Purely
+// decorative per-template variety, not a status signal — stock Tailwind
+// hues are fine here (unlike statusColors.js, nothing here needs to mean
+// "at risk"). `spark` no longer exists as a token (see PLAN "Petrol & Ink"),
+// so `amber` now uses stock Tailwind amber instead.
 const ACCENTS = {
   slate: { grad: 'from-slate-400/25 to-slate-500/5', dot: 'bg-slate-400' },
   violet: { grad: 'from-brand-400/30 to-brand-600/5', dot: 'bg-brand-400' },
   emerald: { grad: 'from-emerald-400/30 to-emerald-600/5', dot: 'bg-emerald-400' },
   blue: { grad: 'from-blue-400/30 to-blue-600/5', dot: 'bg-blue-400' },
-  amber: { grad: 'from-spark-400/30 to-spark-600/5', dot: 'bg-spark-400' },
+  amber: { grad: 'from-amber-400/30 to-amber-600/5', dot: 'bg-amber-400' },
   rose: { grad: 'from-rose-400/30 to-rose-600/5', dot: 'bg-rose-400' },
 };
 
@@ -29,7 +33,7 @@ const BlockPreview = ({ preview = [], dot }) => (
             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} />
           )}
           {type === 'quote' && <span className="h-3 w-0.5 shrink-0 rounded bg-black/25 dark:bg-white/30" />}
-          {type === 'callout' && <span className="h-2.5 w-2.5 shrink-0 rounded bg-spark-400/70" />}
+          {type === 'callout' && <span className="h-2.5 w-2.5 shrink-0 rounded bg-amber-400/70" />}
           <span className={`${barW} ${barH} rounded ${barShade}`} />
         </div>
       );

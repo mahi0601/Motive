@@ -14,7 +14,7 @@ const ProtectedRoute = () => {
   if (bootstrapping) {
     return (
       <div className="flex h-screen items-center justify-center bg-light-background dark:bg-dark-background">
-        <div className="animate-spark-pulse">
+        <div className="animate-pulse">
           <LogoMark size={48} />
         </div>
       </div>

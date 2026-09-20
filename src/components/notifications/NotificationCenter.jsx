@@ -79,7 +79,7 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
       case 'error':
         return <AlertCircle className="w-5 h-5 text-brand-700 dark:text-brand-300" />;
       default:
-        return <Info className="w-5 h-5 text-spark-600 dark:text-spark-400" />;
+        return <Info className="w-5 h-5 text-semantic-info-500 dark:text-semantic-info-dark" />;
     }
   };
 

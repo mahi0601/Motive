@@ -14,14 +14,29 @@ import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
 import { logger } from '../utils/logger';
-import { TASK_CATEGORIES as CATEGORIES } from '../utils/constants';
 import { parseQuickAdd } from '../utils/quickAddParser';
+import { STATUS, getStatusLabel, getStatusDotClass } from '../utils/statusColors';
 
 const PRIORITIES = ['High', 'Medium', 'Low'];
 // Keep in sync with AT_RISK_WINDOW_MS in motive-backend/src/services/momentum.service.js
 // — this is what makes the /momentum "At risk" tile's count and this board's
 // ?highlight=at-risk filter agree on the same set of tasks.
 const AT_RISK_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+// The board's columns, by delivery status rather than the old life-area
+// categories (Personal/Finance/Health/Development) — those made sense for a
+// solo consumer app but don't represent a workflow. `key` is the literal
+// TaskStatus enum value (also the Droppable id, also what gets `patch`ed on
+// drag), `status` is the richer statusColors.js STATUS this column
+// represents, reusing the same vocabulary Momentum already uses ("Shipped",
+// "In flight") instead of a third naming scheme. `category` still exists on
+// every task — see EnhancedTaskCard's tag — it's just no longer the axis
+// the board is organized by.
+const BOARD_COLUMNS = [
+  { key: 'todo', status: STATUS.NOT_STARTED },
+  { key: 'in_progress', status: STATUS.IN_FLIGHT },
+  { key: 'done', status: STATUS.SHIPPED },
+];
 
 // Map a persisted task to the shape the card/analytics components expect.
 const toView = (t) => ({ ...t, completed: t.status === 'done', tags: t.tags || [] });
@@ -69,7 +84,7 @@ const Dashboard = () => {
   const { tasks, setTasks, loading, create, patch, remove } = useTasks();
   const [filterText, setFilterText] = useState('');
   const [drafts, setDrafts] = useState(
-    CATEGORIES.reduce((acc, c) => ({ ...acc, [c]: { title: '', description: '', priority: 'Medium', open: false } }), {})
+    BOARD_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: { title: '', description: '', priority: 'Medium', open: false } }), {})
   );
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -135,10 +150,16 @@ const Dashboard = () => {
     }, { replace: true });
   }, [searchParams, setSearchParams, tasks, loading]);
 
-  const addTask = async (category, data) => {
+  // `columnKey` is only meaningful for quick-add (a specific column's inline
+  // "+"), where it both looks up that column's draft and becomes the new
+  // task's status. The full TaskForm modal (`data` present) isn't opened
+  // from any particular column — it always defaults a new task into
+  // "Not started" unless the form itself supplies a status — and still
+  // carries its own free-text category, independent of the board's columns.
+  const addTask = async (columnKey, data) => {
     const payload = data
-      ? { title: data.title, description: data.description, priority: data.priority, category: data.category || category, dueDate: data.dueDate, tags: data.tags, recurrence: data.recurrence }
-      : drafts[category];
+      ? { title: data.title, description: data.description, priority: data.priority, category: data.category, status: data.status, dueDate: data.dueDate, tags: data.tags, recurrence: data.recurrence }
+      : drafts[columnKey];
     if (!payload.title?.trim()) return;
 
     // Quick-add shorthand ("water plants tomorrow high priority") only —
@@ -158,12 +179,13 @@ const Dashboard = () => {
         title,
         description: payload.description || '',
         priority: priority || 'Medium',
-        category: payload.category || category,
+        status: data ? (payload.status || 'todo') : columnKey,
+        category: payload.category,
         dueDate: dueDate || null,
         tags: payload.tags || [],
         recurrence: payload.recurrence || null,
       });
-      if (!data) setDrafts((d) => ({ ...d, [category]: { title: '', description: '', priority: 'Medium', open: false } }));
+      if (!data) setDrafts((d) => ({ ...d, [columnKey]: { title: '', description: '', priority: 'Medium', open: false } }));
       setShowTaskForm(false);
       notify('success', 'Task created', created.title);
     } catch (e) {
@@ -263,17 +285,19 @@ const Dashboard = () => {
 
   const onDragEnd = ({ destination, source, draggableId }) => {
     if (!destination || destination.droppableId === source.droppableId) return;
-    const category = destination.droppableId;
-    // `patch` rolls back on failure — previously a failed category change
-    // here left the board silently out of sync with the server.
-    patch(draggableId, { category }).catch((e) => logger.warn('Drag-drop category change failed', { taskId: draggableId, category, error: e.message }));
+    const status = destination.droppableId;
+    // `patch` rolls back on failure — previously a failed status change
+    // here left the board silently out of sync with the server. The backend
+    // derives `completedAt` itself on a transition into 'done' (same as
+    // `toggleComplete` below), so nothing extra is needed here for that.
+    patch(draggableId, { status }).catch((e) => logger.warn('Drag-drop status change failed', { taskId: draggableId, status, error: e.message }));
   };
 
   const grouped = useMemo(() => {
     const q = filterText.toLowerCase();
-    return CATEGORIES.reduce((acc, c) => {
-      acc[c] = tasks
-        .filter((t) => (t.category || 'Personal') === c)
+    return BOARD_COLUMNS.reduce((acc, col) => {
+      acc[col.key] = tasks
+        .filter((t) => (t.status || 'todo') === col.key)
         .filter((t) => t.title.toLowerCase().includes(q))
         .filter((t) => matchesHighlight(t, highlight, highlightSince))
         .map(toView);
@@ -348,8 +372,8 @@ const Dashboard = () => {
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {CATEGORIES.map((category) => (
-                <Droppable key={category} droppableId={category}>
+              {BOARD_COLUMNS.map((column) => (
+                <Droppable key={column.key} droppableId={column.key}>
                   {(provided) => (
                     <div
                       ref={provided.innerRef}
@@ -357,41 +381,44 @@ const Dashboard = () => {
                       className="flex min-h-[400px] flex-col rounded-2xl border border-light-border bg-light-surface p-4 shadow-sm dark:border-dark-border dark:bg-dark-surface"
                     >
                       <div className="mb-4 flex items-center justify-between">
-                        <h3 className="font-display text-lg font-semibold text-light-text dark:text-dark-text">{category}</h3>
+                        <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-light-text dark:text-dark-text">
+                          <span className={`h-2 w-2 rounded-full ${getStatusDotClass(column.status)}`} />
+                          {getStatusLabel(column.status)}
+                        </h3>
                         <button
-                          onClick={() => setDrafts((d) => ({ ...d, [category]: { ...d[category], open: !d[category].open } }))}
+                          onClick={() => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], open: !d[column.key].open } }))}
                           className="rounded-full bg-brand-50 p-1.5 text-brand-600 transition hover:bg-brand-600 hover:text-white dark:bg-brand-500/10 dark:text-brand-300"
-                          aria-label={`Add task to ${category}`}
+                          aria-label={`Add task to ${getStatusLabel(column.status)}`}
                         >
                           <PlusCircle className="text-lg" />
                         </button>
                       </div>
 
-                      {drafts[category].open && (
+                      {drafts[column.key].open && (
                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-4 space-y-2">
                           <input
                             type="text"
                             placeholder='Title — try "tomorrow" or "high priority"'
-                            value={drafts[category].title}
-                            onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], title: e.target.value } }))}
+                            value={drafts[column.key].title}
+                            onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], title: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <input
                             type="text"
                             placeholder="Description"
-                            value={drafts[category].description}
-                            onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], description: e.target.value } }))}
+                            value={drafts[column.key].description}
+                            onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], description: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <select
-                            value={drafts[category].priority}
-                            onChange={(e) => setDrafts((d) => ({ ...d, [category]: { ...d[category], priority: e.target.value } }))}
+                            value={drafts[column.key].priority}
+                            onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], priority: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           >
                             {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
                           </select>
                           <button
-                            onClick={() => addTask(category)}
+                            onClick={() => addTask(column.key)}
                             className="w-full rounded-lg bg-brand-600 py-2 font-semibold text-white shadow-sm transition hover:bg-brand-700"
                           >
                             Add Task
@@ -400,7 +427,7 @@ const Dashboard = () => {
                       )}
 
                       <div className="flex-1 space-y-4">
-                        {grouped[category].map((task, index) => (
+                        {grouped[column.key].map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={selectMode}>
                             {(prov) => (
                               <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
@@ -430,7 +457,7 @@ const Dashboard = () => {
 
       {showTaskForm && (
         <TaskForm
-          onSubmit={editingTask ? editTask : (data) => addTask(data.category, data)}
+          onSubmit={editingTask ? editTask : (data) => addTask(null, data)}
           onClose={() => { setShowTaskForm(false); setEditingTask(null); }}
           initialData={editingTask}
         />

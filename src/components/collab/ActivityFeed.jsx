@@ -35,7 +35,7 @@ const ActivityFeed = ({ limit = 5 }) => {
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-brand-600" />;
       case 'updated':
-        return <Edit className="w-4 h-4 text-spark-500" />;
+        return <Edit className="w-4 h-4 text-semantic-info-500 dark:text-semantic-info-dark" />;
       case 'deleted':
         return <Trash2 className="w-4 h-4 text-brand-700" />;
       default:
@@ -50,7 +50,7 @@ const ActivityFeed = ({ limit = 5 }) => {
       case 'completed':
         return 'bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800';
       case 'updated':
-        return 'bg-spark-50 dark:bg-spark-900/20 border-spark-200 dark:border-spark-800';
+        return 'bg-semantic-info-50 dark:bg-semantic-info-500/10 border-semantic-info-200 dark:border-semantic-info-500/30';
       case 'deleted':
         return 'bg-brand-100 dark:bg-brand-900/30 border-brand-300 dark:border-brand-700';
       default:

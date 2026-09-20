@@ -20,13 +20,21 @@ import { ChevronLeft, ChevronRight, Plus, Trash2, Loader2, LayoutGrid, List } fr
 import { useTasks } from '../../hooks/useTasks';
 import { logger } from '../../utils/logger';
 import { getPriorityDotClass } from '../../utils/priorityColors';
+import { getStatusDotClass, getTaskDisplayStatus } from '../../utils/statusColors';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-// Was its own divergent map here (High: rose, Medium: spark, Low: brand) —
-// semantically inverted against priorityColors.js (High=spark/attention,
-// Medium=brand, Low=neutral) and `rose` isn't in the design system at all.
+// Priority picker only — AddForm's three buttons for choosing a NEW event's
+// priority, which has no dueDate/status yet to derive a delivery state from.
 const dotColor = (p) => getPriorityDotClass(p);
+
+// Existing-task display — the calendar's job is showing what needs
+// attention, so a task already on the grid is colored by delivery status
+// (shipped/in flight/at risk/overdue), not by priority. Priority and status
+// are independent (see priorityColors.js's own note on this) — this is the
+// same "hue means state" rule as the rest of the redesign, not a stand-in
+// for priority.
+const statusDotColor = (task) => getStatusDotClass(getTaskDisplayStatus(task));
 
 const dayKey = (d) => format(d, 'yyyy-MM-dd');
 const groupLabel = (d) =>
@@ -79,7 +87,7 @@ const EventRow = ({ t, onDelete, draggable }) => (
     onDragStart={draggable ? (e) => e.dataTransfer.setData('text/plain', t.id) : undefined}
     className={`group flex items-center gap-3 py-2.5 ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
   >
-    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor(t.priority)}`} />
+    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${statusDotColor(t)}`} />
     <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">{t.title}</span>
     <button
       onClick={() => onDelete(t.id)}
@@ -268,7 +276,7 @@ const CalendarView = () => {
                   </span>
                   <div className="flex h-1.5 items-center gap-0.5">
                     {dayTasks.slice(0, 3).map((t) => (
-                      <span key={t.id} className={`h-1.5 w-1.5 rounded-full ${dotColor(t.priority)}`} />
+                      <span key={t.id} className={`h-1.5 w-1.5 rounded-full ${statusDotColor(t)}`} />
                     ))}
                   </div>
                 </button>

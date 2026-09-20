@@ -5,8 +5,10 @@ import { useAuth } from '../context/AuthContext';
 
 // A color per socket, stable for the life of the connection — cheap "who's
 // who" visual distinction without needing per-user color assignment from
-// the server.
-const CURSOR_COLORS = ['#7C5CF6', '#F5A524', '#22C55E', '#EC4899', '#3B82F6', '#EF4444'];
+// the server. Deliberately clear of both `brand` (petrol) and every
+// statusColors.js hue — a collaborator's cursor must never read as a
+// delivery status. Pure identity colors only.
+const CURSOR_COLORS = ['#EC4899', '#8B5CF6', '#F97316', '#06B6D4', '#84CC16', '#6366F1'];
 const colorFor = (socketId) => {
   let hash = 0;
   for (let i = 0; i < socketId.length; i++) hash = (hash * 31 + socketId.charCodeAt(i)) | 0;

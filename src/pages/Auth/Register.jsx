@@ -15,7 +15,10 @@ const strength = (pw) => {
   return score; // 0..4
 };
 const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-const STRENGTH_COLOR = ['', 'bg-red-400', 'bg-amber-400', 'bg-lime-400', 'bg-emerald-500'];
+// Routed through statusColors.js's semantic scale instead of stock Tailwind
+// red/amber/lime/emerald, so this meter uses the exact same "danger →
+// warning → success" hues as the rest of the app.
+const STRENGTH_COLOR = ['', 'bg-semantic-danger-500', 'bg-semantic-warning-500', 'bg-brand-400', 'bg-semantic-success-500'];
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -68,7 +71,7 @@ const Register = () => {
       <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Start organizing in seconds.</p>
 
       {serverError && (
-        <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-500 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
           <AlertCircle size={16} /> {serverError}
         </div>
       )}

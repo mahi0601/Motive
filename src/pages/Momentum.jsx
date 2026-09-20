@@ -11,7 +11,8 @@ import ChartTooltip from '../components/charts/ChartTooltip';
 import { getMomentum } from '../services/momentumService';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { CHART_PRIMARY, SPARK, chartAxisColor } from '../utils/chartColors';
+import { CHART_PRIMARY, BRAND, chartAxisColor, chartGridColor } from '../utils/chartColors';
+import { STATUS, getStatusBadgeClasses } from '../utils/statusColors';
 import { fadeUp, staggerDelay } from '../utils/motion';
 import { logger } from '../utils/logger';
 
@@ -28,16 +29,26 @@ const PERIODS = [
   { id: 'quarter', label: 'This quarter' },
 ];
 
+// Rules-based insight severity → status hue. Kept as its own small map
+// (rather than reusing statusColors.js's 5-state STATUS enum directly)
+// because "warning/good/info" is momentum.service.js's own vocabulary for a
+// free-text insight, not a task's delivery state.
 const SEVERITY_STYLES = {
-  warning: { icon: AlertTriangle, className: 'text-spark-600 dark:text-spark-400' },
-  good: { icon: CheckCircle2, className: 'text-emerald-600 dark:text-emerald-400' },
+  warning: { icon: AlertTriangle, className: 'text-semantic-warning-500 dark:text-semantic-warning-dark' },
+  good: { icon: CheckCircle2, className: 'text-semantic-success-500 dark:text-semantic-success-dark' },
   info: { icon: TrendingUp, className: 'text-brand-600 dark:text-brand-400' },
 };
 
 // A tile's delta as an up/down/flat badge. `null` means "no prior-period
 // baseline to compare against" (e.g. a metric that was 0 last period) —
 // shown as "new", not as a fabricated 0% or a hidden number.
-function DeltaBadge({ current, previous }) {
+//
+// `goodWhenUp` says whether a rising number is the good direction for THIS
+// tile — true for Shipped (more shipped = good), false for At risk/Overdue
+// (more = bad). Getting this backwards is the bug the old spark/emerald
+// coloring had: it colored every tile's increase the same way regardless of
+// what the tile actually measured.
+function DeltaBadge({ current, previous, goodWhenUp = true }) {
   if (previous == null) return null;
   if (previous === 0) {
     return current === 0 ? null : (
@@ -47,8 +58,9 @@ function DeltaBadge({ current, previous }) {
   const pct = Math.round(((current - previous) / previous) * 100);
   if (pct === 0) return <span className="text-xs font-medium text-light-muted dark:text-dark-muted">flat</span>;
   const isUp = pct > 0;
+  const isGood = isUp === goodWhenUp;
   return (
-    <span className={`flex items-center gap-0.5 text-xs font-medium ${isUp ? 'text-spark-600 dark:text-spark-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+    <span className={`flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-semantic-success-500 dark:text-semantic-success-dark' : 'text-semantic-danger-500 dark:text-semantic-danger-dark'}`}>
       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {Math.abs(pct)}%
     </span>
@@ -91,7 +103,12 @@ function highlightUrl(highlight, since) {
   return `/dashboard?${params.toString()}`;
 }
 
-function Tile({ icon: Icon, label, value, context, delta, index, highlight, since, navigate }) {
+// `status` drives the icon chip's color via statusColors.js — this is the
+// fix for the four tiles previously being visually identical (all four used
+// the same bg-brand-50/text-brand-600 chip). Shipped/In flight/At risk/
+// Overdue now each carry their own hue, so the row reads as a single glance
+// instead of four numbers that happen to sit next to each other.
+function Tile({ icon: Icon, label, value, context, delta, index, highlight, since, navigate, status }) {
   const clickable = highlight != null;
   const go = () => navigate(highlightUrl(highlight, since));
   return (
@@ -105,7 +122,7 @@ function Tile({ icon: Icon, label, value, context, delta, index, highlight, sinc
       onKeyDown={clickable ? (e) => { if (e.key === 'Enter') go(); } : undefined}
     >
       <div className="mb-3 flex items-center justify-between">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${getStatusBadgeClasses(status)}`}>
           <Icon className="h-4 w-4" />
         </div>
         {delta}
@@ -154,7 +171,7 @@ const Momentum = () => {
       >
         <div>
           <h2 className="mb-1 flex items-center gap-3 font-display text-display font-semibold text-light-text dark:text-dark-text">
-            <Zap className="text-spark-500" /> Momentum
+            <Zap className="text-brand-500" /> Momentum
           </h2>
           <p className="text-body text-light-muted dark:text-dark-muted">Where things stand, and what to do about it — not just counts.</p>
         </div>
@@ -223,9 +240,10 @@ const Momentum = () => {
               index={0}
               icon={CheckCircle2}
               label="Shipped"
+              status={STATUS.SHIPPED}
               value={data.tiles.shipped.value}
               since={data.periodStart}
-              delta={<DeltaBadge current={data.tiles.shipped.value} previous={data.tiles.shipped.previous} />}
+              delta={<DeltaBadge current={data.tiles.shipped.value} previous={data.tiles.shipped.previous} goodWhenUp />}
               highlight="done"
               navigate={navigate}
             />
@@ -233,6 +251,7 @@ const Momentum = () => {
               index={1}
               icon={ListTodo}
               label="In flight"
+              status={STATUS.IN_FLIGHT}
               value={data.tiles.inFlight.value}
               context={data.tiles.inFlight.oldestDays != null ? `oldest: ${data.tiles.inFlight.oldestDays}d` : null}
               highlight="in-progress"
@@ -242,9 +261,10 @@ const Momentum = () => {
               index={2}
               icon={AlertTriangle}
               label="At risk"
+              status={STATUS.AT_RISK}
               value={data.tiles.atRisk.value}
               context="due within 48h"
-              delta={<DeltaBadge current={data.tiles.atRisk.value} previous={data.tiles.atRisk.previous} />}
+              delta={<DeltaBadge current={data.tiles.atRisk.value} previous={data.tiles.atRisk.previous} goodWhenUp={false} />}
               highlight="at-risk"
               navigate={navigate}
             />
@@ -252,8 +272,9 @@ const Momentum = () => {
               index={3}
               icon={Clock}
               label="Overdue"
+              status={STATUS.OVERDUE}
               value={data.tiles.overdue.value}
-              delta={<DeltaBadge current={data.tiles.overdue.value} previous={data.tiles.overdue.previous} />}
+              delta={<DeltaBadge current={data.tiles.overdue.value} previous={data.tiles.overdue.previous} goodWhenUp={false} />}
               highlight="overdue"
               navigate={navigate}
             />
@@ -282,11 +303,14 @@ const Momentum = () => {
                 <BarChart data={data.throughput} barGap={-16}>
                   <XAxis dataKey="name" stroke={chartAxisColor(isDark)} tick={{ fill: chartAxisColor(isDark) }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
-                  {/* Previous period, ghosted behind this period's bars. */}
-                  <Bar dataKey="previous" name="Previous" fill={isDark ? '#2A2733' : '#E7E0D4'} radius={[6, 6, 0, 0]} />
+                  {/* Previous period, ghosted behind this period's bars. Was
+                      a hardcoded hex here that bypassed chartGridColor and
+                      would have silently kept the old violet-system border
+                      color after this redesign. */}
+                  <Bar dataKey="previous" name="Previous" fill={chartGridColor(isDark)} radius={[6, 6, 0, 0]} />
                   <Bar dataKey="current" name="This period" radius={[6, 6, 0, 0]}>
                     {data.throughput.map((entry, i) => (
-                      <Cell key={i} fill={i === peakIndex ? SPARK[500] : CHART_PRIMARY} />
+                      <Cell key={i} fill={i === peakIndex ? BRAND[700] : CHART_PRIMARY} />
                     ))}
                   </Bar>
                 </BarChart>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Bell, CheckCircle, LogOut, Mail, Moon, Settings as SettingsIcon, Star, Trash2, User, Users } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, Mail, Moon, Settings as SettingsIcon, Star, Trash2, User, Users } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -231,7 +231,7 @@ const Settings = () => {
                 <h4 className="text-lg font-semibold">Notifications</h4>
               </div>
               {notifPermission === 'granted' ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-500 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
                   <CheckCircle /> Enabled
                 </span>
               ) : (
@@ -285,7 +285,7 @@ const Settings = () => {
               </form>
             )}
             {inviteStatus && (
-              <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
+              <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-semantic-danger-500 dark:text-semantic-danger-dark' : 'text-semantic-success-500 dark:text-semantic-success-dark'}`}>
                 {inviteStatus.message}
               </p>
             )}
@@ -311,7 +311,7 @@ const Settings = () => {
                 <h4 className="text-lg font-semibold">Motive Pro</h4>
               </div>
               {user?.isPro && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-500 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
                   <CheckCircle /> You're a Pro member
                 </span>
               )}
@@ -374,9 +374,9 @@ const Settings = () => {
               </>
             )}
 
-            {upgradeError && <p className="text-xs text-red-500 mt-2">{upgradeError}</p>}
+            {upgradeError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark mt-2">{upgradeError}</p>}
             {upgradeStatus === 'cancelled' && !user?.isPro && (
-              <p className="text-xs text-spark-600 dark:text-spark-400 mt-2">Checkout was cancelled — no charge was made.</p>
+              <p className="text-xs text-semantic-warning-500 dark:text-semantic-warning-dark mt-2">Checkout was cancelled — no charge was made.</p>
             )}
           </div>
 

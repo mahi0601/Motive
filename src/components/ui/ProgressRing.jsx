@@ -8,7 +8,7 @@ const ProgressRing = ({ progress, size = 60, strokeWidth = 6, color = 'brand', t
 
   const colorClasses = {
     brand: 'text-brand-600 dark:text-brand-400',
-    spark: 'text-spark-600 dark:text-spark-400',
+    warning: 'text-semantic-warning-500 dark:text-semantic-warning-dark',
   };
 
   const textColorClasses = {

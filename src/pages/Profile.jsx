@@ -67,12 +67,12 @@ const Profile = () => {
 
         <div className="mt-6 p-6 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-md flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <LogOut className="text-red-500" />
-            <h4 className="text-lg font-medium text-red-600 dark:text-red-400">Logout</h4>
+            <LogOut className="text-light-muted dark:text-dark-muted" />
+            <h4 className="text-lg font-medium text-light-text dark:text-dark-text">Logout</h4>
           </div>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-400 hover:bg-red-200 dark:hover:bg-red-800 transition"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-light-surface dark:bg-dark-raised text-light-text dark:text-dark-text border border-light-border dark:border-dark-border hover:bg-light-border/40 dark:hover:bg-dark-border transition"
           >
             Confirm Logout
           </button>

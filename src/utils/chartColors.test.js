@@ -1,15 +1,15 @@
 import { describe, test, expect } from 'vitest';
-import { BRAND, SPARK, CHART_PRIMARY, CHART_SERIES, chartAxisColor, chartGridColor, chartTooltipStyle } from './chartColors';
+import { BRAND, CHART_PRIMARY, CHART_SERIES, chartAxisColor, chartGridColor, chartTooltipStyle } from './chartColors';
 
 describe('chartColors', () => {
-  test('CHART_PRIMARY is the brand-500 hex, matching tailwind.config.js\'s brand scale', () => {
+  test('CHART_PRIMARY is the brand-500 hex, matching tailwind.config.js\'s brand (petrol) scale', () => {
     expect(CHART_PRIMARY).toBe(BRAND[500]);
-    expect(CHART_PRIMARY).toBe('#7C5CF6');
+    expect(CHART_PRIMARY).toBe('#1B7A8C');
   });
 
-  test('CHART_SERIES puts spark exactly once, as the "stands out" accent', () => {
-    expect(CHART_SERIES).toContain(SPARK[500]);
-    expect(CHART_SERIES.filter((c) => c === SPARK[500])).toHaveLength(1);
+  test('CHART_SERIES is a monochrome brand ramp with no duplicate stops', () => {
+    expect(CHART_SERIES).toContain(BRAND[500]);
+    expect(new Set(CHART_SERIES).size).toBe(CHART_SERIES.length);
   });
 
   // recharts reads these as presentation attributes (stroke/fill), never

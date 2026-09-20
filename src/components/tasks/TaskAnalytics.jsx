@@ -50,7 +50,7 @@ const TaskAnalytics = ({ tasks = [] }) => {
       </span>
       <span className="h-4 w-px bg-light-border dark:bg-dark-border" aria-hidden="true" />
       <span className="flex items-center gap-2 text-light-text dark:text-dark-text">
-        <AlertTriangle className="h-4 w-4 text-spark-500" />
+        <AlertTriangle className="h-4 w-4 text-semantic-warning-500 dark:text-semantic-warning-dark" />
         <strong className="font-semibold">{needsAttention}</strong> needs attention
       </span>
       <Link to="/momentum" className="ml-auto text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">

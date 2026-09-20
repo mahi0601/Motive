@@ -37,7 +37,7 @@ const ResetPassword = () => {
   if (!token) {
     return (
       <>
-        <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+        <div className="flex items-center gap-2 text-semantic-danger-500 dark:text-semantic-danger-dark">
           <AlertCircle size={20} />
           <h2 className="font-display text-xl font-bold text-light-text dark:text-white">Invalid link</h2>
         </div>
@@ -54,7 +54,7 @@ const ResetPassword = () => {
   if (done) {
     return (
       <>
-        <div className="flex items-center gap-2 text-brand-600 dark:text-brand-400">
+        <div className="flex items-center gap-2 text-semantic-success-500 dark:text-semantic-success-dark">
           <CheckCircle2 size={20} />
           <h2 className="font-display text-xl font-bold text-light-text dark:text-white">Password updated</h2>
         </div>
@@ -71,7 +71,7 @@ const ResetPassword = () => {
       </p>
 
       {error && (
-        <div className="mb-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-500 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
           <AlertCircle size={16} /> {error}
         </div>
       )}

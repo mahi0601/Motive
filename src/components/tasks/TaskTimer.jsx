@@ -60,7 +60,7 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
           onClick={() => setIsRunning(!isRunning)}
           className={`p-1.5 rounded transition-colors ${
             isRunning
-              ? 'bg-spark-500 hover:bg-spark-600 text-white'
+              ? 'bg-brand-700 hover:bg-brand-800 text-white'
               : 'bg-brand-500 hover:bg-brand-600 text-white'
           }`}
         >

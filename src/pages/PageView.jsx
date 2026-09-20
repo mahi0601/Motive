@@ -111,8 +111,8 @@ const PageView = () => {
           <span className="text-3xl">{page.icon || '📄'}</span>
           <button
             onClick={toggleFavorite}
-            className={`flex items-center gap-1 hover:text-spark-500 ${
-              page.favorite ? 'text-spark-500' : ''
+            className={`flex items-center gap-1 hover:text-amber-500 ${
+              page.favorite ? 'text-amber-500' : ''
             }`}
             title="Toggle favorite"
           >

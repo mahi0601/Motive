@@ -50,7 +50,7 @@ const Header = () => {
           aria-label="Toggle theme"
         >
           {isDark ? (
-            <Sun className="h-5 w-5 text-spark-400" />
+            <Sun className="h-5 w-5 text-brand-400" />
           ) : (
             <Moon className="h-5 w-5 text-light-text dark:text-dark-text" />
           )}
