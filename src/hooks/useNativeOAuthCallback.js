@@ -29,6 +29,10 @@ export const useNativeOAuthCallback = () => {
       const { searchParams } = new URL(url);
       const code = searchParams.get('code');
       const error = searchParams.get('error');
+      // See auth.controller.js#googleCallback — appended to this same deep
+      // link when the sign-in was reached via an invite, so choosing Google
+      // sign-in on Android doesn't silently drop the invite either.
+      const inviteToken = searchParams.get('invite');
 
       if (error || !code) {
         notify('error', 'Google sign-in failed', 'Please try again.');
@@ -39,7 +43,7 @@ export const useNativeOAuthCallback = () => {
       try {
         const { data } = await nativeExchange(code);
         login(data.user, data.accessToken);
-        navigate('/dashboard');
+        navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
       } catch {
         notify('error', 'Google sign-in failed', 'Please try again.');
         navigate('/login');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, Bell, CheckCircle, Info, MessageSquare, Trash2, X } from 'lucide-react';
+import { AlertCircle, Bell, CheckCircle, Info, MessageSquare, Trash2, UserPlus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getNotifications, markNotificationRead, clearNotifications } from '../../services/notificationService';
 import { logger } from '../../utils/logger';
@@ -78,6 +78,10 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
         return <CheckCircle className="w-5 h-5 text-brand-600 dark:text-brand-400" />;
       case 'error':
         return <AlertCircle className="w-5 h-5 text-brand-700 dark:text-brand-300" />;
+      case 'invite_accepted':
+        // Good news, not the generic Info default — see
+        // workspace.service.js#acceptInvite for where this is created.
+        return <UserPlus className="w-5 h-5 text-semantic-success-500 dark:text-semantic-success-dark" />;
       default:
         return <Info className="w-5 h-5 text-semantic-info-500 dark:text-semantic-info-dark" />;
     }

@@ -17,6 +17,12 @@ export const updateMemberRole = (workspaceId, userId, role) =>
   api.patch(`/api/workspaces/${workspaceId}/members/${userId}`, { role });
 export const removeMember = (workspaceId, userId) =>
   api.delete(`/api/workspaces/${workspaceId}/members/${userId}`);
+export const transferOwnership = (workspaceId, userId) =>
+  api.post(`/api/workspaces/${workspaceId}/transfer-ownership`, { userId });
+// Self-service, unlike removeMember (owner-acting-on-someone-else) — a
+// distinct backend function/route for a distinct authorization shape, see
+// workspace.service.js#leaveWorkspace.
+export const leaveWorkspace = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/leave`);
 
 // The /invite/:token public landing page — a different resource root
 // (/api/invites, not /api/workspaces/:id/...) since accepting/declining

@@ -45,9 +45,11 @@ const Header = () => {
             className="hidden max-w-[160px] truncate rounded-lg border border-light-border bg-light-surface px-2 py-1.5 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text sm:block"
             aria-label="Switch workspace"
           >
-            {workspaces.map((w) => (
-              <option key={w.id} value={w.id}>{w.name}</option>
-            ))}
+            {workspaces.map((w) => {
+              const role = w.ownerId === user?.id ? 'Owner' : w.members?.find((m) => m.userId === user?.id)?.role;
+              const label = role ? `${w.name} (${role[0].toUpperCase()}${role.slice(1)})` : w.name;
+              return <option key={w.id} value={w.id}>{label}</option>;
+            })}
           </select>
         )}
       </div>

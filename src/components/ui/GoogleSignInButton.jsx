@@ -17,9 +17,17 @@ import { Browser } from '@capacitor/browser';
 // own WebView anyway).
 const GOOGLE_AUTH_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth/google`;
 
-const GoogleSignInButton = () => {
+// `inviteToken` — passed by Login.jsx/Register.jsx when the page itself was
+// reached via an invite link — rides along on `?invite=` so choosing this
+// button doesn't silently drop the invite (see auth.controller.js's
+// googleRedirect/googleCallback for the other half of this).
+const GoogleSignInButton = ({ inviteToken }) => {
   const isNative = Capacitor.isNativePlatform();
-  const href = isNative ? `${GOOGLE_AUTH_URL}?native=1` : GOOGLE_AUTH_URL;
+  const params = new URLSearchParams();
+  if (isNative) params.set('native', '1');
+  if (inviteToken) params.set('invite', inviteToken);
+  const query = params.toString();
+  const href = query ? `${GOOGLE_AUTH_URL}?${query}` : GOOGLE_AUTH_URL;
 
   const handleClick = isNative
     ? (e) => {

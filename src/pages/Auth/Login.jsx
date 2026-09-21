@@ -107,7 +107,7 @@ const Login = () => {
         or
         <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
       </div>
-      <GoogleSignInButton />
+      <GoogleSignInButton inviteToken={searchParams.get('invite')} />
 
       <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Don’t have an account?{' '}

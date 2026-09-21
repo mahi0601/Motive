@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Bell, CheckCircle, Mail, Moon, RefreshCw, Settings as SettingsIcon, Star, Trash2, User, Users, X } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, Crown, LogOut as LeaveIcon, Mail, Moon, Plus, RefreshCw, Settings as SettingsIcon, Star, Trash2, User, Users, X } from 'lucide-react';
 import { Menu } from '@headlessui/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,13 +8,16 @@ import { useTheme } from '../context/ThemeContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { deleteAccount } from '../services/userService';
 import { createCheckoutSession, reconcileCheckoutSession } from '../services/paymentService';
-import { createInvite, listInvites, resendInvite, revokeInvite, updateMemberRole, removeMember } from '../services/workspaceService';
+import {
+  createInvite, listInvites, resendInvite, revokeInvite,
+  updateMemberRole, removeMember, transferOwnership, leaveWorkspace, createWorkspace,
+} from '../services/workspaceService';
 import { logger } from '../utils/logger';
 
 const Settings = () => {
   const { user, logout, refreshUser } = useAuth();
   const { isDark: isDarkMode, toggleTheme: handleToggleTheme } = useTheme();
-  const { workspace, loadWorkspace } = useWorkspace();
+  const { workspace, loadWorkspace, switchWorkspace } = useWorkspace();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Invite a teammate into the workspace — this is the only way another real
@@ -99,12 +102,67 @@ const Settings = () => {
     }
   };
 
+  // A single pending-action slot for the two high-stakes per-member actions
+  // (remove, transfer ownership) — clicking either shows an inline
+  // "are you sure" in that row instead of acting immediately, matching the
+  // Danger Zone's own commit-then-confirm bar below rather than Dashboard's
+  // optimistic-undo pattern, which doesn't map cleanly onto a persisted
+  // member list. Only one row can be mid-confirm at a time.
+  const [pendingMemberAction, setPendingMemberAction] = useState(null); // { type: 'remove'|'transfer', userId, name }
+
   const handleRemoveMember = async (memberUserId) => {
+    setPendingMemberAction(null);
     try {
       await removeMember(workspace.id, memberUserId);
       loadWorkspace();
     } catch (err) {
       setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not remove that member.' });
+    }
+  };
+
+  const handleTransferOwnership = async (memberUserId) => {
+    setPendingMemberAction(null);
+    try {
+      await transferOwnership(workspace.id, memberUserId);
+      loadWorkspace(); // isOwner re-derives from workspace.ownerId === user.id
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not transfer ownership.' });
+    }
+  };
+
+  const [leaving, setLeaving] = useState(false);
+  const handleLeaveWorkspace = async () => {
+    setLeaving(true);
+    try {
+      await leaveWorkspace(workspace.id);
+      loadWorkspace();
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not leave that workspace.' });
+      setLeaving(false);
+    }
+  };
+
+  // "+ New workspace" — createWorkspace has existed on the backend (and even
+  // in this file's own service import) with no UI entry point at all; this
+  // is the only one. Same inline-reveal weight as Dashboard's per-column
+  // quick-add, not a full modal.
+  const [creatingWorkspace, setCreatingWorkspace] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [creatingWorkspaceBusy, setCreatingWorkspaceBusy] = useState(false);
+  const handleCreateWorkspace = async (e) => {
+    e.preventDefault();
+    if (!newWorkspaceName.trim()) return;
+    setCreatingWorkspaceBusy(true);
+    try {
+      const { data } = await createWorkspace({ name: newWorkspaceName.trim() });
+      await loadWorkspace();
+      switchWorkspace(data.workspace.id);
+      setNewWorkspaceName('');
+      setCreatingWorkspace(false);
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err?.response?.data?.message || 'Could not create that workspace.' });
+    } finally {
+      setCreatingWorkspaceBusy(false);
     }
   };
 
@@ -317,10 +375,50 @@ const Settings = () => {
               the owner can invite, change roles, or remove someone, same
               authorization the backend enforces. */}
           <div className="p-5 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="text-brand-500" />
-              <h4 className="text-lg font-semibold">Members</h4>
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-3">
+                <Users className="text-brand-500" />
+                <h4 className="text-lg font-semibold">Members</h4>
+              </div>
+              {/* createWorkspace has existed on the backend (and even in
+                  this file's own service import) with no UI entry point at
+                  all — this is the only one. */}
+              {!creatingWorkspace && (
+                <button
+                  onClick={() => setCreatingWorkspace(true)}
+                  className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+                >
+                  <Plus className="h-3.5 w-3.5" /> New workspace
+                </button>
+              )}
             </div>
+            {creatingWorkspace && (
+              <form onSubmit={handleCreateWorkspace} className="mb-3 flex flex-wrap gap-2">
+                <input
+                  type="text"
+                  autoFocus
+                  value={newWorkspaceName}
+                  onChange={(e) => setNewWorkspaceName(e.target.value)}
+                  placeholder="Workspace name"
+                  className="min-w-0 flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
+                />
+                <button
+                  type="submit"
+                  disabled={creatingWorkspaceBusy}
+                  className="px-3 py-2 text-sm rounded-lg font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:opacity-60"
+                >
+                  {creatingWorkspaceBusy ? 'Creating…' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setCreatingWorkspace(false); setNewWorkspaceName(''); }}
+                  disabled={creatingWorkspaceBusy}
+                  className="px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border text-light-text dark:text-dark-text"
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
             <p className="text-sm text-light-muted dark:text-dark-muted mb-3">
               Invite a teammate by email — they'll get a link to join, whether or not they have a Motive account yet.
             </p>
@@ -365,40 +463,91 @@ const Settings = () => {
 
             {workspace?.members?.length > 0 && (
               <div className="mt-4 divide-y divide-light-border dark:divide-dark-border">
-                {workspace.members.map((m) => (
-                  <div key={m.id} className="flex items-center gap-3 py-2">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
-                      {(m.user?.name || '?').charAt(0).toUpperCase()}
-                    </span>
-                    <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">
-                      {m.user?.name} {m.userId === user?.id ? '(you)' : ''}
-                    </span>
-                    {m.role === 'owner' ? (
-                      <span className="rounded-lg bg-brand-soft px-2 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Owner</span>
-                    ) : isOwner ? (
-                      <>
-                        <select
-                          value={m.role}
-                          onChange={(e) => handleRoleChange(m.userId, e.target.value)}
-                          className="rounded-lg border border-light-border bg-light-surface px-2 py-1 text-xs dark:border-dark-border dark:bg-dark-raised"
-                        >
-                          <option value="editor">Editor</option>
-                          <option value="viewer">Viewer</option>
-                        </select>
-                        <button
-                          onClick={() => handleRemoveMember(m.userId)}
-                          className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
-                          aria-label={`Remove ${m.user?.name}`}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <span className="text-xs capitalize text-light-muted dark:text-dark-muted">{m.role}</span>
-                    )}
-                  </div>
-                ))}
+                {workspace.members.map((m) => {
+                  const isPendingRemove = pendingMemberAction?.type === 'remove' && pendingMemberAction.userId === m.userId;
+                  const isPendingTransfer = pendingMemberAction?.type === 'transfer' && pendingMemberAction.userId === m.userId;
+                  if (isPendingRemove || isPendingTransfer) {
+                    return (
+                      <div key={m.id} className="flex items-center justify-between gap-3 py-2">
+                        <span className="text-sm text-light-text dark:text-dark-text">
+                          {isPendingRemove ? `Remove ${m.user?.name}?` : `Make ${m.user?.name} the owner?`}
+                        </span>
+                        <div className="flex shrink-0 gap-2">
+                          <button
+                            onClick={() => (isPendingRemove ? handleRemoveMember(m.userId) : handleTransferOwnership(m.userId))}
+                            className={`rounded-lg px-3 py-1 text-xs font-semibold text-white transition ${
+                              isPendingRemove ? 'bg-semantic-danger-500 hover:opacity-90' : 'bg-brand-600 hover:bg-brand-700'
+                            }`}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setPendingMemberAction(null)}
+                            className="rounded-lg border border-light-border px-3 py-1 text-xs font-medium text-light-text dark:border-dark-border dark:text-dark-text"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={m.id} className="flex items-center gap-3 py-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
+                        {(m.user?.name || '?').charAt(0).toUpperCase()}
+                      </span>
+                      <span className="flex-1 truncate text-sm text-light-text dark:text-dark-text">
+                        {m.user?.name} {m.userId === user?.id ? '(you)' : ''}
+                      </span>
+                      {m.role === 'owner' ? (
+                        <span className="rounded-lg bg-brand-soft px-2 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Owner</span>
+                      ) : isOwner ? (
+                        <>
+                          <select
+                            value={m.role}
+                            onChange={(e) => handleRoleChange(m.userId, e.target.value)}
+                            className="rounded-lg border border-light-border bg-light-surface px-2 py-1 text-xs dark:border-dark-border dark:bg-dark-raised"
+                          >
+                            <option value="editor">Editor</option>
+                            <option value="viewer">Viewer</option>
+                          </select>
+                          <button
+                            onClick={() => setPendingMemberAction({ type: 'transfer', userId: m.userId })}
+                            className="rounded-lg p-1.5 text-light-muted transition hover:text-brand-600 dark:text-dark-muted"
+                            aria-label={`Make ${m.user?.name} the owner`}
+                            title="Make owner"
+                          >
+                            <Crown className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setPendingMemberAction({ type: 'remove', userId: m.userId })}
+                            className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
+                            aria-label={`Remove ${m.user?.name}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-xs capitalize text-light-muted dark:text-dark-muted">{m.role}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+            )}
+
+            {/* Self-service — today, a non-owner had zero actions on their
+                own row at all. removeMember is owner-acting-on-someone-else
+                (assertOwner-gated); this calls the distinct leaveWorkspace
+                function instead, since it's a different authorization shape. */}
+            {!isOwner && workspace && (
+              <button
+                onClick={handleLeaveWorkspace}
+                disabled={leaving}
+                className="mt-4 flex items-center gap-1.5 text-xs font-medium text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted disabled:opacity-60"
+              >
+                <LeaveIcon className="h-3.5 w-3.5" /> {leaving ? 'Leaving…' : 'Leave workspace'}
+              </button>
             )}
 
             {isOwner && !invitesLoading && pendingInvites.length > 0 && (
@@ -510,66 +659,77 @@ const Settings = () => {
             )}
           </div>
 
-          {/* Danger Zone — delete account. Red stays here deliberately (this
-              is genuinely destructive, unlike Logout — see Header.jsx and
-              Profile.jsx), now routed through the semantic-danger tokens
-              instead of stock Tailwind red so it's the exact same hue as
-              every other "danger" in the app, not a second, slightly
-              different red. */}
-          <div className="p-5 rounded-xl border border-semantic-danger-200 dark:border-semantic-danger-500/30 bg-semantic-danger-50/60 dark:bg-semantic-danger-500/10">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="text-semantic-danger-500 dark:text-semantic-danger-dark" />
-              <h4 className="text-lg font-semibold text-semantic-danger-500 dark:text-semantic-danger-dark">Danger Zone</h4>
-            </div>
-            <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
-              Permanently delete your account and <strong>all</strong> of your pages, tasks, and data.
-              This cannot be undone.
-            </p>
-
+          {/* Delete account — quiet until you actually commit to it. At rest
+              this reads like any other settings card (no red), so scrolling
+              past Settings isn't a constant, low-grade warning; the
+              semantic-danger treatment only appears once you click through
+              to the confirm step, which is the point where the stakes are
+              actually real. Same "one red, everywhere" tokens as the rest
+              of the app either way — see the file's earlier note on that. */}
+          <div
+            className={`p-5 rounded-xl border shadow-sm transition-colors ${
+              confirming
+                ? 'border-semantic-danger-200 dark:border-semantic-danger-500/40 bg-semantic-danger-50/40 dark:bg-semantic-danger-500/10'
+                : 'border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised'
+            }`}
+          >
             {!confirming ? (
-              <button
-                onClick={() => setConfirming(true)}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-semantic-danger-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                <Trash2 /> Delete account
-              </button>
-            ) : (
-              <div className="mt-4 space-y-3">
-                <p className="text-sm font-medium text-light-text dark:text-dark-muted">
-                  Enter your password to confirm deletion:
+              <>
+                <h4 className="text-lg font-semibold text-light-text dark:text-dark-text">Delete account</h4>
+                <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
+                  Permanently remove your account and all its data. This cannot be undone.
                 </p>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setDeleteError('');
-                  }}
-                  placeholder="Your password"
-                  className="w-full max-w-xs rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised px-3 py-2 text-sm text-light-text dark:text-dark-text outline-none focus:border-semantic-danger-500 focus:ring-2 focus:ring-semantic-danger-200 dark:focus:ring-semantic-danger-500/30"
-                />
-                {deleteError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{deleteError}</p>}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleDeleteAccount}
-                    disabled={deleting}
-                    className="rounded-lg bg-semantic-danger-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-                  >
-                    {deleting ? 'Deleting…' : 'Permanently delete'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setConfirming(false);
-                      setPassword('');
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-light-border dark:border-dark-border px-4 py-2 text-sm font-medium text-light-text dark:text-dark-text transition hover:border-semantic-danger-300 hover:text-semantic-danger-500 dark:hover:border-semantic-danger-500/50 dark:hover:text-semantic-danger-dark"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete account
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-semantic-danger-500 dark:text-semantic-danger-dark" />
+                  <h4 className="text-lg font-semibold text-semantic-danger-500 dark:text-semantic-danger-dark">This can't be undone</h4>
+                </div>
+                <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
+                  All your pages, tasks, and data will be permanently removed. Enter your password to confirm.
+                </p>
+                <div className="mt-4 space-y-3">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
                       setDeleteError('');
                     }}
-                    disabled={deleting}
-                    className="rounded-lg border border-light-border dark:border-dark-border px-4 py-2 text-sm font-medium text-light-text dark:text-dark-text"
-                  >
-                    Cancel
-                  </button>
+                    placeholder="Your password"
+                    autoFocus
+                    className="w-full max-w-xs rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised px-3 py-2 text-sm text-light-text dark:text-dark-text outline-none focus:border-semantic-danger-500 focus:ring-2 focus:ring-semantic-danger-200 dark:focus:ring-semantic-danger-500/30"
+                  />
+                  {deleteError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{deleteError}</p>}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={deleting}
+                      className="rounded-lg bg-semantic-danger-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                    >
+                      {deleting ? 'Deleting…' : 'Permanently delete'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirming(false);
+                        setPassword('');
+                        setDeleteError('');
+                      }}
+                      disabled={deleting}
+                      className="rounded-lg border border-light-border dark:border-dark-border px-4 py-2 text-sm font-medium text-light-text dark:text-dark-text"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
