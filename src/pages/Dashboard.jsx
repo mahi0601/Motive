@@ -11,6 +11,7 @@ import ActivityFeed from '../components/collab/ActivityFeed';
 import DailyDigest from '../components/tasks/DailyDigest';
 import KeyboardShortcuts from '../components/app/KeyboardShortcuts';
 import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
+import GettingStartedCard from '../components/app/GettingStartedCard';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
 import { logger } from '../utils/logger';
@@ -329,6 +330,12 @@ const Dashboard = () => {
           </div>
         </div>
 
+        <GettingStartedCard
+          tasks={tasks}
+          createTask={create}
+          onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
+        />
+
         <TaskAnalytics tasks={analyticsTasks} />
 
         {highlight && (
@@ -411,6 +418,7 @@ const Dashboard = () => {
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <select
+                            aria-label="Priority"
                             value={drafts[column.key].priority}
                             onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], priority: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
@@ -430,7 +438,7 @@ const Dashboard = () => {
                         {grouped[column.key].map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={selectMode}>
                             {(prov) => (
-                              <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
+                              <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps} role="group" aria-roledescription="sortable task">
                                 <EnhancedTaskCard
                                   task={task}
                                   onEdit={(t) => { setEditingTask(t); setShowTaskForm(true); }}
@@ -483,7 +491,7 @@ const Dashboard = () => {
           </button>
           <button
             onClick={bulkDelete}
-            className="rounded-full border border-semantic-danger-200 px-4 py-1.5 text-sm font-medium text-semantic-danger-500 hover:bg-semantic-danger-50 dark:border-semantic-danger-500/40 dark:text-semantic-danger-dark dark:hover:bg-semantic-danger-500/10"
+            className="rounded-full border border-semantic-danger-200 px-4 py-1.5 text-sm font-medium text-semantic-danger-700 hover:bg-semantic-danger-50 dark:border-semantic-danger-500/40 dark:text-semantic-danger-dark dark:hover:bg-semantic-danger-500/10"
           >
             Delete
           </button>

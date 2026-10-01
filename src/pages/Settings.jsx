@@ -8,6 +8,7 @@ import ThemeCard from '../components/settings/ThemeCard';
 import NotificationsCard from '../components/settings/NotificationsCard';
 import MembersCard from '../components/settings/MembersCard';
 import StatusPageCard from '../components/settings/StatusPageCard';
+import AccountCard from '../components/settings/AccountCard';
 import BillingCard from '../components/settings/BillingCard';
 import DangerZoneCard from '../components/settings/DangerZoneCard';
 
@@ -88,6 +89,7 @@ const Settings = () => {
           <NotificationsCard />
           <MembersCard />
           <StatusPageCard />
+          <AccountCard />
           <BillingCard />
           <DangerZoneCard />
         </div>

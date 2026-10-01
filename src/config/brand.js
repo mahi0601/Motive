@@ -24,7 +24,7 @@ export const VALUE_PROPS = [
     body: 'Momentum flags at-risk and overdue work across every project, automatically.',
   },
   {
-    title: 'Client seats are free, forever.',
-    body: 'Pay for your team. Never for the people you\'re accountable to.',
+    title: 'Your clients never need an account.',
+    body: 'They open one link — no sign-up, no seat to buy. You pay for your team, not for the people you\'re accountable to.',
   },
 ];

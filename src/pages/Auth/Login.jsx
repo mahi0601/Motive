@@ -41,7 +41,7 @@ const Login = () => {
     setServerError('');
     try {
       const { data } = await loginRequest(form);
-      setAuthUser(data.user, data.accessToken, data.csrfToken);
+      setAuthUser(data.user, data.accessToken);
       // Came here from an invite link ("I already have an account") — send
       // them back to it now authenticated, so Invite.jsx's own accept flow
       // (and its wrong-email handling) takes over, instead of duplicating
@@ -61,7 +61,7 @@ const Login = () => {
       <p className="mt-2 mb-8 text-light-muted dark:text-dark-muted">Log in to your Motive workspace.</p>
 
       {serverError && (
-        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-500 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-700 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
           <AlertCircle size={16} /> {serverError}
         </div>
       )}

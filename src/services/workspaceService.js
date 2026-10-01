@@ -28,11 +28,18 @@ export const leaveWorkspace = (workspaceId) => api.delete(`/api/workspaces/${wor
 // ONCE ({ token, shareEnabledAt }) — calling it again rotates the link and
 // kills the old one. DELETE turns sharing off.
 export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspaceId}/share`);
+// Owner-only: what the public status page says about the project. See
+// StatusPageDetailsForm and the backend's updateStatusPage for the fields.
+export const updateStatusPage = (workspaceId, data) => api.patch(`/api/workspaces/${workspaceId}/status-page`, data);
+// The owner's inbox of client feedback from the public status page.
+export const listFeedback = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/feedback`);
+export const markFeedbackRead = (workspaceId, id) => api.patch(`/api/workspaces/${workspaceId}/feedback/${id}/read`);
+export const deleteFeedback = (workspaceId, id) => api.delete(`/api/workspaces/${workspaceId}/feedback/${id}`);
 export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/share`);
 
 // The /invite/:token public landing page — a different resource root
 // (/api/invites, not /api/workspaces/:id/...) since accepting/declining
 // happens before the caller is necessarily a member of anything.
-export const getInviteByToken = (token) => api.get(`/api/invites/${token}`);
-export const acceptInvite = (token) => api.post(`/api/invites/${token}/accept`);
-export const declineInvite = (token) => api.post(`/api/invites/${token}/decline`);
+export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComponent(token)}`);
+export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
+export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);

@@ -9,7 +9,7 @@ export default [
   // built web assets (including the minified service worker) into
   // android/app/src/main/assets/public on every `cap sync`, which isn't
   // source and shouldn't be linted.
-  { ignores: ['dist', 'android'] },
+  { ignores: ['dist', 'android', 'test-results', 'playwright-report'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -57,5 +57,10 @@ export default [
     languageOptions: {
       globals: globals.node,
     },
+  },
+  // Playwright's config runs in Node, not the browser.
+  {
+    files: ['playwright.config.js'],
+    languageOptions: { globals: globals.node },
   },
 ]

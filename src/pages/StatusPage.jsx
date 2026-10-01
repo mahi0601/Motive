@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { getStatus } from '../services/statusService';
+import { accentFor } from '../config/statusAccents';
+import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
 import {
   STATUS,
   getTaskDisplayStatus,
@@ -20,8 +22,14 @@ const SECTION_ORDER = [STATUS.OVERDUE, STATUS.AT_RISK, STATUS.IN_FLIGHT, STATUS.
 const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
-const Shell = ({ children }) => (
-  <div className="min-h-screen bg-light-background px-4 py-10 dark:bg-dark-background">
+// `accent` is a preset key; its light and dark colours become two CSS variables
+// that the page's accented parts read (see config/statusAccents.js).
+const Shell = ({ children, accent }) => (
+  <div
+    data-accent={accent}
+    style={{ '--accent-l': accentFor(accent).light, '--accent-d': accentFor(accent).dark }}
+    className="min-h-screen bg-light-background px-4 py-10 dark:bg-dark-background"
+  >
     <div className="mx-auto w-full max-w-2xl">{children}</div>
   </div>
 );
@@ -87,7 +95,7 @@ const StatusPage = () => {
       <Shell>
         <div className="mt-24 text-center">
           <LogoMark size={48} />
-          <div className="mt-6 flex items-center justify-center gap-2 text-semantic-danger-500 dark:text-semantic-danger-dark">
+          <div className="mt-6 flex items-center justify-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
             <AlertCircle size={20} />
             <h1 className="font-display text-xl font-bold text-light-text dark:text-white">Status page unavailable</h1>
           </div>
@@ -101,16 +109,40 @@ const StatusPage = () => {
   }
 
   const { workspace, summary } = status;
+  // Owner-written details (an older server may not send them at all). All of it
+  // is rendered as text by React, never as HTML.
+  const page = status.page || {};
 
   return (
-    <Shell>
+    <Shell accent={page.accent}>
       <header className="flex items-center gap-3">
         <span className="text-3xl" aria-hidden="true">{workspace.icon}</span>
         <div>
           <h1 className="font-display text-2xl font-bold text-light-text dark:text-white">{workspace.name}</h1>
-          <p className="text-sm text-light-muted dark:text-dark-muted">Project status</p>
+          <p className="text-sm text-light-muted dark:text-dark-muted">{page.headline || 'Project status'}</p>
         </div>
       </header>
+
+      {page.summary && (
+        <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-light-text dark:text-dark-text">{page.summary}</p>
+      )}
+
+      {page.milestone && (
+        <section
+          aria-label="Next milestone"
+          className="mt-4 rounded-xl border border-light-border bg-light-surface px-4 py-3 dark:border-dark-border dark:bg-dark-raised"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-l)] dark:text-[color:var(--accent-d)]">
+            Next milestone
+          </p>
+          <p className="mt-0.5 text-sm font-medium text-light-text dark:text-dark-text">
+            {page.milestone.title}
+            {formatDate(page.milestone.date) && (
+              <span className="font-normal text-light-muted dark:text-dark-muted"> · {formatDate(page.milestone.date)}</span>
+            )}
+          </p>
+        </section>
+      )}
 
       <section
         aria-label="Overall progress"
@@ -130,7 +162,7 @@ const StatusPage = () => {
           aria-label="Percent of tasks shipped"
           className="mt-3 h-2 overflow-hidden rounded-full bg-light-border dark:bg-dark-border"
         >
-          <div className="h-full rounded-full bg-brand-600 dark:bg-brand-400" style={{ width: `${summary.percent}%` }} />
+          <div className="h-full rounded-full bg-[color:var(--accent-l)] dark:bg-[color:var(--accent-d)]" style={{ width: `${summary.percent}%` }} />
         </div>
       </section>
 
@@ -172,6 +204,8 @@ const StatusPage = () => {
         );
       })}
 
+      {page.allowFeedback && <ClientFeedbackForm token={token} milestone={page.milestone} />}
+
       {status.truncated && (
         <p className="mt-4 text-center text-xs text-light-muted dark:text-dark-muted">
           Showing the first {status.tasks.length} tasks.
@@ -183,7 +217,7 @@ const StatusPage = () => {
           Updated {updatedAt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} · refreshes automatically
         </p>
       )}
-      <Footer />
+      {!page.hideBranding && <Footer />}
     </Shell>
   );
 };

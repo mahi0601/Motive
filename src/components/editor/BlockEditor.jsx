@@ -220,10 +220,11 @@ const BlockEditor = ({ pageId }) => {
         <Droppable droppableId="blocks">
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
+              {/* The library gives the drag handle role="button"; a button that contains the block's own buttons and inputs is invalid for assistive tech, so it is a group. Keyboard dragging keeps working (it depends on tabindex and key events, not the role). */}
               {topLevel.map((block, index) => (
                 <Draggable key={block.id} draggableId={block.id} index={index}>
                   {(prov) => (
-                    <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
+                    <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps} role="group" aria-roledescription="sortable block">
                       {renderBlock(block, index)}
                     </div>
                   )}

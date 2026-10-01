@@ -34,8 +34,8 @@ const PERIODS = [
 // because "warning/good/info" is momentum.service.js's own vocabulary for a
 // free-text insight, not a task's delivery state.
 const SEVERITY_STYLES = {
-  warning: { icon: AlertTriangle, className: 'text-semantic-warning-500 dark:text-semantic-warning-dark' },
-  good: { icon: CheckCircle2, className: 'text-semantic-success-500 dark:text-semantic-success-dark' },
+  warning: { icon: AlertTriangle, className: 'text-semantic-warning-700 dark:text-semantic-warning-dark' },
+  good: { icon: CheckCircle2, className: 'text-semantic-success-700 dark:text-semantic-success-dark' },
   info: { icon: TrendingUp, className: 'text-brand-600 dark:text-brand-400' },
 };
 
@@ -60,7 +60,7 @@ function DeltaBadge({ current, previous, goodWhenUp = true }) {
   const isUp = pct > 0;
   const isGood = isUp === goodWhenUp;
   return (
-    <span className={`flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-semantic-success-500 dark:text-semantic-success-dark' : 'text-semantic-danger-500 dark:text-semantic-danger-dark'}`}>
+    <span className={`flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-semantic-success-700 dark:text-semantic-success-dark' : 'text-semantic-danger-700 dark:text-semantic-danger-dark'}`}>
       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {Math.abs(pct)}%
     </span>
@@ -129,7 +129,7 @@ function Tile({ icon: Icon, label, value, context, delta, index, highlight, sinc
       </div>
       <p className="text-2xl font-bold leading-none text-light-text dark:text-dark-text">{value}</p>
       <p className="mt-2 text-label text-light-muted dark:text-dark-muted">{label}</p>
-      {context && <p className="mt-1 text-caption text-light-muted/80 dark:text-dark-muted/80">{context}</p>}
+      {context && <p className="mt-1 text-caption text-light-muted dark:text-dark-muted">{context}</p>}
     </motion.div>
   );
 }
