@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Link, Outlet } from 'react-router-dom';
+import PageFallback from '../components/ui/PageFallback';
 import { motion } from 'framer-motion';
 import { Link2, AlertTriangle, Users } from 'lucide-react';
 import Logo from '../components/ui/Logo';
@@ -73,7 +74,9 @@ const AuthLayout = () => (
         <Link to="/" className="mb-8 inline-flex">
           <Logo size={36} />
         </Link>
-        <Outlet />
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
         <p className="mt-8 text-center text-xs text-light-muted dark:text-dark-muted">
           <Link to="/privacy" className="hover:text-brand-600 dark:hover:text-brand-400">
             Privacy Policy

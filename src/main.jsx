@@ -4,6 +4,10 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import './styles/global.css';
+import { warmUpApi } from './services/warmup';
+
+// Start waking a sleeping API now, while the rest of the app is still loading.
+warmUpApi();
 
 // One-time cleanup of legacy client-side data from the old mock-based app.
 // Tasks/activity now live in the backend, so these stale keys are removed.

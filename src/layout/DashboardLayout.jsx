@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
+import PageFallback from '../components/ui/PageFallback';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/layout/Sidebar';
 import { motion } from 'framer-motion';
@@ -28,7 +29,9 @@ const DashboardLayout = () => {
           transition={{ duration: 0.4, delay: 0.05 }}
           className="flex-grow overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
         >
-          <Outlet />
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
         </motion.main>
       </div>
     </div>
