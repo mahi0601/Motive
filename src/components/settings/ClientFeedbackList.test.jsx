@@ -53,6 +53,26 @@ describe('ClientFeedbackList', () => {
     await waitFor(() => expect(screen.queryByText('Make it blue')).toBeNull());
   });
 
+  test('the Sign-offs filter shows only approvals and offers the record as a CSV', async () => {
+    render(<ClientFeedbackList workspaceId="ws-1" />);
+    await screen.findByText('Make it blue');
+    listFeedback.mockResolvedValueOnce({ data: { items: [ITEMS[1]], unread: 0, pagination: { total: 1 } } });
+    fireEvent.click(screen.getByRole('button', { name: /sign-offs/i }));
+    await waitFor(() => expect(listFeedback).toHaveBeenLastCalledWith('ws-1', { kind: 'approve' }));
+    await waitFor(() => expect(screen.queryByText('Make it blue')).toBeNull());
+    expect(screen.getByRole('button', { name: /sign-offs/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /download sign-off record/i })).toBeEnabled();
+  });
+
+  test('with no sign-offs yet, the record cannot be downloaded and the empty state says why', async () => {
+    render(<ClientFeedbackList workspaceId="ws-1" />);
+    await screen.findByText('Make it blue');
+    listFeedback.mockResolvedValueOnce({ data: { items: [], unread: 0, pagination: { total: 0 } } });
+    fireEvent.click(screen.getByRole('button', { name: /sign-offs/i }));
+    expect(await screen.findByText(/no sign-offs yet/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download sign-off record/i })).toBeDisabled();
+  });
+
   test('shows a helpful empty state', async () => {
     load([], 0);
     render(<ClientFeedbackList workspaceId="ws-1" />);

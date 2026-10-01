@@ -50,6 +50,8 @@ for (const theme of ['light', 'dark']) {
 
     // The public status page, as a client sees it, with every part switched on.
     const share = await (await request.post(`${API}/api/workspaces/${await firstWorkspaceId(request, auth)}/share`, { headers: auth })).json();
+    // An approved milestone, so that state is audited too.
+    await request.post(`${API}/api/status/${share.share.token}/feedback`, { data: { kind: 'approve', name: 'Audit Client' } });
     found['status page'] = [];
     await page.goto(`/s/${share.share.token}`);
     found['status page'] = await violations(page);

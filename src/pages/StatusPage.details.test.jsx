@@ -37,6 +37,19 @@ describe('StatusPage: owner-written details', () => {
     expect(milestone).toHaveTextContent(/2026/);
   });
 
+  test('shows when the milestone was approved, as a date, and nothing about who', async () => {
+    renderWith({ ...PAGE, milestone: { title: 'Design sign-off', date: null, approvedAt: '2026-10-12T09:30:00.000Z' } });
+    const milestone = await screen.findByRole('region', { name: /next milestone/i });
+    expect(milestone).toHaveTextContent(/approved/i);
+    expect(milestone).toHaveTextContent(/2026/);
+  });
+
+  test('an unapproved milestone says nothing about approval', async () => {
+    renderWith({ ...PAGE, milestone: { title: 'Design sign-off', date: null, approvedAt: null } });
+    const milestone = await screen.findByRole('region', { name: /next milestone/i });
+    expect(milestone).not.toHaveTextContent(/approved/i);
+  });
+
   test('falls back to "Project status" and shows no empty summary or milestone boxes', async () => {
     renderWith(PAGE);
     expect(await screen.findByText('Project status')).toBeInTheDocument();

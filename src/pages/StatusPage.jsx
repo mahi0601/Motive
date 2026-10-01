@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
@@ -141,6 +141,12 @@ const StatusPage = () => {
               <span className="font-normal text-light-muted dark:text-dark-muted"> · {formatDate(page.milestone.date)}</span>
             )}
           </p>
+          {page.milestone.approvedAt && (
+            <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-semantic-success-700 dark:text-semantic-success-dark">
+              <CheckCircle2 size={16} aria-hidden="true" />
+              Approved on {formatDate(page.milestone.approvedAt)}
+            </p>
+          )}
         </section>
       )}
 

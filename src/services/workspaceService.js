@@ -32,7 +32,7 @@ export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspac
 // StatusPageDetailsForm and the backend's updateStatusPage for the fields.
 export const updateStatusPage = (workspaceId, data) => api.patch(`/api/workspaces/${workspaceId}/status-page`, data);
 // The owner's inbox of client feedback from the public status page.
-export const listFeedback = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/feedback`);
+export const listFeedback = (workspaceId, params) => api.get(`/api/workspaces/${workspaceId}/feedback`, { params });
 export const markFeedbackRead = (workspaceId, id) => api.patch(`/api/workspaces/${workspaceId}/feedback/${id}/read`);
 export const deleteFeedback = (workspaceId, id) => api.delete(`/api/workspaces/${workspaceId}/feedback/${id}`);
 export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/share`);
