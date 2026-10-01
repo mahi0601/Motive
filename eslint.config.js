@@ -53,7 +53,7 @@ export default [
   {
     // Build-tool config files run under Node, not the browser — they need
     // `process`/`import.meta` Node globals instead of `globals.browser`.
-    files: ['vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
+    files: ['vite.config.js', 'vitest.config.js', 'postcss.config.js', 'tailwind.config.js'],
     languageOptions: {
       globals: globals.node,
     },
