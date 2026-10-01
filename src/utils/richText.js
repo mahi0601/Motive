@@ -19,26 +19,41 @@ const SANITIZE_CONFIG = {
 // styling directly. Since the sanitizer's tag allowlist doesn't include
 // <span>, that would otherwise silently vanish on save — so normalize it
 // into semantic tags first, whichever code path produced it.
+//
+// SAFETY INVARIANT: untrusted markup must never be assigned to the innerHTML of
+// an element that belongs to the LIVE document. A browser parses that string
+// immediately, so `<img src=x onerror=…>` starts loading and its handler runs
+// even though the element is never attached to the page — i.e. before DOMPurify
+// has seen it. Everything below therefore happens inside one inert document
+// (DOMParser never runs scripts or loads resources), and the semantic wrappers
+// are built with createElement in that same document with the existing nodes
+// MOVED into them — there is no string round-trip anywhere.
 const normalizeStyledSpans = (html) => {
-  // Parse into an inert document (DOMParser never runs scripts or fires
-  // onerror/onload handlers). Assigning untrusted HTML to a element's
-  // innerHTML in the live document would execute e.g. <img onerror=...>
-  // before DOMPurify ever sees it.
-  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html');
-  const container = doc.body.firstElementChild;
-  container.querySelectorAll('span[style]').forEach((span) => {
+  // Parsed into the body directly rather than wrapped in a <div>: wrapping let a
+  // stray "</div>" in user content close the wrapper early and silently drop
+  // everything after it.
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.body.querySelectorAll('span[style]').forEach((span) => {
     const style = span.getAttribute('style') || '';
     const bold = /font-weight:\s*(bold|[6-9]00)/i.test(style);
     const italic = /font-style:\s*italic/i.test(style);
     if (!bold && !italic) return; // some other inline style — leave for the allowlist to strip
-    let inner = span.innerHTML;
-    if (italic) inner = `<em>${inner}</em>`;
-    if (bold) inner = `<b>${inner}</b>`;
-    const wrapper = document.createElement('span');
-    wrapper.innerHTML = inner;
-    span.replaceWith(...wrapper.childNodes);
+
+    // Bold outermost, italic inside it: <b><em>…</em></b>.
+    const tags = [];
+    if (bold) tags.push('b');
+    if (italic) tags.push('em');
+    const fragment = doc.createDocumentFragment();
+    let parent = fragment;
+    tags.forEach((tag) => {
+      const el = doc.createElement(tag);
+      parent.append(el);
+      parent = el;
+    });
+    parent.append(...span.childNodes);
+    span.replaceWith(fragment);
   });
-  return container.innerHTML;
+  return doc.body.innerHTML;
 };
 
 export const sanitizeInlineHtml = (html) => DOMPurify.sanitize(normalizeStyledSpans(html || ''), SANITIZE_CONFIG);
