@@ -5,6 +5,7 @@ import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import ResetPassword from '../pages/Auth/ResetPassword';
+import VerifyEmail from '../pages/Auth/VerifyEmail';
 import Calendar from '../pages/Calendar';
 import Momentum from '../pages/Momentum';
 import Settings from '../pages/Settings';
@@ -58,6 +59,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" />} />
