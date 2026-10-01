@@ -34,7 +34,7 @@ const PERIODS = [
 // because "warning/good/info" is momentum.service.js's own vocabulary for a
 // free-text insight, not a task's delivery state.
 const SEVERITY_STYLES = {
-  warning: { icon: AlertTriangle, className: 'text-semantic-warning-500 dark:text-semantic-warning-dark' },
+  warning: { icon: AlertTriangle, className: 'text-semantic-warning-700 dark:text-semantic-warning-dark' },
   good: { icon: CheckCircle2, className: 'text-semantic-success-500 dark:text-semantic-success-dark' },
   info: { icon: TrendingUp, className: 'text-brand-600 dark:text-brand-400' },
 };
@@ -129,7 +129,7 @@ function Tile({ icon: Icon, label, value, context, delta, index, highlight, sinc
       </div>
       <p className="text-2xl font-bold leading-none text-light-text dark:text-dark-text">{value}</p>
       <p className="mt-2 text-label text-light-muted dark:text-dark-muted">{label}</p>
-      {context && <p className="mt-1 text-caption text-light-muted/80 dark:text-dark-muted/80">{context}</p>}
+      {context && <p className="mt-1 text-caption text-light-muted dark:text-dark-muted">{context}</p>}
     </motion.div>
   );
 }

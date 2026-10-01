@@ -84,7 +84,7 @@ const StatusPageCard = () => {
       <p className="mt-2 text-sm text-light-muted dark:text-dark-muted">
         Give a client a link to a live, read-only view of “{workspace.name}”. No account needed.
       </p>
-      <p className="mt-2 rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-xs text-semantic-warning-500 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
+      <p className="mt-2 rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-xs text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
         Anyone with the link can see every task’s <strong>title, status and dates</strong> in this workspace. People’s names,
         descriptions, comments and files are never shown. Keep confidential details out of task titles.
       </p>

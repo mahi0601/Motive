@@ -226,6 +226,7 @@ const MembersCard = () => {
               className="min-w-0 flex-1 px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
             />
             <select
+              aria-label="Role for the new invitation"
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
               className="px-2 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised"
@@ -292,6 +293,7 @@ const MembersCard = () => {
                 ) : isOwner ? (
                   <>
                     <select
+                      aria-label={`Role for ${m.user?.name || 'member'}`}
                       value={m.role}
                       onChange={(e) => handleRoleChange(m.userId, e.target.value)}
                       className="rounded-lg border border-light-border bg-light-surface px-2 py-1 text-xs dark:border-dark-border dark:bg-dark-raised"

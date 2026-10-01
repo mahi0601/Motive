@@ -73,7 +73,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                 onClick={() => onRemove(notification.id)}
                 className="p-1 hover:bg-black/10 rounded transition-colors"
               >
-                <X className="w-4 h-4 text-light-muted" />
+                <X className="w-4 h-4 text-light-muted dark:text-dark-muted" />
               </button>
             </div>
           </motion.div>

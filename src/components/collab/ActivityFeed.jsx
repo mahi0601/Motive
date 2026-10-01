@@ -39,7 +39,7 @@ const ActivityFeed = ({ limit = 5 }) => {
       case 'deleted':
         return <Trash2 className="w-4 h-4 text-brand-700" />;
       default:
-        return <Clock className="w-4 h-4 text-light-muted" />;
+        return <Clock className="w-4 h-4 text-light-muted dark:text-dark-muted" />;
     }
   };
 

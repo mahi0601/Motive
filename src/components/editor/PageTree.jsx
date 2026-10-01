@@ -21,23 +21,22 @@ const PageNode = ({ page, allPages, depth, currentId, onAdd, onDelete, navigate 
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={() => navigate(`/page/${page.id}`)}
       >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen((o) => !o);
-          }}
-          className="shrink-0 text-light-muted dark:text-dark-muted"
-        >
-          {hasChildren ? (
-            open ? (
-              <ChevronDown size={14} />
-            ) : (
-              <ChevronRight size={14} />
-            )
-          ) : (
-            <span className="inline-block w-[14px]" />
-          )}
-        </button>
+        {hasChildren ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((o) => !o);
+            }}
+            aria-label={`${open ? 'Collapse' : 'Expand'} ${page.title || 'Untitled'}`}
+            aria-expanded={open}
+            className="shrink-0 text-light-muted dark:text-dark-muted"
+          >
+            {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </button>
+        ) : (
+          // Same width as the toggle so titles line up, but nothing to focus or announce.
+          <span aria-hidden="true" className="inline-block w-[14px] shrink-0" />
+        )}
         <span className="shrink-0">{page.icon || <FileText size={14} />}</span>
         <span className="flex-1 truncate">{page.title || 'Untitled'}</span>
         <button

@@ -101,7 +101,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
           isOverdue
             ? 'text-semantic-danger-500 dark:text-semantic-danger-dark font-medium'
             : daysUntilDue !== null && daysUntilDue <= 3
-            ? 'text-semantic-warning-500 dark:text-semantic-warning-dark'
+            ? 'text-semantic-warning-700 dark:text-semantic-warning-dark'
             : 'text-light-muted dark:text-dark-muted'
         }`}>
           <Calendar className="w-4 h-4" />

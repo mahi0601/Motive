@@ -77,7 +77,7 @@ const TableBlock = ({ content, onChange }) => {
           ))}
         </tbody>
       </table>
-      <div className="mt-1 flex gap-3 text-xs text-light-muted">
+      <div className="mt-1 flex gap-3 text-xs text-light-muted dark:text-dark-muted">
         <button onClick={addRow} className="hover:text-brand-500">+ Row</button>
         <button onClick={addColumn} className="hover:text-brand-500">+ Column</button>
       </div>
@@ -113,7 +113,7 @@ const EmbedBlock = ({ content, onChange }) => {
         }}
         className="flex items-center gap-2 rounded-lg border border-dashed border-light-border p-3 dark:border-dark-border"
       >
-        <LinkIcon size={16} className="shrink-0 text-light-muted" />
+        <LinkIcon size={16} className="shrink-0 text-light-muted dark:text-dark-muted" />
         <input
           value={draft}
           onChange={(e) => {
@@ -342,7 +342,7 @@ const Block = ({
         <div className="flex items-start gap-1 rounded px-1 py-0.5 hover:bg-gray-50 dark:hover:bg-white/5">
           <button
             onClick={() => onToggleCollapse?.(block.id)}
-            className="mt-1 shrink-0 text-light-muted transition-transform hover:text-light-muted dark:hover:text-dark-text"
+            className="mt-1 shrink-0 text-light-muted dark:text-dark-muted transition-transform hover:text-light-muted dark:hover:text-dark-text"
             style={{ transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)' }}
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
@@ -362,7 +362,7 @@ const Block = ({
         {!collapsed && (
           <div className="ml-5 border-l border-light-border pl-3 dark:border-dark-border">
             {(childBlocks || []).length === 0 ? (
-              <p className="py-1 text-sm italic text-light-muted">Empty — press Tab on a block above to nest it here.</p>
+              <p className="py-1 text-sm italic text-light-muted dark:text-dark-muted">Empty — press Tab on a block above to nest it here.</p>
             ) : (
               childBlocks.map((child, i) => renderChild(child, i))
             )}
@@ -383,7 +383,7 @@ const Block = ({
       onBlur={() => setToolbar(null)}
       className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted [&_code]:rounded [&_code]:bg-light-border/40 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-dark-raised [&_a]:text-brand-500 [&_a]:underline [&_mark]:rounded-sm [&_mark]:bg-yellow-200 [&_mark]:px-0.5 dark:[&_mark]:bg-yellow-300 dark:[&_mark]:text-black ${
         typeClasses[block.type] || 'text-base'
-      } ${block.content?.checked ? 'line-through text-light-muted' : ''}`}
+      } ${block.content?.checked ? 'line-through text-light-muted dark:text-dark-muted' : ''}`}
     />
   );
 
@@ -443,12 +443,12 @@ const Block = ({
             e.preventDefault();
             onAddBelow(block.id);
           }}
-          className="text-light-muted hover:text-light-muted dark:hover:text-dark-text"
+          className="text-light-muted dark:text-dark-muted hover:text-light-muted dark:hover:text-dark-text"
           title="Add block below"
         >
           <Plus size={16} />
         </button>
-        <span className="cursor-grab text-light-muted" title="Drag to reorder">
+        <span className="cursor-grab text-light-muted dark:text-dark-muted" title="Drag to reorder">
           <GripVertical size={16} />
         </span>
       </div>

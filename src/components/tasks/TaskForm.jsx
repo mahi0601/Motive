@@ -88,16 +88,17 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
             onClick={onClose}
             className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-light-muted" />
+            <X className="w-5 h-5 text-light-muted dark:text-dark-muted" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+            <label htmlFor="task-title" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
               Task Title *
             </label>
             <input
+              id="task-title"
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -108,10 +109,11 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+            <label htmlFor="task-description" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
               Description
             </label>
             <textarea
+              id="task-description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Add details about this task..."
@@ -122,10 +124,11 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
+              <label htmlFor="task-priority" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
                 <Flag className="text-brand-500" /> Priority
               </label>
               <select
+                id="task-priority"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-xl bg-light-surface dark:bg-dark-raised text-light-text dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
@@ -137,10 +140,11 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
+              <label htmlFor="task-due" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
                 <Calendar className="text-brand-500" /> Due Date
               </label>
               <input
+                id="task-due"
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
@@ -150,10 +154,11 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
+            <label htmlFor="task-repeat" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
               <Repeat className="text-brand-500" /> Repeat
             </label>
             <select
+              id="task-repeat"
               value={formData.recurrence}
               onChange={(e) => setFormData({ ...formData, recurrence: e.target.value })}
               className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-xl bg-light-surface dark:bg-dark-raised text-light-text dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
@@ -170,14 +175,15 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+            <span id="task-category-label" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
               Category
-            </label>
-            <div className="flex flex-wrap gap-2">
+            </span>
+            <div className="flex flex-wrap gap-2" role="group" aria-labelledby="task-category-label">
               {categories.map(cat => (
                 <button
                   key={cat}
                   type="button"
+                  aria-pressed={formData.category === cat}
                   onClick={() => setFormData({ ...formData, category: cat })}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     formData.category === cat
@@ -192,11 +198,12 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
+            <label htmlFor="task-tags" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2 flex items-center gap-2">
               <Tag className="text-brand-500" /> Tags
             </label>
             <div className="flex gap-2 mb-2">
               <input
+                id="task-tags"
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}

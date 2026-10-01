@@ -120,13 +120,13 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                   title="Clear all"
                 >
-                  <Trash2 className="w-5 h-5 text-light-muted" />
+                  <Trash2 className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-light-muted" />
+                  <X className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
               </div>
             </div>

@@ -138,7 +138,7 @@ const Invite = () => {
   if (user?.email?.toLowerCase() !== invite.email.toLowerCase()) {
     return (
       <Shell>
-        <div className="flex items-center justify-center gap-2 text-semantic-warning-500 dark:text-semantic-warning-dark">
+        <div className="flex items-center justify-center gap-2 text-semantic-warning-700 dark:text-semantic-warning-dark">
           <AlertCircle size={20} />
           <h1 className="font-display text-xl font-bold text-light-text dark:text-white">Wrong account</h1>
         </div>

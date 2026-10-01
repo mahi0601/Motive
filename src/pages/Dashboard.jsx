@@ -411,6 +411,7 @@ const Dashboard = () => {
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
                           />
                           <select
+                            aria-label="Priority"
                             value={drafts[column.key].priority}
                             onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], priority: e.target.value } }))}
                             className="w-full rounded-lg border border-light-border bg-light-surface p-2 text-sm dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
@@ -430,7 +431,7 @@ const Dashboard = () => {
                         {grouped[column.key].map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={selectMode}>
                             {(prov) => (
-                              <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
+                              <div ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps} role="group" aria-roledescription="sortable task">
                                 <EnhancedTaskCard
                                   task={task}
                                   onEdit={(t) => { setEditingTask(t); setShowTaskForm(true); }}

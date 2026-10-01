@@ -139,7 +139,7 @@ const CommentSection = ({ taskId }) => {
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-light-border/40 dark:hover:bg-white/5"
                   >
                     <span className="font-medium text-light-text dark:text-white">{m.name}</span>
-                    <span className="text-xs text-light-muted">{m.email}</span>
+                    <span className="text-xs text-light-muted dark:text-dark-muted">{m.email}</span>
                   </button>
                 ))}
               </div>
@@ -159,7 +159,7 @@ const CommentSection = ({ taskId }) => {
 
       <div className="space-y-4">
         {loading ? (
-          <p className="text-center text-sm text-light-muted">Loading…</p>
+          <p className="text-center text-sm text-light-muted dark:text-dark-muted">Loading…</p>
         ) : comments.length === 0 ? (
           <p className="py-4 text-center text-sm text-light-muted dark:text-dark-muted">
             No comments yet. Be the first to comment!

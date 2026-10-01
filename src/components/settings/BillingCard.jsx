@@ -111,7 +111,7 @@ const BillingCard = () => {
               : 'Monthly subscription — all Pro features are unlocked.'}
           </p>
           {user.subscriptionStatus === 'past_due' && (
-            <p className="text-sm rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-semantic-warning-500 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
+            <p className="text-sm rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
               Your last payment didn't go through. Update your payment method to keep Pro.
             </p>
           )}
@@ -183,7 +183,7 @@ const BillingCard = () => {
 
       {upgradeError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark mt-2">{upgradeError}</p>}
       {upgradeStatus === 'cancelled' && !user?.isPro && (
-        <p className="text-xs text-semantic-warning-500 dark:text-semantic-warning-dark mt-2">Checkout was cancelled — no charge was made.</p>
+        <p className="text-xs text-semantic-warning-700 dark:text-semantic-warning-dark mt-2">Checkout was cancelled — no charge was made.</p>
       )}
     </div>
   );
