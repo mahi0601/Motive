@@ -57,7 +57,7 @@ const AccountCard = () => {
         ) : (
           <>
             <p className="flex items-center gap-2 text-sm text-light-text dark:text-dark-text">
-              <MailWarning size={16} className="text-semantic-danger-500" /> Confirm {user?.email} to invite teammates.
+              <MailWarning size={16} className="text-semantic-danger-700" /> Confirm {user?.email} to invite teammates.
             </p>
             <button
               type="button"
@@ -89,7 +89,7 @@ const AccountCard = () => {
           <Download size={16} /> {exporting ? 'Preparing…' : 'Download my data'}
         </button>
         {exportError && (
-          <p role="alert" className="mt-2 text-sm text-semantic-danger-500 dark:text-semantic-danger-dark">
+          <p role="alert" className="mt-2 text-sm text-semantic-danger-700 dark:text-semantic-danger-dark">
             {exportError}
           </p>
         )}

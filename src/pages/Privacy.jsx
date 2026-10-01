@@ -21,7 +21,7 @@ const Privacy = () => (
         <LogoMark size={36} />
         <h1 className="font-display text-display font-extrabold text-light-text dark:text-white">Privacy Policy</h1>
       </div>
-      <p className="text-sm text-light-muted">Last updated: September 30, 2026</p>
+      <p className="text-sm text-light-muted dark:text-dark-muted">Last updated: September 30, 2026</p>
 
       <p className="mt-6 text-light-muted dark:text-dark-muted">
         Motive (“we”, “us”) is a productivity workspace. This policy explains what data we
@@ -78,7 +78,7 @@ const Privacy = () => (
         <p>Questions about this policy or your data? Email <a className="text-brand-600 hover:underline dark:text-brand-400" href="mailto:support@motive.app">support@motive.app</a>.</p>
       </Section>
 
-      <p className="mt-10 rounded-lg border border-light-border bg-light-border/30 p-4 text-xs text-light-muted dark:border-dark-border dark:bg-dark-surface">
+      <p className="mt-10 rounded-lg border border-light-border bg-light-border/30 p-4 text-xs text-light-muted dark:text-dark-muted dark:border-dark-border dark:bg-dark-surface">
         This policy is provided as a starting template and is not legal advice. Please have it
         reviewed by a qualified professional before relying on it for your jurisdiction.
       </p>

@@ -78,12 +78,15 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
         return <CheckCircle className="w-5 h-5 text-brand-600 dark:text-brand-400" />;
       case 'error':
         return <AlertCircle className="w-5 h-5 text-brand-700 dark:text-brand-300" />;
+      case 'client_feedback':
+        // A client responded on the public status page.
+        return <MessageSquare className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;
       case 'invite_accepted':
         // Good news, not the generic Info default — see
         // workspace.service.js#acceptInvite for where this is created.
-        return <UserPlus className="w-5 h-5 text-semantic-success-500 dark:text-semantic-success-dark" />;
+        return <UserPlus className="w-5 h-5 text-semantic-success-700 dark:text-semantic-success-dark" />;
       default:
-        return <Info className="w-5 h-5 text-semantic-info-500 dark:text-semantic-info-dark" />;
+        return <Info className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;
     }
   };
 
@@ -120,13 +123,13 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                   title="Clear all"
                 >
-                  <Trash2 className="w-5 h-5 text-light-muted" />
+                  <Trash2 className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-raised rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-light-muted" />
+                  <X className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
               </div>
             </div>

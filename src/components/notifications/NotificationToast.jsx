@@ -26,7 +26,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                   ? 'text-brand-600 dark:text-brand-400'
                   : notification.type === 'error'
                   ? 'text-brand-700 dark:text-brand-300'
-                  : 'text-semantic-info-500 dark:text-semantic-info-dark'
+                  : 'text-semantic-info-700 dark:text-semantic-info-dark'
               }`}>
                 {notification.type === 'success' ? (
                   <CheckCircle className="w-5 h-5" />
@@ -42,7 +42,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                     ? 'text-brand-800 dark:text-brand-200'
                     : notification.type === 'error'
                     ? 'text-brand-800 dark:text-brand-200'
-                    : 'text-semantic-info-500 dark:text-semantic-info-dark'
+                    : 'text-semantic-info-700 dark:text-semantic-info-dark'
                 }`}>
                   {notification.title}
                 </p>
@@ -52,7 +52,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                       ? 'text-brand-700 dark:text-brand-300'
                       : notification.type === 'error'
                       ? 'text-brand-700 dark:text-brand-300'
-                      : 'text-semantic-info-500 dark:text-semantic-info-dark'
+                      : 'text-semantic-info-700 dark:text-semantic-info-dark'
                   }`}>
                     {notification.message}
                   </p>
@@ -73,7 +73,7 @@ const NotificationToast = ({ notifications, onRemove }) => {
                 onClick={() => onRemove(notification.id)}
                 className="p-1 hover:bg-black/10 rounded transition-colors"
               >
-                <X className="w-4 h-4 text-light-muted" />
+                <X className="w-4 h-4 text-light-muted dark:text-dark-muted" />
               </button>
             </div>
           </motion.div>

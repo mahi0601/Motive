@@ -75,6 +75,18 @@ a:hover {
   text-decoration: underline;
 }
 
+/* On the dark background the base link colour is only 3.7:1 and its hover
+   colour (--brand-strong) just 2:1, both below the 4.5:1 text minimum. Dark
+   mode gets lighter tints (6:1 and 10:1). :where() keeps the specificity of
+   plain `a`, so any utility class on a link (text-white, hover:text-…) still
+   wins as before. */
+:where(.dark) a {
+  color: var(--brand-tint);
+}
+:where(.dark) a:hover {
+  color: #8cc7d4;
+}
+
 ::selection {
   background-color: rgba(27, 122, 140, 0.25);
 }

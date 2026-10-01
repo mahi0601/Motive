@@ -43,7 +43,7 @@ const VerifyEmail = () => {
   }
   return (
     <>
-      <div className="flex items-center gap-2 text-semantic-danger-500 dark:text-semantic-danger-dark">
+      <div className="flex items-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
         <AlertCircle size={20} /> <h2 className="font-display text-display font-bold">Link not valid</h2>
       </div>
       <p className="mt-3 text-light-muted dark:text-dark-muted">

@@ -60,7 +60,7 @@ const KeyboardShortcuts = () => {
                   onClick={() => setIsOpen(false)}
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-border rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-light-muted" />
+                  <X className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
               </div>
 
