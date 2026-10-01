@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Trash2, Search, FileStack } from 'lucide-react';
 import { getTemplates, createPageFromTemplate, deleteTemplate } from '../../services/templateService';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import { logger } from '../../utils/logger';
 
 // Accent → thumbnail gradient + marker color (Tailwind classes). Purely
@@ -107,6 +108,7 @@ const CardSkeleton = () => (
 );
 
 const TemplateGallery = ({ onUse }) => {
+  const { workspace } = useWorkspace();
   const [data, setData] = useState({ builtIn: [], custom: [] });
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -132,7 +134,7 @@ const TemplateGallery = ({ onUse }) => {
   const handleUse = async (tpl) => {
     setBusyId(tpl.id);
     try {
-      const { data: res } = await createPageFromTemplate(tpl.id);
+      const { data: res } = await createPageFromTemplate(tpl.id, null, workspace?.id);
       onUse?.(res.page);
     } catch (e) {
       logger.warn('Failed to use template', { templateId: tpl.id, error: e.message });

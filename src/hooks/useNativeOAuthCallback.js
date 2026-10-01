@@ -5,6 +5,7 @@ import { Browser } from '@capacitor/browser';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { nativeExchange } from '../services/authService';
+import { takeVerifier } from '../utils/pkce';
 import { useToast } from '../context/ToastContext';
 
 // Catches the deep link the backend redirects to once Google sign-in
@@ -34,15 +35,19 @@ export const useNativeOAuthCallback = () => {
       // sign-in on Android doesn't silently drop the invite either.
       const inviteToken = searchParams.get('invite');
 
-      if (error || !code) {
+      // Read (and clear) the verifier even on the error path, so a stale one
+      // never lingers for the next attempt.
+      const codeVerifier = takeVerifier();
+
+      if (error || !code || !codeVerifier) {
         notify('error', 'Google sign-in failed', 'Please try again.');
         navigate('/login');
         return;
       }
 
       try {
-        const { data } = await nativeExchange(code);
-        login(data.user, data.accessToken);
+        const { data } = await nativeExchange(code, codeVerifier);
+        login(data.user, data.accessToken, data.csrfToken);
         navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
       } catch {
         notify('error', 'Google sign-in failed', 'Please try again.');

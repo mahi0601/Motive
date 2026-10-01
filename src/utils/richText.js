@@ -5,7 +5,11 @@ import DOMPurify from 'dompurify';
 // paste) is stripped.
 const SANITIZE_CONFIG = {
   ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'code', 'br', 'a', 'mark'],
-  ALLOWED_ATTR: ['href'],
+  // `rel`/`target` alongside `href` — toggleLink() below now sets
+  // rel="noopener noreferrer" on every link it creates; without these in
+  // the allowlist, DOMPurify would strip that attribute back out on the
+  // very next save/reload round-trip.
+  ALLOWED_ATTR: ['href', 'rel', 'target'],
 };
 
 // macOS Chrome/Safari intercept Cmd+B/Cmd+I as a native OS-level text-editing
@@ -16,8 +20,12 @@ const SANITIZE_CONFIG = {
 // <span>, that would otherwise silently vanish on save — so normalize it
 // into semantic tags first, whichever code path produced it.
 const normalizeStyledSpans = (html) => {
-  const container = document.createElement('div');
-  container.innerHTML = html;
+  // Parse into an inert document (DOMParser never runs scripts or fires
+  // onerror/onload handlers). Assigning untrusted HTML to a element's
+  // innerHTML in the live document would execute e.g. <img onerror=...>
+  // before DOMPurify ever sees it.
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html');
+  const container = doc.body.firstElementChild;
   container.querySelectorAll('span[style]').forEach((span) => {
     const style = span.getAttribute('style') || '';
     const bold = /font-weight:\s*(bold|[6-9]00)/i.test(style);
@@ -45,6 +53,28 @@ const escapeHtml = (text) =>
 
 export const htmlForContent = (content) =>
   content?.html != null ? sanitizeInlineHtml(content.html) : escapeHtml(content?.text);
+
+// Allowlists http(s) — a `javascript:`/`data:` URL written straight into an
+// `href` runs the instant it's clicked. DOMPurify's own URI scheme allowlist
+// already blocks those on the *saved* string (sanitizeInlineHtml, above),
+// but toggleLink() below writes directly to the live, pre-save DOM node —
+// and Block.jsx never re-syncs that node's innerHTML from state after the
+// initial mount, so an unsafe href written here would stay live and
+// clickable for the rest of the editing session regardless of what
+// DOMPurify would have done to it on save. EmbedBlock (Block.jsx) uses this
+// too, for a *persisted* URL — visible to every collaborator, not just
+// whoever typed it.
+export const safeUrl = (url) => {
+  if (!url) return null;
+  try {
+    // Base only matters for a relative URL (e.g. "/pages/x") — resolves it
+    // against the current origin rather than rejecting it outright.
+    const parsed = new URL(url, window.location.origin);
+    return ['http:', 'https:'].includes(parsed.protocol) ? url : null;
+  } catch {
+    return null;
+  }
+};
 
 // Toggle an inline mark (<b>, <em>, <code>) on the current selection within
 // `root`. document.execCommand('bold'/'italic') turned out to be unreliable
@@ -100,9 +130,15 @@ export const toggleLink = (root) => {
 
   const url = window.prompt('Link URL:', 'https://');
   if (!url || !url.trim()) return;
+  const safe = safeUrl(url.trim());
+  if (!safe) {
+    window.alert('Only http:// and https:// links are allowed.');
+    return;
+  }
 
   const a = document.createElement('a');
-  a.href = url.trim();
+  a.href = safe;
+  a.rel = 'noopener noreferrer';
   a.appendChild(range.extractContents());
   range.insertNode(a);
   sel.removeAllRanges();

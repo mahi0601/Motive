@@ -24,6 +24,12 @@ export const transferOwnership = (workspaceId, userId) =>
 // workspace.service.js#leaveWorkspace.
 export const leaveWorkspace = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/leave`);
 
+// Public client status link. POST enables sharing and returns the raw token
+// ONCE ({ token, shareEnabledAt }) — calling it again rotates the link and
+// kills the old one. DELETE turns sharing off.
+export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspaceId}/share`);
+export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/share`);
+
 // The /invite/:token public landing page — a different resource root
 // (/api/invites, not /api/workspaces/:id/...) since accepting/declining
 // happens before the caller is necessarily a member of anything.

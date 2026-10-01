@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { getAccessToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../utils/logger';
 
 // A color per socket, stable for the life of the connection — cheap "who's
 // who" visual distinction without needing per-user color assignment from
@@ -29,13 +30,30 @@ export const usePageSocket = (pageId, containerRef) => {
     if (!pageId || !user) return undefined;
 
     // No withCredentials — the socket doesn't use cookies (auth is the JWT
-    // sent explicitly in page:join below), and pairing it with the server's
-    // wildcard CORS origin ('*') is actively rejected by browsers.
-    const socket = io(import.meta.env.VITE_API_BASE_URL);
+    // handed to the server during the handshake below), and pairing it with
+    // the server's wildcard CORS origin ('*') is actively rejected by
+    // browsers.
+    //
+    // `auth` as a function (not a plain object) so socket.io calls it fresh
+    // on every (re)connection attempt — a plain object would freeze in the
+    // access token that was live when this effect first ran, so a
+    // reconnect after a silent token refresh would hand the server a stale
+    // token and get rejected by the handshake middleware.
+    const socket = io(import.meta.env.VITE_API_BASE_URL, {
+      auth: (cb) => cb({ token: getAccessToken() }),
+    });
     socketRef.current = socket;
 
-    const join = () => socket.emit('page:join', { pageId, token: getAccessToken(), name: user.name });
+    // Identity is established by the handshake now — this just tells the
+    // server which page room to put the (already-authenticated) socket in.
+    const join = () => socket.emit('page:join', { pageId, name: user.name });
     socket.on('connect', join);
+    // A rejected handshake (expired/missing token) used to fail silently —
+    // presence would just never show up with nothing in the console to say
+    // why.
+    socket.on('connect_error', (err) => {
+      logger.warn('Page socket connection rejected', { pageId, error: err.message });
+    });
 
     socket.on('presence:join', ({ socketId, user: peerUser }) => {
       setPeers((prev) => ({ ...prev, [socketId]: { user: peerUser, x: null, y: null } }));

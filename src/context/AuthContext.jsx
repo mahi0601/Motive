@@ -1,8 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { setAccessToken, clearAccessToken, refreshSession } from '../services/api';
+import { setAccessToken, clearAccessToken, setCsrfToken, clearCsrfToken, refreshSession } from '../services/api';
 import { logout as logoutRequest } from '../services/authService';
 import { getProfile } from '../services/userService';
 import { logger } from '../utils/logger';
+
+// The Google web-login redirect (backend's auth.controller.js#googleCallback)
+// can't hand the CSRF token back in a JSON body like every other login path
+// — it's a top-level navigation, not an AJAX response — so it rides the
+// redirect URL instead, once. Picked up here before the very first
+// /refresh call and stripped from the address bar immediately; it's inert
+// on its own (the httpOnly cookie is what actually authenticates anything)
+// and is replaced by a fresh one from that same refresh response either way.
+function consumeCsrfFromUrl() {
+  const url = new URL(window.location.href);
+  const csrf = url.searchParams.get('csrf');
+  if (!csrf) return null;
+  url.searchParams.delete('csrf');
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  return csrf;
+}
 
 const AuthContext = createContext();
 
@@ -30,6 +46,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let active = true;
     (async () => {
+      const csrfFromUrl = consumeCsrfFromUrl();
+      if (csrfFromUrl) setCsrfToken(csrfFromUrl);
       try {
         const { user: restored } = await refreshSession();
         if (active) setUser(restored);
@@ -50,9 +68,10 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Called by Login/Register after a successful response.
-  const login = useCallback((userData, accessToken) => {
+  // Called by Login/Register/native-OAuth after a successful response.
+  const login = useCallback((userData, accessToken, csrfToken) => {
     setAccessToken(accessToken);
+    setCsrfToken(csrfToken);
     setUser(userData);
   }, []);
 
@@ -71,6 +90,7 @@ export const AuthProvider = ({ children }) => {
       /* best effort */
     }
     clearAccessToken();
+    clearCsrfToken();
     setUser(null);
     window.location.assign('/login');
   }, []);

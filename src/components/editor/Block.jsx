@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GripVertical, Plus, Link as LinkIcon, ExternalLink } from 'lucide-react';
-import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink } from '../../utils/richText';
+import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink, safeUrl } from '../../utils/richText';
 
 // Markdown prefixes that auto-convert a block on space.
 const MD_SHORTCUTS = [
@@ -89,27 +89,44 @@ const TableBlock = ({ content, onChange }) => {
 const YOUTUBE_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
 const EmbedBlock = ({ content, onChange }) => {
   const [draft, setDraft] = useState(content?.url || '');
-  const url = content?.url;
+  const [draftError, setDraftError] = useState('');
+  // Re-validated on every render, not just at submit time — this is
+  // persisted, collaborator-visible data (unlike toggleLink's live-DOM
+  // write in richText.js), so a bad value written some other way (a direct
+  // API call, or content saved before this check existed) still can't
+  // render as a dangerous href.
+  const url = safeUrl(content?.url) || undefined;
 
   if (!url) {
     return (
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (draft.trim()) onChange({ url: draft.trim() });
+          const trimmed = draft.trim();
+          if (!trimmed) return;
+          if (!safeUrl(trimmed)) {
+            setDraftError('Only http:// and https:// links are allowed.');
+            return;
+          }
+          setDraftError('');
+          onChange({ url: trimmed });
         }}
         className="flex items-center gap-2 rounded-lg border border-dashed border-light-border p-3 dark:border-dark-border"
       >
         <LinkIcon size={16} className="shrink-0 text-light-muted" />
         <input
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setDraftError('');
+          }}
           placeholder="Paste a link (YouTube, or any URL)…"
           className="flex-1 border-none bg-transparent text-sm outline-none"
         />
         <button type="submit" className="text-xs font-semibold text-brand-500 hover:text-brand-600">
           Embed
         </button>
+        {draftError && <span className="text-xs text-red-500">{draftError}</span>}
       </form>
     );
   }

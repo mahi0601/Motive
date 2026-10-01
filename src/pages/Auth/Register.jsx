@@ -55,7 +55,7 @@ const Register = () => {
     try {
       const { data } = await registerRequest(form);
       // Backend returns an access token on register → log the user straight in.
-      setAuthUser(data.user, data.accessToken);
+      setAuthUser(data.user, data.accessToken, data.csrfToken);
       // Same hand-off as Login.jsx: let Invite.jsx do the actual accept once
       // this person is authenticated, rather than duplicating that here.
       const inviteToken = searchParams.get('invite');
