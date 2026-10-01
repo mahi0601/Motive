@@ -41,7 +41,7 @@ const Login = () => {
     setServerError('');
     try {
       const { data } = await loginRequest(form);
-      setAuthUser(data.user, data.accessToken, data.csrfToken);
+      setAuthUser(data.user, data.accessToken);
       // Came here from an invite link ("I already have an account") — send
       // them back to it now authenticated, so Invite.jsx's own accept flow
       // (and its wrong-email handling) takes over, instead of duplicating

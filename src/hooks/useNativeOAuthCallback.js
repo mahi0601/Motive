@@ -47,7 +47,7 @@ export const useNativeOAuthCallback = () => {
 
       try {
         const { data } = await nativeExchange(code, codeVerifier);
-        login(data.user, data.accessToken, data.csrfToken);
+        login(data.user, data.accessToken);
         navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
       } catch {
         notify('error', 'Google sign-in failed', 'Please try again.');
