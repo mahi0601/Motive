@@ -123,7 +123,7 @@ const Header = () => {
               Login
             </Link>
             {/* Tonal, not gradient, for consistency with the rest of the
-                gradient-budget pass (PLAN §4) — chrome/nav elements read as
+                gradient-budget pass — chrome/nav elements read as
                 secondary to whatever a screen's one primary action is. (This
                 whole `!user` branch is currently unreachable: Header only
                 renders inside DashboardLayout, which sits behind

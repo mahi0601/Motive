@@ -4,7 +4,7 @@
 // #8b5cf6, #a855f7, #c084fc — indigo/violet/purple-500/400, none of which is
 // actually the brand color).
 
-// Brand petrol scale (tailwind.config.js `brand`) — see PLAN "Petrol & Ink".
+// Brand petrol scale (tailwind.config.js `brand`).
 export const BRAND = {
   300: '#7FBDCB',
   400: '#4A9DB1',

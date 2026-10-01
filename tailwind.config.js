@@ -6,8 +6,7 @@
 // instrument a client is meant to trust. Petrol is deliberately pulled off
 // the status hue wheel (green/azure/amber/red/slate) so the brand never
 // competes with the one thing this app actually needs to communicate at a
-// glance: what state is this work in. See PLAN "Petrol & Ink" for the full
-// color-psychology rationale.
+// glance: what state is this work in.
 const petrol = {
   50: '#EFF7F9',
   100: '#D7ECF0',
@@ -76,7 +75,7 @@ export default {
       },
       // A deliberate scale, not the Tailwind defaults — so a stat tile's
       // number and a task card's title differ on purpose instead of by
-      // accident (see PLAN §4). Pair with `font-display` (IBM Plex Sans)
+      // accident. Pair with `font-display` (IBM Plex Sans)
       // only at `display-xl`/`display`/`title`; everything else stays Inter.
       fontSize: {
         'display-xl': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],

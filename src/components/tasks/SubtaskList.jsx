@@ -70,7 +70,7 @@ const SubtaskList = ({ taskId }) => {
         <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-light-border dark:bg-dark-border">
           {/* Solid, not gradient — this renders nested inside TaskForm's
               modal, which already spends its one gradient on the
-              Create/Update Task submit button (see PLAN §4). */}
+              Create/Update Task submit button. */}
           <div
             className="h-full rounded-full bg-brand-500 transition-all"
             style={{ width: `${(doneCount / subtasks.length) * 100}%` }}

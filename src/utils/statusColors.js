@@ -3,7 +3,7 @@
 // deliberately, but is a genuinely new map: before this file, status color
 // was scattered across a 3-tone inline object in Momentum.jsx, a hardcoded
 // `text-green-500` in EnhancedTaskCard.jsx, and copy-pasted stock Tailwind
-// red/green/emerald classes in ~15 other files (see PLAN "Petrol & Ink" §3).
+// red/green/emerald classes in ~15 other files.
 //
 // This is the one place hue is allowed to mean "state." `brand` (petrol)
 // must never be reused here — the whole point of the redesign is that the

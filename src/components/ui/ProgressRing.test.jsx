@@ -4,7 +4,7 @@ import ProgressRing from './ProgressRing';
 
 // Proves the React Testing Library harness itself works end to end (jsdom +
 // @testing-library/react + framer-motion rendering), not just the
-// pure-function test runner — see PLAN's testing-strategy section. Picked
+// pure-function test runner. Picked
 // for having no network/context dependency, unlike almost everything else
 // in this app.
 describe('ProgressRing', () => {

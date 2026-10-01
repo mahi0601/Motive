@@ -69,7 +69,7 @@ function DeltaBadge({ current, previous, goodWhenUp = true }) {
 
 // Maps a tile/insight's meaning to the Dashboard's `?highlight=` contract
 // (see Dashboard.jsx#matchesHighlight) — the other half of "click-through to
-// the filtered list" (PLAN §3, Row 1 and Row 4).
+// the filtered list".
 function toHighlight(filter) {
   if (!filter) return null;
   if (filter.status) return filter.status; // 'overdue' | 'at-risk'
@@ -231,7 +231,7 @@ const Momentum = () => {
       ) : (
         <>
           {/* Row 1 — four signal tiles, each with a period-over-period
-              delta instead of a bare, undated count (see PLAN §3). */}
+              delta instead of a bare, undated count. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* "Shipped" is period-scoped (this week/month/quarter), so its
                 click-through carries `since` — the server's own period
@@ -318,9 +318,9 @@ const Momentum = () => {
             </div>
           </motion.div>
 
-          {/* Row 3 — where open work sits, by category and by status (see
-              PLAN §3, "Where work piles up"). Per-assignee breakdown arrives
-              once tasks carry a workspace/assignee (Phase 2). */}
+          {/* Row 3 — where open work sits, by category and by status
+              ("Where work piles up"). A per-assignee breakdown isn't built
+              yet. */}
           {(data.byCategory.length > 0 || data.byStatus.length > 0) && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {data.byCategory.length > 0 && (

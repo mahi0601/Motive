@@ -1,14 +1,14 @@
 import { describe, test, expect } from 'vitest';
 import { getPriorityBadgeClasses, getPriorityDotClass, getPriorityBorderClass } from './priorityColors';
 
-// First real frontend tests in this repo (see PLAN's testing-strategy
-// section) — deliberately starting with pure, already-existing logic rather
+// First real frontend tests in this repo — deliberately starting with pure,
+// already-existing logic rather
 // than inventing new coverage. This is also the exact source of truth
 // CalendarView.jsx was fixed to use instead of its own divergent (and
 // semantically inverted) priority-color map, so it's worth locking down.
 //
 // Priority is expressed by WEIGHT in the brand petrol ramp, not by a
-// separate hue (see PLAN "Petrol & Ink") — hue is reserved exclusively for
+// separate hue — hue is reserved exclusively for
 // delivery STATE (statusColors.js), so a High-priority task never collides
 // visually with an At-risk one.
 describe('priorityColors', () => {

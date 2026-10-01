@@ -7,7 +7,7 @@ const AT_RISK_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 // Was a 4-tile grid (Total/Completed/Pending/Overdue) plus a fifth
 // gradient "Completion Rate" bar — the third of three places that number
-// was shown across the app (see PLAN §3). Reduced to the two numbers that
+// was shown across the app. Reduced to the two numbers that
 // are actually decisions, not database statistics: what's due today, and
 // what's at risk of being late. The full breakdown — with period-over-period
 // deltas — lives on /momentum now.
@@ -31,7 +31,7 @@ const TaskAnalytics = ({ tasks = [] }) => {
   // attention" instead of "At risk" for exactly that reason: two different
   // numbers under the same label, visible on pages a user will compare
   // directly, is the "completion rate shown three times" bug this whole
-  // pass exists to kill (see PLAN §3).
+  // pass exists to kill.
   const needsAttention = tasks.filter((t) => {
     if (!t.dueDate || t.completed) return false;
     const d = new Date(t.dueDate);

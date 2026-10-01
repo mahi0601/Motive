@@ -5,8 +5,7 @@
 // intent into momentum."). The next copy change should be one edit here,
 // not a hunt across the app.
 //
-// Positioning: B2B, agencies and small studios running client work — see
-// PLAN "Motive → B2B" (business plan) and "Petrol & Ink" (visual redesign).
+// Positioning: B2B, agencies and small studios running client work.
 
 export const BRAND = {
   name: 'Motive',

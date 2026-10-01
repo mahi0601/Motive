@@ -6,7 +6,7 @@ import { logger } from '../../utils/logger';
 // Accent → thumbnail gradient + marker color (Tailwind classes). Purely
 // decorative per-template variety, not a status signal — stock Tailwind
 // hues are fine here (unlike statusColors.js, nothing here needs to mean
-// "at risk"). `spark` no longer exists as a token (see PLAN "Petrol & Ink"),
+// "at risk"). `spark` no longer exists as a token,
 // so `amber` now uses stock Tailwind amber instead.
 const ACCENTS = {
   slate: { grad: 'from-slate-400/25 to-slate-500/5', dot: 'bg-slate-400' },

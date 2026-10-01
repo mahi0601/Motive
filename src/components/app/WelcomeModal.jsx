@@ -78,7 +78,7 @@ const WelcomeModal = ({ onClose }) => {
           <div className="p-6">
             {/* Tonal, not gradient — this is a decorative step icon, not the
                 action; "Next"/"Get started" below is the one CTA this
-                screen spends its gradient on (see PLAN §4). */}
+                screen spends its gradient on. */}
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
               <Icon className="h-6 w-6" />
             </div>
