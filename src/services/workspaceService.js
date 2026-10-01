@@ -33,6 +33,6 @@ export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${works
 // The /invite/:token public landing page — a different resource root
 // (/api/invites, not /api/workspaces/:id/...) since accepting/declining
 // happens before the caller is necessarily a member of anything.
-export const getInviteByToken = (token) => api.get(`/api/invites/${token}`);
-export const acceptInvite = (token) => api.post(`/api/invites/${token}/accept`);
-export const declineInvite = (token) => api.post(`/api/invites/${token}/decline`);
+export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComponent(token)}`);
+export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
+export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);

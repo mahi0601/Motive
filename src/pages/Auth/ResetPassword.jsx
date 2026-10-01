@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import AuthField from '../../components/ui/AuthField';
@@ -6,8 +6,13 @@ import { resetPassword } from '../../services/authService';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || '';
+  // Read once, then strip it from the address bar: a reset token left in the
+  // URL ends up in browser history, screenshots and Referer/error reports.
+  const [token] = useState(() => searchParams.get('token') || '');
   const navigate = useNavigate();
+  useEffect(() => {
+    if (searchParams.has('token')) navigate('/reset-password', { replace: true });
+  }, [navigate, searchParams]);
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
