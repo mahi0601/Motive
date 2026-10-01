@@ -7,6 +7,7 @@ import { WorkspaceProvider } from './context/WorkspaceContext';
 import { ToastProvider } from './context/ToastContext';
 import { NotificationSocketProvider } from './context/NotificationSocketContext';
 import { CommandPaletteProvider } from './context/CommandPaletteContext';
+import ServerWakingBanner from './components/ui/ServerWakingBanner';
 import CommandPalette from './components/app/CommandPalette';
 import { useNativeOAuthCallback } from './hooks/useNativeOAuthCallback';
 
@@ -21,6 +22,7 @@ const NativeOAuthListener = () => {
 const App = () => {
   return (
     <ThemeProvider>
+      <ServerWakingBanner />
       <AuthProvider>
         <ToastProvider>
           <NotificationSocketProvider>

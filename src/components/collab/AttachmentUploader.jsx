@@ -42,7 +42,7 @@ const AttachmentUploader = ({ onUpload }) => {
           : 'border-light-border hover:border-brand-400 dark:border-dark-border'
       }`}
     >
-      <UploadCloud className={`h-8 w-8 ${isDragging ? 'text-brand-500' : 'text-light-muted'}`} />
+      <UploadCloud className={`h-8 w-8 ${isDragging ? 'text-brand-500' : 'text-light-muted dark:text-dark-muted'}`} />
       <span className="text-sm text-light-muted dark:text-dark-muted">
         Drag a file here, or <span className="font-medium text-brand-500">browse</span>
       </span>

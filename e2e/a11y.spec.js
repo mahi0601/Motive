@@ -1,0 +1,67 @@
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { API, createUser, signIn } from './helpers';
+
+// Automated accessibility check (axe-core, WCAG 2.0/2.1 A and AA) on every main
+// screen, in both themes. It catches the mechanical failures — unnamed buttons
+// and selects, nested interactive controls, text that is too faint — not the
+// whole of accessibility (that still needs keyboard and screen-reader testing).
+// Only serious and critical findings fail the test.
+const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy']];
+
+async function firstWorkspaceId(request, auth) {
+  const res = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
+  const ws = res.workspaces[0];
+  await request.patch(`${API}/api/workspaces/${ws.id}/status-page`, {
+    headers: auth,
+    data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber', allowFeedback: true },
+  });
+  return ws.id;
+}
+
+async function violations(page) {
+  await page.waitForTimeout(1500); // let entrance animations finish: axe would otherwise measure half-faded text
+  const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  return result.violations
+    .filter((v) => ['serious', 'critical'].includes(v.impact))
+    .map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 6).map((n) => `${n.target.join(' ')} [${(n.any[0]?.message || '').slice(0, 130)}]`).join(' | ')}`);
+}
+
+for (const theme of ['light', 'dark']) {
+  test(`no serious accessibility violations (${theme})`, async ({ page, request }) => {
+    test.setTimeout(90_000);
+    await page.addInitScript((t) => {
+      try { localStorage.setItem('theme', t); } catch { /* storage unavailable */ }
+    }, theme);
+    await page.emulateMedia({ colorScheme: theme });
+
+    const found = {};
+    for (const [name, path] of SCREENS_PUBLIC) {
+      await page.goto(path);
+      found[name] = await violations(page);
+    }
+
+    const user = await createUser(request, `a11y-${theme}`);
+    const auth = { Authorization: `Bearer ${user.accessToken}` };
+    const created = await (await request.post(`${API}/api/pages`, { headers: auth, data: { title: 'A11y page' } })).json();
+    const pageId = (created.page || created.data || created).id;
+    await request.post(`${API}/api/pages/${pageId}/blocks`, { headers: auth, data: { type: 'paragraph', content: { html: 'hello' } } });
+    await request.post(`${API}/api/tasks`, { headers: auth, data: { title: 'A task' } });
+
+    // The public status page, as a client sees it, with every part switched on.
+    const share = await (await request.post(`${API}/api/workspaces/${await firstWorkspaceId(request, auth)}/share`, { headers: auth })).json();
+    found['status page'] = [];
+    await page.goto(`/s/${share.share.token}`);
+    found['status page'] = await violations(page);
+
+    await signIn(page, user);
+    found.dashboard = await violations(page);
+    for (const [name, path] of [['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
+      await page.goto(path);
+      found[name] = await violations(page);
+    }
+
+    const failing = Object.fromEntries(Object.entries(found).filter(([, v]) => v.length));
+    expect(failing).toEqual({});
+  });
+}

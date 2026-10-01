@@ -1,30 +1,38 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from '../pages/Dashboard';
+const Dashboard = lazyWithRetry(() => import('../pages/Dashboard'));
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
-import ForgotPassword from '../pages/Auth/ForgotPassword';
-import ResetPassword from '../pages/Auth/ResetPassword';
-import VerifyEmail from '../pages/Auth/VerifyEmail';
-import Calendar from '../pages/Calendar';
-import Momentum from '../pages/Momentum';
-import Settings from '../pages/Settings';
+const ForgotPassword = lazyWithRetry(() => import('../pages/Auth/ForgotPassword'));
+const ResetPassword = lazyWithRetry(() => import('../pages/Auth/ResetPassword'));
+const VerifyEmail = lazyWithRetry(() => import('../pages/Auth/VerifyEmail'));
+const Calendar = lazyWithRetry(() => import('../pages/Calendar'));
+const Momentum = lazyWithRetry(() => import('../pages/Momentum'));
+const Settings = lazyWithRetry(() => import('../pages/Settings'));
 import Home from '../pages/Home';
-import Profile from '../pages/Profile';
-import Templates from '../pages/Templates';
-import PageView from '../pages/PageView';
-import Privacy from '../pages/Privacy';
-import Invite from '../pages/Invite';
-import StatusPage from '../pages/StatusPage';
+const Profile = lazyWithRetry(() => import('../pages/Profile'));
+const Templates = lazyWithRetry(() => import('../pages/Templates'));
+const PageView = lazyWithRetry(() => import('../pages/PageView'));
+const Privacy = lazyWithRetry(() => import('../pages/Privacy'));
+const Invite = lazyWithRetry(() => import('../pages/Invite'));
+const StatusPage = lazyWithRetry(() => import('../pages/StatusPage'));
+import PageFallback from '../components/ui/PageFallback';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 import ProtectedRoute from './ProtectedRoute';
 import DashboardLayout from '../layout/DashboardLayout';
 import AuthLayout from '../layout/AuthLayout';
 
+// Pages are code-split (lazyWithRetry), so a visitor downloads only the screen
+// they open — the charts library behind Momentum, for example, no longer loads
+// for everyone. Home, Login and Register stay in the main bundle: they are the
+// first thing a new visitor sees. Each layout wraps its <Outlet/> in a Suspense
+// boundary, so changing pages keeps the shell on screen.
 // DashboardLayout/AuthLayout/ProtectedRoute are all layout ROUTES (each
 // renders an <Outlet/>) — the shell/auth-gate is applied once per group
 // here, instead of every page individually wrapping itself.
 const AppRoutes = () => {
   return (
+    <Suspense fallback={<PageFallback />}>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/privacy" element={<Privacy />} />
@@ -64,6 +72,7 @@ const AppRoutes = () => {
 
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
+    </Suspense>
   );
 };
 

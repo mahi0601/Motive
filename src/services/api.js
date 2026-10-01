@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { logger } from '../utils/logger';
+import { requestStarted, requestSettled } from './serverStatus';
 
 // ── In-memory access token ──────────────────────────────
 // Kept in a module variable, NEVER in localStorage → not reachable by XSS.
@@ -26,6 +27,7 @@ const api = axios.create({
 // Attach the in-memory access token to every request.
 api.interceptors.request.use((config) => {
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  requestStarted();
   return config;
 });
 
@@ -39,7 +41,18 @@ const refreshClient = axios.create({
   withCredentials: true,
 });
 
+// The session check on page load is usually the first call to a sleeping API,
+// so it is tracked like any other request (see serverStatus.js).
 export const refreshSession = async () => {
+  requestStarted();
+  try {
+    return await refreshSessionRequest();
+  } finally {
+    requestSettled();
+  }
+};
+
+const refreshSessionRequest = async () => {
   // The custom header is what keeps another site from making this call with
   // the user's cookie (see services/authService.js).
   const { data } = await refreshClient.post('/api/auth/refresh', null, {
@@ -50,8 +63,12 @@ export const refreshSession = async () => {
 };
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    requestSettled();
+    return res;
+  },
   async (error) => {
+    requestSettled();
     const original = error.config;
     const status = error.response?.status;
     const isAuthCall = AUTH_PATHS.some((p) => original?.url?.includes(p));

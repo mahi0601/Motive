@@ -113,5 +113,19 @@ export default defineConfig({
     // when actually uploading (see filesToDeleteAfterUpload) — an unconfigured
     // build stays exactly as before, with no sourcemaps in the output.
     sourcemap: !!sentryAuthToken,
+    rollupOptions: {
+      output: {
+        // Keep big, rarely-changing libraries in their own files: a code change
+        // to the app then does not make every returning visitor re-download
+        // them, and the charts library only loads with the screens that use it.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/node_modules\/(recharts|d3-|victory-vendor)/.test(id)) return 'vendor-charts';
+          if (/node_modules\/(framer-motion|motion-)/.test(id)) return 'vendor-motion';
+          if (/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(id)) return 'vendor-react';
+          return undefined;
+        },
+      },
+    },
   },
 })
