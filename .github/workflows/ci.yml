@@ -50,14 +50,18 @@ jobs:
   # This static site is connected to Render as a public-repo deploy, so it has
   # no push webhook and never auto-deploys; this job is what ships it.
   #
-  # Needs a repo secret RENDER_DEPLOY_HOOK_URL (Render → motive-app → Settings
-  # → Deploy Hook). The hook URL is a credential: keep it in GitHub secrets,
-  # never in the repo.
+  # Needs RENDER_DEPLOY_HOOK_URL (Render → motive-app → Settings → Deploy Hook)
+  # as a secret of the `render-production` GitHub environment, restricted to
+  # the master branch. (Not `production`: that name is also Vercel's, which
+  # would share, and could be granted, the same secrets.) The hook URL is a
+  # credential: keep it in GitHub secrets, never in the repo. `permissions: {}`
+  # — the job only calls curl and needs no access to this repository.
   deploy:
     needs: [secret-scan, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    environment: production
+    permissions: {}
+    environment: render-production
     steps:
       - name: Trigger Render deploy
         env:
