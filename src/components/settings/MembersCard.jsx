@@ -245,7 +245,7 @@ const MembersCard = () => {
         )
       )}
       {inviteStatus && (
-        <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-semantic-danger-500 dark:text-semantic-danger-dark' : 'text-semantic-success-500 dark:text-semantic-success-dark'}`}>
+        <p className={`text-sm mt-2 ${inviteStatus.type === 'error' ? 'text-semantic-danger-700 dark:text-semantic-danger-dark' : 'text-semantic-success-700 dark:text-semantic-success-dark'}`}>
           {inviteStatus.message}
         </p>
       )}
@@ -311,7 +311,7 @@ const MembersCard = () => {
                     </button>
                     <button
                       onClick={() => setPendingMemberAction({ type: 'remove', userId: m.userId })}
-                      className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
+                      className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-700 dark:text-dark-muted"
                       aria-label={`Remove ${m.user?.name}`}
                     >
                       <X className="h-4 w-4" />
@@ -334,7 +334,7 @@ const MembersCard = () => {
         <button
           onClick={handleLeaveWorkspace}
           disabled={leaving}
-          className="mt-4 flex items-center gap-1.5 text-xs font-medium text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted disabled:opacity-60"
+          className="mt-4 flex items-center gap-1.5 text-xs font-medium text-light-muted transition hover:text-semantic-danger-700 dark:text-dark-muted disabled:opacity-60"
         >
           <LeaveIcon className="h-3.5 w-3.5" /> {leaving ? 'Leaving…' : 'Leave workspace'}
         </button>
@@ -359,7 +359,7 @@ const MembersCard = () => {
                 </button>
                 <button
                   onClick={() => handleRevokeInvite(inv.id)}
-                  className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-500 dark:text-dark-muted"
+                  className="rounded-lg p-1.5 text-light-muted transition hover:text-semantic-danger-700 dark:text-dark-muted"
                   aria-label={`Revoke invite to ${inv.email}`}
                   title="Revoke"
                 >

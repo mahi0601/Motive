@@ -45,7 +45,7 @@ const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
+      {error && <p className="mt-1 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>}
     </div>
   );
 };
