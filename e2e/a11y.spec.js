@@ -14,7 +14,7 @@ async function firstWorkspaceId(request, auth) {
   const ws = res.workspaces[0];
   await request.patch(`${API}/api/workspaces/${ws.id}/status-page`, {
     headers: auth,
-    data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber' },
+    data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber', allowFeedback: true },
   });
   return ws.id;
 }
