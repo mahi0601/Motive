@@ -11,6 +11,7 @@ import ActivityFeed from '../components/collab/ActivityFeed';
 import DailyDigest from '../components/tasks/DailyDigest';
 import KeyboardShortcuts from '../components/app/KeyboardShortcuts';
 import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
+import GettingStartedCard from '../components/app/GettingStartedCard';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
 import { logger } from '../utils/logger';
@@ -328,6 +329,12 @@ const Dashboard = () => {
             <ActivityFeed limit={3} />
           </div>
         </div>
+
+        <GettingStartedCard
+          tasks={tasks}
+          createTask={create}
+          onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
+        />
 
         <TaskAnalytics tasks={analyticsTasks} />
 

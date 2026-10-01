@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CheckSquare, Command, FileText, Layout, X } from 'lucide-react';
+import { CheckSquare, Command, FileText, Layout, Link2, X } from 'lucide-react';
 
 const STORAGE_KEY = 'motive_onboarded';
 
@@ -14,8 +14,13 @@ const markSeen = () => localStorage.setItem(STORAGE_KEY, 'true');
 const STEPS = [
   {
     icon: CheckSquare,
-    title: 'Organize tasks your way',
-    body: 'Drag tasks between Personal, Finance, Health, and Development boards. Track priority, due dates, and completion at a glance.',
+    title: 'Run client work on a board',
+    body: 'Drag tasks between boards, set priority and due dates, and see what is slipping at a glance.',
+  },
+  {
+    icon: Link2,
+    title: 'Give each client a live link',
+    body: 'In Settings, turn on a status link. Your client sees task titles, status and dates, with no sign-up, and never names, emails, comments or files.',
   },
   {
     icon: FileText,
@@ -49,6 +54,27 @@ const WelcomeModal = ({ onClose }) => {
     if (path) navigate(path);
   };
 
+  // Dialog behaviour: Escape closes it, and focus moves into it when it opens
+  // (and back where it was when it closes), so keyboard and screen-reader
+  // users are not left behind the overlay.
+  const panelRef = useRef(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    panelRef.current?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        markSeen();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      previous?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const { icon: Icon, title, body } = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
@@ -62,9 +88,14 @@ const WelcomeModal = ({ onClose }) => {
         onClick={dismiss}
       >
         <motion.div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Welcome to Motive"
+          tabIndex={-1}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-full max-w-md rounded-2xl border shadow-2xl"
+          className="w-full max-w-md rounded-2xl border shadow-2xl outline-none"
           style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--surface-border)' }}
           onClick={(e) => e.stopPropagation()}
         >
