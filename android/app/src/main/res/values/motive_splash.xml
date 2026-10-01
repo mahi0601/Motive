@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch background for Android 12+ system splash (Theme.SplashScreen reads it
+         via windowSplashScreenBackground in styles.xml). Deep petrol — the brand
+         anchor (brand-700) — so there is no white flash before the app appears.
+         Keep in step with `npm run brand:android` (scripts in package.json). -->
+    <color name="motive_splash_background">#0E4C5C</color>
+</resources>
