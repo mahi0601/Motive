@@ -12,7 +12,7 @@
     "android": "vite build && cap sync && cap open android",
     "apk": "vite build && cap sync android && cd android && ./gradlew assembleRelease && echo '\\nAPK: android/app/build/outputs/apk/release/app-release.apk'",
     "brand": "node scripts/generate-brand-assets.mjs",
-    "brand:android": "capacitor-assets generate --android --assetPath assets --iconBackgroundColor '#0E4C5C' --iconBackgroundColorDark '#0E4C5C' --splashBackgroundColor '#0E4C5C' --splashBackgroundColorDark '#0B1418'"
+    "brand:android": "npx --yes @capacitor/assets@3.0.5 generate --android --assetPath assets --iconBackgroundColor '#0E4C5C' --iconBackgroundColorDark '#0E4C5C' --splashBackgroundColor '#0E4C5C' --splashBackgroundColorDark '#0B1418'"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
@@ -35,7 +35,6 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.2",
     "@eslint/js": "^9.21.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
