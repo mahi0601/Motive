@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
   const [show, setShow] = useState(false);
+  const id = useId();
   const isPassword = type === 'password';
   const inputType = isPassword ? (show ? 'text' : 'password') : type;
 
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-light-text dark:text-dark-muted">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-light-text dark:text-dark-muted">
         {label}
       </label>
       <div className="relative">
@@ -19,9 +20,11 @@ const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
           />
         )}
         <input
+          id={id}
           type={inputType}
+          aria-invalid={error ? 'true' : undefined}
           className={`w-full rounded-lg border bg-light-surface py-2.5 text-light-text outline-none transition
-            placeholder:text-light-muted dark:bg-dark-surface dark:text-dark-text
+            placeholder:text-light-muted dark:placeholder:text-dark-muted dark:bg-dark-surface dark:text-dark-text
             ${Icon ? 'pl-10' : 'pl-3.5'} ${isPassword ? 'pr-10' : 'pr-3.5'}
             ${
               error
@@ -42,7 +45,7 @@ const AuthField = ({ label, icon: Icon, type = 'text', error, ...props }) => {
           </button>
         )}
       </div>
-      {error && <p className="mt-1 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
+      {error && <p className="mt-1 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>}
     </div>
   );
 };

@@ -17,6 +17,9 @@ export const register = (data) => api.post('/api/auth/register', data, withCooki
 export const logout = () => api.post('/api/auth/logout', null, { ...withCookie, headers: sameSiteHeader });
 export const forgotPassword = (email) => api.post('/api/auth/forgot-password', { email });
 export const resetPassword = (token, password) => api.post('/api/auth/reset-password', { token, password });
+// Email confirmation: the token comes from the emailed link; resending needs a session.
+export const verifyEmail = (token) => api.post('/api/auth/verify-email', { token });
+export const resendVerification = () => api.post('/api/auth/resend-verification');
 // Native (Capacitor) Google sign-in hand-off — see hooks/useNativeOAuthCallback.js.
 // `codeVerifier` is the PKCE verifier — see utils/pkce.js.
 export const nativeExchange = (code, codeVerifier) =>

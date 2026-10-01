@@ -35,11 +35,11 @@ const ActivityFeed = ({ limit = 5 }) => {
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-brand-600" />;
       case 'updated':
-        return <Edit className="w-4 h-4 text-semantic-info-500 dark:text-semantic-info-dark" />;
+        return <Edit className="w-4 h-4 text-semantic-info-700 dark:text-semantic-info-dark" />;
       case 'deleted':
         return <Trash2 className="w-4 h-4 text-brand-700" />;
       default:
-        return <Clock className="w-4 h-4 text-light-muted" />;
+        return <Clock className="w-4 h-4 text-light-muted dark:text-dark-muted" />;
     }
   };
 
