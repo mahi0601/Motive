@@ -15,7 +15,7 @@ describe('StatusPageDetailsForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUser = { id: 'o1', isPro: false };
-    mockWorkspace = { id: 'ws-1', name: 'Acme', statusHeadline: 'Old headline', statusSummary: null, milestoneTitle: 'M1', milestoneDate: '2026-12-01T00:00:00.000Z', statusAccent: 'blue', statusHideBranding: false };
+    mockWorkspace = { id: 'ws-1', name: 'Acme', statusHeadline: 'Old headline', statusSummary: null, milestoneTitle: 'M1', milestoneDate: '2026-12-01T00:00:00.000Z', statusAccent: 'blue', statusHideBranding: false, statusAllowFeedback: false };
   });
 
   test('starts from what is saved, and warns that it is all public', () => {
@@ -42,6 +42,7 @@ describe('StatusPageDetailsForm', () => {
       milestoneDate: '2026-12-01',
       accent: 'violet',
       hideBranding: false,
+      allowFeedback: false,
     });
     expect(loadWorkspace).toHaveBeenCalled();
     expect(await screen.findByRole('status')).toHaveTextContent(/saved/i);
@@ -79,6 +80,18 @@ describe('StatusPageDetailsForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => expect(updateStatusPage).toHaveBeenCalled());
     expect(updateStatusPage.mock.calls[0][1].hideBranding).toBe(true);
+  });
+
+  test('lets the owner turn client responses on, with a plain warning about what that opens', async () => {
+    updateStatusPage.mockResolvedValue({ data: { page: {} } });
+    render(<StatusPageDetailsForm />);
+    const toggle = screen.getByRole('checkbox', { name: /let clients respond/i });
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText(/anyone with the link can send/i)).toBeInTheDocument();
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(updateStatusPage).toHaveBeenCalled());
+    expect(updateStatusPage.mock.calls[0][1].allowFeedback).toBe(true);
   });
 
   test('a server refusal is shown, not swallowed', async () => {

@@ -4,7 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import StatusPageCard from './StatusPageCard';
 import { enableShare, disableShare } from '../../services/workspaceService';
 
-vi.mock('../../services/workspaceService', () => ({ enableShare: vi.fn(), disableShare: vi.fn() }));
+vi.mock('../../services/workspaceService', () => ({
+  enableShare: vi.fn(),
+  disableShare: vi.fn(),
+  updateStatusPage: vi.fn(),
+  listFeedback: vi.fn().mockResolvedValue({ data: { items: [], unread: 0, pagination: { total: 0 } } }),
+  markFeedbackRead: vi.fn(),
+  deleteFeedback: vi.fn(),
+}));
 
 const loadWorkspace = vi.fn().mockResolvedValue(undefined);
 let mockWorkspace;

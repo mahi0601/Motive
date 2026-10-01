@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { enableShare, disableShare } from '../../services/workspaceService';
 import StatusPageDetailsForm from './StatusPageDetailsForm';
+import ClientFeedbackList from './ClientFeedbackList';
 import { CARD_CLASS } from './cardStyles';
 
 // Where the public link points. In the browser that's simply this site; the
@@ -171,6 +172,7 @@ const StatusPageCard = () => {
       </div>
 
       {enabled && <StatusPageDetailsForm />}
+      {enabled && <ClientFeedbackList workspaceId={workspace.id} />}
     </div>
   );
 };

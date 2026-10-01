@@ -5,7 +5,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import StatusPage from './StatusPage';
 import { getStatus } from '../services/statusService';
 
-vi.mock('../services/statusService', () => ({ getStatus: vi.fn() }));
+vi.mock('../services/statusService', () => ({ getStatus: vi.fn(), sendFeedback: vi.fn() }));
 
 const base = {
   workspace: { name: 'Acme Redesign', icon: '🚀' },
@@ -23,7 +23,7 @@ const renderWith = (page) => {
     </MemoryRouter>
   );
 };
-const PAGE = { headline: null, summary: null, milestone: null, accent: 'teal', hideBranding: false };
+const PAGE = { headline: null, summary: null, milestone: null, accent: 'teal', hideBranding: false, allowFeedback: false };
 
 describe('StatusPage: owner-written details', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -66,6 +66,16 @@ describe('StatusPage: owner-written details', () => {
     const bar = await screen.findByRole('progressbar', { name: /percent of tasks shipped/i });
     expect(bar.firstChild.className).toMatch(/--accent/);
     expect(bar.closest('[data-accent]').getAttribute('data-accent')).toBe('violet');
+  });
+
+  test('offers the response form only when the owner allowed it', async () => {
+    const { unmount } = renderWith(PAGE);
+    await screen.findByText('Acme Redesign');
+    expect(screen.queryByRole('region', { name: /respond/i })).toBeNull();
+    unmount();
+    renderWith({ ...PAGE, allowFeedback: true, milestone: { title: 'Design sign-off', date: null } });
+    const region = await screen.findByRole('region', { name: /respond/i });
+    expect(region).toHaveTextContent(/send comment/i);
   });
 
   test('an older server that sends no `page` still renders the page', async () => {

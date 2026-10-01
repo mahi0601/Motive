@@ -4,6 +4,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
+import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
 import {
   STATUS,
   getTaskDisplayStatus,
@@ -202,6 +203,8 @@ const StatusPage = () => {
           </section>
         );
       })}
+
+      {page.allowFeedback && <ClientFeedbackForm token={token} milestone={page.milestone} />}
 
       {status.truncated && (
         <p className="mt-4 text-center text-xs text-light-muted dark:text-dark-muted">

@@ -17,7 +17,7 @@ const counterClass = 'text-xs font-normal text-light-muted dark:text-dark-muted'
 const StatusPageDetailsForm = () => {
   const { user } = useAuth();
   const { workspace, loadWorkspace } = useWorkspace();
-  const ids = { headline: useId(), summary: useId(), milestoneTitle: useId(), milestoneDate: useId(), hide: useId() };
+  const ids = { headline: useId(), summary: useId(), milestoneTitle: useId(), milestoneDate: useId(), hide: useId(), feedback: useId() };
 
   const [form, setForm] = useState(() => ({
     headline: workspace.statusHeadline || '',
@@ -26,6 +26,7 @@ const StatusPageDetailsForm = () => {
     milestoneDate: workspace.milestoneDate ? workspace.milestoneDate.slice(0, 10) : '',
     accent: workspace.statusAccent || 'teal',
     hideBranding: !!workspace.statusHideBranding,
+    allowFeedback: !!workspace.statusAllowFeedback,
   }));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +50,7 @@ const StatusPageDetailsForm = () => {
         milestoneDate: form.milestoneDate || null,
         accent: form.accent,
         hideBranding: form.hideBranding,
+        allowFeedback: form.allowFeedback,
       });
       await loadWorkspace();
       setSaved(true);
@@ -142,6 +144,24 @@ const StatusPageDetailsForm = () => {
         {!canHide && (
           <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Hiding it is part of Motive Pro.</p>
         )}
+      </div>
+
+      <div>
+        <label htmlFor={ids.feedback} className="flex cursor-pointer items-center gap-2 text-sm text-light-text dark:text-dark-text">
+          <input
+            id={ids.feedback}
+            type="checkbox"
+            checked={form.allowFeedback}
+            onChange={(e) => {
+              setSaved(false);
+              setForm((f) => ({ ...f, allowFeedback: e.target.checked }));
+            }}
+          />
+          Let clients respond from the page (approve, request changes, comment)
+        </label>
+        <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+          Anyone with the link can send you a message under any name. Messages are shown only to you, never published.
+        </p>
       </div>
 
       {error && (
