@@ -65,21 +65,21 @@ export const STATUS_ICON = {
 
 // Solid text/icon color — for a tile's icon chip, a status dot, a chart bar.
 export const STATUS_TEXT_CLASSES = {
-  [STATUS.SHIPPED]: 'text-semantic-success-500 dark:text-semantic-success-dark',
-  [STATUS.IN_FLIGHT]: 'text-semantic-info-500 dark:text-semantic-info-dark',
+  [STATUS.SHIPPED]: 'text-semantic-success-700 dark:text-semantic-success-dark',
+  [STATUS.IN_FLIGHT]: 'text-semantic-info-700 dark:text-semantic-info-dark',
   [STATUS.AT_RISK]: 'text-semantic-warning-700 dark:text-semantic-warning-dark',
-  [STATUS.OVERDUE]: 'text-semantic-danger-500 dark:text-semantic-danger-dark',
-  [STATUS.NOT_STARTED]: 'text-semantic-idle-500 dark:text-semantic-idle-dark',
+  [STATUS.OVERDUE]: 'text-semantic-danger-700 dark:text-semantic-danger-dark',
+  [STATUS.NOT_STARTED]: 'text-semantic-idle-700 dark:text-semantic-idle-dark',
 };
 
 // Soft badge/chip background + text + ring — for the Momentum tile icon
 // chips and any status pill.
 export const STATUS_BADGE_CLASSES = {
-  [STATUS.SHIPPED]: 'bg-semantic-success-50 text-semantic-success-500 ring-1 ring-semantic-success-200 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark dark:ring-semantic-success-500/30',
-  [STATUS.IN_FLIGHT]: 'bg-semantic-info-50 text-semantic-info-500 ring-1 ring-semantic-info-200 dark:bg-semantic-info-500/10 dark:text-semantic-info-dark dark:ring-semantic-info-500/30',
+  [STATUS.SHIPPED]: 'bg-semantic-success-50 text-semantic-success-700 ring-1 ring-semantic-success-200 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark dark:ring-semantic-success-500/30',
+  [STATUS.IN_FLIGHT]: 'bg-semantic-info-50 text-semantic-info-700 ring-1 ring-semantic-info-200 dark:bg-semantic-info-500/10 dark:text-semantic-info-dark dark:ring-semantic-info-500/30',
   [STATUS.AT_RISK]: 'bg-semantic-warning-50 text-semantic-warning-700 ring-1 ring-semantic-warning-200 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark dark:ring-semantic-warning-500/30',
-  [STATUS.OVERDUE]: 'bg-semantic-danger-50 text-semantic-danger-500 ring-1 ring-semantic-danger-200 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark dark:ring-semantic-danger-500/30',
-  [STATUS.NOT_STARTED]: 'bg-semantic-idle-50 text-semantic-idle-500 ring-1 ring-semantic-idle-200 dark:bg-semantic-idle-500/10 dark:text-semantic-idle-dark dark:ring-semantic-idle-500/30',
+  [STATUS.OVERDUE]: 'bg-semantic-danger-50 text-semantic-danger-700 ring-1 ring-semantic-danger-200 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark dark:ring-semantic-danger-500/30',
+  [STATUS.NOT_STARTED]: 'bg-semantic-idle-50 text-semantic-idle-700 ring-1 ring-semantic-idle-200 dark:bg-semantic-idle-500/10 dark:text-semantic-idle-dark dark:ring-semantic-idle-500/30',
 };
 
 // Solid dot — for compact chart legends / task-card status markers.

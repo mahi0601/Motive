@@ -65,7 +65,7 @@ const DangerZoneCard = () => {
           </p>
           <button
             onClick={() => setConfirming(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-light-border dark:border-dark-border px-4 py-2 text-sm font-medium text-light-text dark:text-dark-text transition hover:border-semantic-danger-300 hover:text-semantic-danger-500 dark:hover:border-semantic-danger-500/50 dark:hover:text-semantic-danger-dark"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg border border-light-border dark:border-dark-border px-4 py-2 text-sm font-medium text-light-text dark:text-dark-text transition hover:border-semantic-danger-300 hover:text-semantic-danger-700 dark:hover:border-semantic-danger-500/50 dark:hover:text-semantic-danger-dark"
           >
             <Trash2 className="h-4 w-4" /> Delete account
           </button>
@@ -73,8 +73,8 @@ const DangerZoneCard = () => {
       ) : (
         <>
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-semantic-danger-500 dark:text-semantic-danger-dark" />
-            <h4 className="text-lg font-semibold text-semantic-danger-500 dark:text-semantic-danger-dark">This can't be undone</h4>
+            <AlertTriangle className="h-5 w-5 text-semantic-danger-700 dark:text-semantic-danger-dark" />
+            <h4 className="text-lg font-semibold text-semantic-danger-700 dark:text-semantic-danger-dark">This can't be undone</h4>
           </div>
           <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
             All your pages, tasks, and data will be permanently removed.{' '}
@@ -98,7 +98,7 @@ const DangerZoneCard = () => {
               autoFocus
               className="w-full max-w-xs rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-raised px-3 py-2 text-sm text-light-text dark:text-dark-text outline-none focus:border-semantic-danger-500 focus:ring-2 focus:ring-semantic-danger-200 dark:focus:ring-semantic-danger-500/30"
             />
-            {deleteError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{deleteError}</p>}
+            {deleteError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{deleteError}</p>}
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteAccount}

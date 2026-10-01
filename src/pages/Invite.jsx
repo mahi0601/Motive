@@ -87,7 +87,7 @@ const Invite = () => {
       : 'This invite link is invalid.';
     return (
       <Shell>
-        <div className="flex items-center justify-center gap-2 text-semantic-danger-500 dark:text-semantic-danger-dark">
+        <div className="flex items-center justify-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
           <AlertCircle size={20} />
           <h1 className="font-display text-xl font-bold text-light-text dark:text-white">Can't open this invite</h1>
         </div>
@@ -156,7 +156,7 @@ const Invite = () => {
     <Shell>
       {heading}
       {error && (
-        <p className="mt-4 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-2 text-sm text-semantic-danger-500 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
+        <p className="mt-4 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-2 text-sm text-semantic-danger-700 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
           {error}
         </p>
       )}
@@ -171,7 +171,7 @@ const Invite = () => {
         <button
           onClick={handleDecline}
           disabled={responding}
-          className="w-full rounded-lg border border-light-border py-3 text-sm font-medium text-light-muted transition hover:border-semantic-danger-300 hover:text-semantic-danger-500 dark:border-dark-border dark:text-dark-muted disabled:opacity-60"
+          className="w-full rounded-lg border border-light-border py-3 text-sm font-medium text-light-muted transition hover:border-semantic-danger-300 hover:text-semantic-danger-700 dark:border-dark-border dark:text-dark-muted disabled:opacity-60"
         >
           Decline
         </button>

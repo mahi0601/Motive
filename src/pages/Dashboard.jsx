@@ -11,6 +11,7 @@ import ActivityFeed from '../components/collab/ActivityFeed';
 import DailyDigest from '../components/tasks/DailyDigest';
 import KeyboardShortcuts from '../components/app/KeyboardShortcuts';
 import WelcomeModal, { hasSeenWelcome } from '../components/app/WelcomeModal';
+import GettingStartedCard from '../components/app/GettingStartedCard';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
 import { logger } from '../utils/logger';
@@ -329,6 +330,12 @@ const Dashboard = () => {
           </div>
         </div>
 
+        <GettingStartedCard
+          tasks={tasks}
+          createTask={create}
+          onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
+        />
+
         <TaskAnalytics tasks={analyticsTasks} />
 
         {highlight && (
@@ -484,7 +491,7 @@ const Dashboard = () => {
           </button>
           <button
             onClick={bulkDelete}
-            className="rounded-full border border-semantic-danger-200 px-4 py-1.5 text-sm font-medium text-semantic-danger-500 hover:bg-semantic-danger-50 dark:border-semantic-danger-500/40 dark:text-semantic-danger-dark dark:hover:bg-semantic-danger-500/10"
+            className="rounded-full border border-semantic-danger-200 px-4 py-1.5 text-sm font-medium text-semantic-danger-700 hover:bg-semantic-danger-50 dark:border-semantic-danger-500/40 dark:text-semantic-danger-dark dark:hover:bg-semantic-danger-500/10"
           >
             Delete
           </button>

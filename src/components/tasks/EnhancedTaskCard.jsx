@@ -41,7 +41,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
 
       {task.completed && (
         <div className="absolute top-4 right-4">
-          <CheckCircle className="w-6 h-6 text-semantic-success-500 dark:text-semantic-success-dark" />
+          <CheckCircle className="w-6 h-6 text-semantic-success-700 dark:text-semantic-success-dark" />
         </div>
       )}
 
@@ -99,7 +99,7 @@ const EnhancedTaskCard = ({ task, onEdit, onDelete, onComplete, onCalendarClick,
       {task.dueDate && (
         <div className={`flex items-center gap-2 mb-3 text-sm ${
           isOverdue
-            ? 'text-semantic-danger-500 dark:text-semantic-danger-dark font-medium'
+            ? 'text-semantic-danger-700 dark:text-semantic-danger-dark font-medium'
             : daysUntilDue !== null && daysUntilDue <= 3
             ? 'text-semantic-warning-700 dark:text-semantic-warning-dark'
             : 'text-light-muted dark:text-dark-muted'

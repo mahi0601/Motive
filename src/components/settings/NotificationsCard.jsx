@@ -28,7 +28,7 @@ const NotificationsCard = () => {
           <h4 className="text-lg font-semibold">Notifications</h4>
         </div>
         {notifPermission === 'granted' ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-500 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-700 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
             <CheckCircle /> Enabled
           </span>
         ) : (
