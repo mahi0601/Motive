@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Link, Outlet } from 'react-router-dom';
+import PageFallback from '../components/ui/PageFallback';
 import { motion } from 'framer-motion';
 import { Link2, AlertTriangle, Users } from 'lucide-react';
-import { LogoMark } from '../components/ui/Logo';
+import Logo from '../components/ui/Logo';
 import { BRAND, VALUE_PROPS } from '../config/brand';
 
 // Same three value props as Home.jsx (both now read from config/brand.js),
@@ -25,9 +26,8 @@ const AuthLayout = () => (
       <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-2xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
 
-      <div className="relative flex items-center gap-3">
-        <LogoMark size={40} />
-        <span className="font-display text-2xl font-bold">{BRAND.name}</span>
+      <div className="relative">
+        <Logo size={40} tone="light" />
       </div>
 
       <div className="relative">
@@ -71,13 +71,12 @@ const AuthLayout = () => (
         className="w-full max-w-md"
       >
         {/* Brand logo above the form — visible on every screen size */}
-        <Link to="/" className="mb-8 flex items-center gap-2.5">
-          <LogoMark size={36} />
-          <span className="font-display text-2xl font-bold text-light-text dark:text-dark-text">
-            Motive
-          </span>
+        <Link to="/" className="mb-8 inline-flex">
+          <Logo size={36} />
         </Link>
-        <Outlet />
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
         <p className="mt-8 text-center text-xs text-light-muted dark:text-dark-muted">
           <Link to="/privacy" className="hover:text-brand-600 dark:hover:text-brand-400">
             Privacy Policy

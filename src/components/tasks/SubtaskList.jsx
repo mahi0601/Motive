@@ -63,14 +63,14 @@ const SubtaskList = ({ taskId }) => {
     <div className="mt-6 border-t border-light-border pt-6 dark:border-dark-border">
       <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-light-text dark:text-white">
         <CheckSquare className="text-brand-500" />
-        Subtasks {subtasks.length > 0 && <span className="text-light-muted">({doneCount}/{subtasks.length})</span>}
+        Subtasks {subtasks.length > 0 && <span className="text-light-muted dark:text-dark-muted">({doneCount}/{subtasks.length})</span>}
       </h4>
 
       {!loading && subtasks.length > 0 && (
         <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-light-border dark:bg-dark-border">
           {/* Solid, not gradient — this renders nested inside TaskForm's
               modal, which already spends its one gradient on the
-              Create/Update Task submit button (see PLAN §4). */}
+              Create/Update Task submit button. */}
           <div
             className="h-full rounded-full bg-brand-500 transition-all"
             style={{ width: `${(doneCount / subtasks.length) * 100}%` }}
@@ -92,12 +92,12 @@ const SubtaskList = ({ taskId }) => {
       </div>
 
       <form onSubmit={handleAdd} className="mt-2 flex items-center gap-2">
-        <Plus className="h-4 w-4 shrink-0 text-light-muted" />
+        <Plus className="h-4 w-4 shrink-0 text-light-muted dark:text-dark-muted" />
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Add a subtask…"
-          className="flex-1 border-none bg-transparent text-sm outline-none placeholder:text-light-muted"
+          className="flex-1 border-none bg-transparent text-sm outline-none placeholder:text-light-muted dark:placeholder:text-dark-muted"
         />
       </form>
     </div>

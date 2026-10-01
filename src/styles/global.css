@@ -5,7 +5,7 @@
 
 :root {
   /* Petrol brand tokens — see tailwind.config.js for the full scale and the
-     color-psychology rationale (PLAN "Petrol & Ink"). */
+     color-psychology rationale. */
   --brand: #1b7a8c;
   --brand-strong: #0e4c5c;
   --brand-tint: #4a9db1;
@@ -46,7 +46,7 @@ html.dark body {
 
 /* Headings inherit the body font (Inter) by default now — a display face at
    14-18px (h4-h6, most card/section titles) was the single strongest
-   "generic template" tell in the whole app (see PLAN §4). IBM Plex Sans is
+   "generic template" tell in the whole app. IBM Plex Sans is
    opt-in via the `font-display` utility class, reserved for page-level
    h1/h2 at ≥24px (text-2xl+) — e.g. "My Work", "Momentum", "Settings". This
    one deletion changes every page at once, so it ships alone, not mixed
@@ -73,6 +73,18 @@ a {
 a:hover {
   color: var(--brand-strong);
   text-decoration: underline;
+}
+
+/* On the dark background the base link colour is only 3.7:1 and its hover
+   colour (--brand-strong) just 2:1, both below the 4.5:1 text minimum. Dark
+   mode gets lighter tints (6:1 and 10:1). :where() keeps the specificity of
+   plain `a`, so any utility class on a link (text-white, hover:text-…) still
+   wins as before. */
+:where(.dark) a {
+  color: var(--brand-tint);
+}
+:where(.dark) a:hover {
+  color: #8cc7d4;
 }
 
 ::selection {
@@ -151,7 +163,7 @@ input:focus, select:focus, textarea:focus {
    and the `.card`/`.page-wrapper`/`.sidebar-item`/animation-keyframe helper
    classes that used to live here had zero usages in src/ — removed. */
 
-/* The one structural motif (see PLAN §4): a hairline border and a header
+/* The one structural motif: a hairline border and a header
    divider carry the structure, not a shadow — elevation is reserved for
    things that actually float (modals, menus, drag previews). Every screen
    used to hand-write `bg-light-surface dark:bg-dark-raised rounded-xl

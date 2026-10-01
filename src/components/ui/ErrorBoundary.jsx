@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component {
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-light-background px-6 text-center dark:bg-dark-background">
-        <LogoMark size={56} animated={false} />
+        <LogoMark size={56} />
         <h1 className="font-display text-2xl font-bold text-light-text dark:text-white">
           Something went wrong
         </h1>

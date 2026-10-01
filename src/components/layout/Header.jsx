@@ -7,7 +7,6 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { useNotificationSocket } from '../../context/NotificationSocketContext';
-import { useWorkspace } from '../../context/WorkspaceContext';
 import NotificationCenter from '../notifications/NotificationCenter';
 
 const Header = () => {
@@ -16,7 +15,6 @@ const Header = () => {
   const { canInstall, promptInstall } = useInstallPrompt();
   const [notifOpen, setNotifOpen] = useState(false);
   const { unreadCount, setUnreadCount } = useNotificationSocket();
-  const { workspace, workspaces, switchWorkspace } = useWorkspace();
 
   const initial = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
@@ -34,24 +32,6 @@ const Header = () => {
         <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
           <Logo size={28} />
         </Link>
-        {/* Only appears once it's actually needed — a solo user never sees
-            it. See WorkspaceContext.jsx#switchWorkspace: without this, a
-            workspace joined via invite would be created correctly on the
-            backend and then never be reachable in the UI. */}
-        {workspaces.length > 1 && (
-          <select
-            value={workspace?.id || ''}
-            onChange={(e) => switchWorkspace(e.target.value)}
-            className="hidden max-w-[160px] truncate rounded-lg border border-light-border bg-light-surface px-2 py-1.5 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text sm:block"
-            aria-label="Switch workspace"
-          >
-            {workspaces.map((w) => {
-              const role = w.ownerId === user?.id ? 'Owner' : w.members?.find((m) => m.userId === user?.id)?.role;
-              const label = role ? `${w.name} (${role[0].toUpperCase()}${role.slice(1)})` : w.name;
-              return <option key={w.id} value={w.id}>{label}</option>;
-            })}
-          </select>
-        )}
       </div>
 
       <nav className="flex items-center gap-2 sm:gap-3">
@@ -123,7 +103,7 @@ const Header = () => {
               Login
             </Link>
             {/* Tonal, not gradient, for consistency with the rest of the
-                gradient-budget pass (PLAN §4) — chrome/nav elements read as
+                gradient-budget pass — chrome/nav elements read as
                 secondary to whatever a screen's one primary action is. (This
                 whole `!user` branch is currently unreachable: Header only
                 renders inside DashboardLayout, which sits behind

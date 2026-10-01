@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { getComments, addComment } from '../../services/commentService';
-import { getWorkspaces } from '../../services/workspaceService';
 import { useAuth } from '../../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import { logger } from '../../utils/logger';
 
 // Mentions are authored inline as @[Display Name](userId) and rendered back
@@ -49,19 +49,17 @@ const CommentSection = ({ taskId }) => {
         setLoading(false);
       }
     })();
-    // Workspace members are the mention candidates — there's no per-task
-    // sharing model in this app, so "who can be @mentioned" is scoped to
-    // your own workspace rather than "who has access to this task".
-    (async () => {
-      try {
-        const { data } = await getWorkspaces();
-        const all = (data.workspaces[0]?.members || []).map((m) => m.user).filter(Boolean);
-        setMembers(all);
-      } catch (e) {
-        logger.warn('Failed to load workspace members', { error: e.message });
-      }
-    })();
   }, [taskId]);
+
+  // Workspace members are the mention candidates — there's no per-task
+  // sharing model in this app, so "who can be @mentioned" is scoped to the
+  // workspace the board is showing (the active one), not whichever workspace
+  // happens to be first in the list. Already loaded by WorkspaceContext, so
+  // no extra request per task.
+  const { workspace } = useWorkspace();
+  useEffect(() => {
+    setMembers((workspace?.members || []).map((m) => m.user).filter(Boolean));
+  }, [workspace]);
 
   const filteredMembers = useMemo(() => {
     if (mentionQuery == null) return [];
@@ -141,7 +139,7 @@ const CommentSection = ({ taskId }) => {
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-light-border/40 dark:hover:bg-white/5"
                   >
                     <span className="font-medium text-light-text dark:text-white">{m.name}</span>
-                    <span className="text-xs text-light-muted">{m.email}</span>
+                    <span className="text-xs text-light-muted dark:text-dark-muted">{m.email}</span>
                   </button>
                 ))}
               </div>
@@ -161,7 +159,7 @@ const CommentSection = ({ taskId }) => {
 
       <div className="space-y-4">
         {loading ? (
-          <p className="text-center text-sm text-light-muted">Loading…</p>
+          <p className="text-center text-sm text-light-muted dark:text-dark-muted">Loading…</p>
         ) : comments.length === 0 ? (
           <p className="py-4 text-center text-sm text-light-muted dark:text-dark-muted">
             No comments yet. Be the first to comment!

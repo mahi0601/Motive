@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // Called by Login/Register after a successful response.
+  // Called by Login/Register/native-OAuth after a successful response.
   const login = useCallback((userData, accessToken) => {
     setAccessToken(accessToken);
     setUser(userData);

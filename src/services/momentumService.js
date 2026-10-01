@@ -1,6 +1,5 @@
 import api from './api';
 
-// Supersedes statsService.js — see PLAN §3. `/api/stats` is kept on the
-// backend as a permanent alias for anything still pointed at it, but this is
-// the endpoint the app itself talks to.
+// Supersedes the old statsService.js. The backend's `/api/stats` alias has
+// been removed; `/api/momentum` is the only endpoint.
 export const getMomentum = (period = 'week') => api.get('/api/momentum', { params: { period } });

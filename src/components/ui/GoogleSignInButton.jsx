@@ -1,6 +1,7 @@
 import React from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
+import { createPkcePair, saveVerifier } from '../../utils/pkce';
 
 // Web: a full top-level browser navigation (not a fetch/axios call) — the
 // OAuth redirect dance (this app → Google's consent screen → back to the
@@ -29,10 +30,17 @@ const GoogleSignInButton = ({ inviteToken }) => {
   const query = params.toString();
   const href = query ? `${GOOGLE_AUTH_URL}?${query}` : GOOGLE_AUTH_URL;
 
+  // Native only: a fresh PKCE pair per attempt. The challenge goes up with the
+  // sign-in request; the verifier stays on-device until the deep link returns
+  // (see hooks/useNativeOAuthCallback.js).
   const handleClick = isNative
-    ? (e) => {
+    ? async (e) => {
         e.preventDefault();
-        Browser.open({ url: href });
+        const { verifier, challenge } = await createPkcePair();
+        saveVerifier(verifier);
+        const nativeParams = new URLSearchParams(params);
+        nativeParams.set('code_challenge', challenge);
+        Browser.open({ url: `${GOOGLE_AUTH_URL}?${nativeParams}` });
       }
     : undefined;
 

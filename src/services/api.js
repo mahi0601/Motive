@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { logger } from '../utils/logger';
+import { requestStarted, requestSettled } from './serverStatus';
 
 // ── In-memory access token ──────────────────────────────
 // Kept in a module variable, NEVER in localStorage → not reachable by XSS.
@@ -15,12 +16,18 @@ export const clearAccessToken = () => {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, // send the refresh cookie to /auth/* endpoints
+  // No withCredentials here — this client's calls only ever carry the
+  // Bearer access token (see the request interceptor below). The refresh
+  // cookie is scoped server-side to /api/auth anyway (config/env.js's
+  // cookie.path), so sending it on every task/page/block/comment call was
+  // never necessary; it only widened this client's cross-site exposure to every
+  // endpoint instead of the two that actually read the cookie.
 });
 
 // Attach the in-memory access token to every request.
 api.interceptors.request.use((config) => {
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  requestStarted();
   return config;
 });
 
@@ -34,15 +41,34 @@ const refreshClient = axios.create({
   withCredentials: true,
 });
 
+// The session check on page load is usually the first call to a sleeping API,
+// so it is tracked like any other request (see serverStatus.js).
 export const refreshSession = async () => {
-  const { data } = await refreshClient.post('/api/auth/refresh');
+  requestStarted();
+  try {
+    return await refreshSessionRequest();
+  } finally {
+    requestSettled();
+  }
+};
+
+const refreshSessionRequest = async () => {
+  // The custom header is what keeps another site from making this call with
+  // the user's cookie (see services/authService.js).
+  const { data } = await refreshClient.post('/api/auth/refresh', null, {
+    headers: { 'X-Requested-With': 'motive' },
+  });
   setAccessToken(data.accessToken);
   return data; // { user, accessToken }
 };
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    requestSettled();
+    return res;
+  },
   async (error) => {
+    requestSettled();
     const original = error.config;
     const status = error.response?.status;
     const isAuthCall = AUTH_PATHS.some((p) => original?.url?.includes(p));

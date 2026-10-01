@@ -60,7 +60,7 @@ const KeyboardShortcuts = () => {
                   onClick={() => setIsOpen(false)}
                   className="p-2 hover:bg-light-border/40 dark:hover:bg-dark-border rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-light-muted" />
+                  <X className="w-5 h-5 text-light-muted dark:text-dark-muted" />
                 </button>
               </div>
 
@@ -96,10 +96,9 @@ const KeyboardShortcuts = () => {
 
       {/* Tonal, not gradient — a "?" help FAB is a low-priority utility, not
           a screen's primary action, so it shouldn't outrank whatever real
-          CTA is on screen (see PLAN §4). Also a candidate for `hidden
-          lg:block` once mobile has its own bottom-tab-bar FAB (PLAN §5,
-          Phase 4) — this button already sits in that exact bottom-right
-          slot. */}
+          CTA is on screen. Also a candidate for `hidden lg:block` once
+          mobile has its own bottom-tab-bar FAB — this button already sits
+          in that exact bottom-right slot. */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}

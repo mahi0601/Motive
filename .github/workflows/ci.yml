@@ -3,19 +3,82 @@ name: CI
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
+  pull_request: # any base branch, so stacked PRs are checked too
+
+# A newer push to the same ref supersedes an in-flight run — but never cancel
+# a run on master, so a deploy that's already started isn't cut off mid-way.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+permissions:
+  contents: read
 
 jobs:
+  # Scans only the commits introduced by this push/PR, not the repo's full
+  # history — see motive-backend/.github/workflows/ci.yml's copy of this job
+  # for why (a real credential was committed and later deleted in that
+  # repo's history before this existed; scanning only what's new is what
+  # prevents a repeat without permanently red-X'ing CI over an
+  # already-rotated leak).
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
+
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run test
       - run: npm run build
+
+  # Deploys only after every check above passed, and only for a push to master.
+  # This static site is connected to Render as a public-repo deploy, so it has
+  # no push webhook and never auto-deploys; this job is what ships it.
+  #
+  # Needs RENDER_DEPLOY_HOOK_URL (Render → motive-app → Settings → Deploy Hook)
+  # as a secret of the `render-production` GitHub environment, restricted to
+  # the master branch. (Not `production`: that name is also Vercel's, which
+  # would share, and could be granted, the same secrets.) The hook URL is a
+  # credential: keep it in GitHub secrets, never in the repo. `permissions: {}`
+  # — the job only calls curl and needs no access to this repository.
+  deploy:
+    needs: [secret-scan, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions: {}
+    environment: render-production
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret is not set" >&2
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+      # Smoke check only: the old version keeps serving until the new build is
+      # live, so a pass means the site is up, not that the rollout finished.
+      - name: Smoke-check site
+        run: |
+          for i in $(seq 1 15); do
+            if curl -fsS -o /dev/null https://motive-app-stsv.onrender.com; then exit 0; fi
+            sleep 20
+          done
+          echo "Site did not respond in time" >&2
+          exit 1

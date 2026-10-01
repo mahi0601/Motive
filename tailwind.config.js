@@ -6,8 +6,7 @@
 // instrument a client is meant to trust. Petrol is deliberately pulled off
 // the status hue wheel (green/azure/amber/red/slate) so the brand never
 // competes with the one thing this app actually needs to communicate at a
-// glance: what state is this work in. See PLAN "Petrol & Ink" for the full
-// color-psychology rationale.
+// glance: what state is this work in.
 const petrol = {
   50: '#EFF7F9',
   100: '#D7ECF0',
@@ -37,11 +36,16 @@ export default {
         // flight/at risk/overdue/not started). Never reused decoratively —
         // that's what `brand` is for.
         semantic: {
-          success: { 50: '#ECFDF3', 200: '#ABEFC6', 500: '#16A34A', dark: '#4ADE80' },
-          info: { 50: '#EFF6FF', 200: '#BFDBFE', 500: '#3B82F6', dark: '#60A5FA' },
-          warning: { 50: '#FFFBEB', 200: '#FDE7B0', 500: '#E8A317', dark: '#FBBF24' },
-          danger: { 50: '#FEF2F2', 200: '#FECACA', 500: '#D64545', dark: '#F87171' },
-          idle: { 50: '#F1F5F9', 200: '#CBD5E1', 500: '#94A3B8', dark: '#64748B' },
+          // 700 is the text shade on light backgrounds (500 is for fills and borders:
+          // as text it is only ~3:1 on its own pale tint).
+          success: { 50: '#ECFDF3', 200: '#ABEFC6', 500: '#16A34A', 700: '#15803D', dark: '#4ADE80' },
+          info: { 50: '#EFF6FF', 200: '#BFDBFE', 500: '#3B82F6', 700: '#1D4ED8', dark: '#60A5FA' },
+          // 700 is the text shade on light backgrounds: 500 is a good fill/border
+          // colour but only reaches ~2:1 as text on the pale tint.
+          warning: { 50: '#FFFBEB', 200: '#FDE7B0', 500: '#E8A317', 700: '#8A5A00', dark: '#FBBF24' },
+          danger: { 50: '#FEF2F2', 200: '#FECACA', 500: '#D64545', 700: '#B91C1C', dark: '#F87171' },
+          // idle.dark was #64748B, only 3.9:1 on the dark background; #94A3B8 is 7:1.
+          idle: { 50: '#F1F5F9', 200: '#CBD5E1', 500: '#94A3B8', 700: '#475569', dark: '#94A3B8' },
         },
         dark: {
           // Blue-biased near-black (was a purple-black under the violet
@@ -76,7 +80,7 @@ export default {
       },
       // A deliberate scale, not the Tailwind defaults — so a stat tile's
       // number and a task card's title differ on purpose instead of by
-      // accident (see PLAN §4). Pair with `font-display` (IBM Plex Sans)
+      // accident. Pair with `font-display` (IBM Plex Sans)
       // only at `display-xl`/`display`/`title`; everything else stays Inter.
       fontSize: {
         'display-xl': ['2.5rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],

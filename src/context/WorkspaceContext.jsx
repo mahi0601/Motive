@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { getPages, createPage, updatePage, deletePage } from '../services/pageService';
 import { getWorkspaces } from '../services/workspaceService';
 import { useAuth } from './AuthContext';
@@ -34,18 +34,29 @@ export const WorkspaceProvider = ({ children }) => {
   const [workspaces, setWorkspaces] = useState([]);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
+  // False until the first workspace lookup has finished (success or failure).
+  // Task/page loaders wait on this so they don't fire once unscoped and then
+  // again once the active workspace is known.
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  const workspaceId = workspace?.id;
+
+  // Only the newest request may write `pages` — switching workspaces quickly
+  // must not let a slower, stale response overwrite the current workspace's tree.
+  const pagesRequest = useRef(0);
 
   const refreshPages = useCallback(async () => {
+    if (!workspaceId) return;
+    const requestId = ++pagesRequest.current;
     setLoading(true);
     try {
-      const { data } = await getPages();
-      setPages(data.pages);
+      const { data } = await getPages(workspaceId);
+      if (requestId === pagesRequest.current) setPages(data.pages);
     } catch (e) {
       logger.warn('Failed to load pages', { error: e.message });
     } finally {
-      setLoading(false);
+      if (requestId === pagesRequest.current) setLoading(false);
     }
-  }, []);
+  }, [workspaceId]);
 
   const loadWorkspace = useCallback(async () => {
     try {
@@ -56,6 +67,8 @@ export const WorkspaceProvider = ({ children }) => {
       setWorkspace(active);
     } catch (e) {
       logger.warn('Failed to load workspace', { error: e.message });
+    } finally {
+      setWorkspaceReady(true);
     }
   }, []);
 
@@ -77,16 +90,26 @@ export const WorkspaceProvider = ({ children }) => {
     if (bootstrapping) return;
     if (isAuthenticated) {
       loadWorkspace();
-      refreshPages();
     } else {
       setWorkspace(null);
       setWorkspaces([]);
       setPages([]);
+      setWorkspaceReady(false);
     }
-  }, [bootstrapping, isAuthenticated, loadWorkspace, refreshPages]);
+  }, [bootstrapping, isAuthenticated, loadWorkspace]);
 
+  // The page tree belongs to the ACTIVE workspace — reload it whenever that
+  // changes (initial load, or the user switching workspaces). Previously pages
+  // were fetched once, unscoped, so switching changed nothing in the sidebar.
+  useEffect(() => {
+    if (!isAuthenticated || !workspaceId) return;
+    setPages([]);
+    refreshPages();
+  }, [isAuthenticated, workspaceId, refreshPages]);
+
+  // New pages land in the workspace the user is currently working in.
   const addPage = async (payload = {}) => {
-    const { data } = await createPage(payload);
+    const { data } = await createPage({ workspaceId, ...payload });
     setPages((prev) => [...prev, data.page]);
     return data.page;
   };
@@ -116,6 +139,7 @@ export const WorkspaceProvider = ({ children }) => {
       value={{
         workspace,
         workspaces,
+        workspaceReady,
         switchWorkspace,
         pages,
         loading,

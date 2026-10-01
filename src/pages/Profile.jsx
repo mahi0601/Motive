@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, LogOut, Mail, User } from 'lucide-react';
+import { ArrowLeft, LogOut, Mail, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [loginTime, setLoginTime] = useState(null);
-
-  useEffect(() => {
-    const loginTimestamp = localStorage.getItem('loginTime');
-    if (loginTimestamp) setLoginTime(new Date(loginTimestamp).toLocaleString());
-  }, []);
 
   const handleLogout = () => {
     logout(); // revokes refresh token, clears cookie + access token, redirects
@@ -53,11 +47,6 @@ const Profile = () => {
               <p className="text-sm text-light-muted dark:text-dark-muted flex items-center gap-2">
                 <Mail /> {user?.email || 'No email found'}
               </p>
-              {loginTime && (
-                <p className="text-sm text-light-muted dark:text-dark-muted mt-1 flex items-center gap-2">
-                  <Clock /> Logged in since: {loginTime}
-                </p>
-              )}
             </div>
           </div>
           <div className="mt-4 text-sm text-light-muted dark:text-dark-muted">

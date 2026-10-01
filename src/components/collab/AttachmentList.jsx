@@ -51,7 +51,7 @@ const AttachmentList = ({ taskId }) => {
     <div className="mt-6 border-t border-light-border pt-6 dark:border-dark-border">
       <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-light-text dark:text-white">
         <Paperclip className="text-brand-500" />
-        Attachments {files.length > 0 && <span className="text-light-muted">({files.length})</span>}
+        Attachments {files.length > 0 && <span className="text-light-muted dark:text-dark-muted">({files.length})</span>}
       </h4>
 
       {!loading && files.length > 0 && (
@@ -61,7 +61,7 @@ const AttachmentList = ({ taskId }) => {
               key={f.id}
               className="group flex items-center gap-2 rounded-lg border border-light-border p-2 text-sm dark:border-dark-border"
             >
-              <File className="h-4 w-4 shrink-0 text-light-muted" />
+              <File className="h-4 w-4 shrink-0 text-light-muted dark:text-dark-muted" />
               <a
                 href={f.url}
                 target="_blank"
@@ -72,7 +72,7 @@ const AttachmentList = ({ taskId }) => {
               </a>
               <button
                 onClick={() => handleDelete(f)}
-                className="rounded p-1 text-light-muted opacity-0 transition-opacity hover:bg-light-border hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark group-hover:opacity-100 dark:hover:bg-dark-border"
+                className="rounded p-1 text-light-muted dark:text-dark-muted opacity-0 transition-opacity hover:bg-light-border hover:text-semantic-danger-700 dark:hover:text-semantic-danger-dark group-hover:opacity-100 dark:hover:bg-dark-border"
                 aria-label="Remove attachment"
               >
                 <X className="h-4 w-4" />
@@ -83,8 +83,8 @@ const AttachmentList = ({ taskId }) => {
       )}
 
       <AttachmentUploader onUpload={handleUpload} />
-      {uploading && <p className="mt-1 text-xs text-light-muted">Uploading…</p>}
-      {error && <p className="mt-1 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
+      {uploading && <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Uploading…</p>}
+      {error && <p className="mt-1 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>}
     </div>
   );
 };

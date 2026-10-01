@@ -34,8 +34,8 @@ const PERIODS = [
 // because "warning/good/info" is momentum.service.js's own vocabulary for a
 // free-text insight, not a task's delivery state.
 const SEVERITY_STYLES = {
-  warning: { icon: AlertTriangle, className: 'text-semantic-warning-500 dark:text-semantic-warning-dark' },
-  good: { icon: CheckCircle2, className: 'text-semantic-success-500 dark:text-semantic-success-dark' },
+  warning: { icon: AlertTriangle, className: 'text-semantic-warning-700 dark:text-semantic-warning-dark' },
+  good: { icon: CheckCircle2, className: 'text-semantic-success-700 dark:text-semantic-success-dark' },
   info: { icon: TrendingUp, className: 'text-brand-600 dark:text-brand-400' },
 };
 
@@ -60,7 +60,7 @@ function DeltaBadge({ current, previous, goodWhenUp = true }) {
   const isUp = pct > 0;
   const isGood = isUp === goodWhenUp;
   return (
-    <span className={`flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-semantic-success-500 dark:text-semantic-success-dark' : 'text-semantic-danger-500 dark:text-semantic-danger-dark'}`}>
+    <span className={`flex items-center gap-0.5 text-xs font-medium ${isGood ? 'text-semantic-success-700 dark:text-semantic-success-dark' : 'text-semantic-danger-700 dark:text-semantic-danger-dark'}`}>
       {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {Math.abs(pct)}%
     </span>
@@ -69,7 +69,7 @@ function DeltaBadge({ current, previous, goodWhenUp = true }) {
 
 // Maps a tile/insight's meaning to the Dashboard's `?highlight=` contract
 // (see Dashboard.jsx#matchesHighlight) — the other half of "click-through to
-// the filtered list" (PLAN §3, Row 1 and Row 4).
+// the filtered list".
 function toHighlight(filter) {
   if (!filter) return null;
   if (filter.status) return filter.status; // 'overdue' | 'at-risk'
@@ -129,7 +129,7 @@ function Tile({ icon: Icon, label, value, context, delta, index, highlight, sinc
       </div>
       <p className="text-2xl font-bold leading-none text-light-text dark:text-dark-text">{value}</p>
       <p className="mt-2 text-label text-light-muted dark:text-dark-muted">{label}</p>
-      {context && <p className="mt-1 text-caption text-light-muted/80 dark:text-dark-muted/80">{context}</p>}
+      {context && <p className="mt-1 text-caption text-light-muted dark:text-dark-muted">{context}</p>}
     </motion.div>
   );
 }
@@ -231,7 +231,7 @@ const Momentum = () => {
       ) : (
         <>
           {/* Row 1 — four signal tiles, each with a period-over-period
-              delta instead of a bare, undated count (see PLAN §3). */}
+              delta instead of a bare, undated count. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* "Shipped" is period-scoped (this week/month/quarter), so its
                 click-through carries `since` — the server's own period
@@ -318,9 +318,9 @@ const Momentum = () => {
             </div>
           </motion.div>
 
-          {/* Row 3 — where open work sits, by category and by status (see
-              PLAN §3, "Where work piles up"). Per-assignee breakdown arrives
-              once tasks carry a workspace/assignee (Phase 2). */}
+          {/* Row 3 — where open work sits, by category and by status
+              ("Where work piles up"). A per-assignee breakdown isn't built
+              yet. */}
           {(data.byCategory.length > 0 || data.byStatus.length > 0) && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {data.byCategory.length > 0 && (

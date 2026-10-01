@@ -7,7 +7,7 @@ const AT_RISK_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 // Was a 4-tile grid (Total/Completed/Pending/Overdue) plus a fifth
 // gradient "Completion Rate" bar — the third of three places that number
-// was shown across the app (see PLAN §3). Reduced to the two numbers that
+// was shown across the app. Reduced to the two numbers that
 // are actually decisions, not database statistics: what's due today, and
 // what's at risk of being late. The full breakdown — with period-over-period
 // deltas — lives on /momentum now.
@@ -31,7 +31,7 @@ const TaskAnalytics = ({ tasks = [] }) => {
   // attention" instead of "At risk" for exactly that reason: two different
   // numbers under the same label, visible on pages a user will compare
   // directly, is the "completion rate shown three times" bug this whole
-  // pass exists to kill (see PLAN §3).
+  // pass exists to kill.
   const needsAttention = tasks.filter((t) => {
     if (!t.dueDate || t.completed) return false;
     const d = new Date(t.dueDate);
@@ -50,7 +50,7 @@ const TaskAnalytics = ({ tasks = [] }) => {
       </span>
       <span className="h-4 w-px bg-light-border dark:bg-dark-border" aria-hidden="true" />
       <span className="flex items-center gap-2 text-light-text dark:text-dark-text">
-        <AlertTriangle className="h-4 w-4 text-semantic-warning-500 dark:text-semantic-warning-dark" />
+        <AlertTriangle className="h-4 w-4 text-semantic-warning-700 dark:text-semantic-warning-dark" />
         <strong className="font-semibold">{needsAttention}</strong> needs attention
       </span>
       <Link to="/momentum" className="ml-auto text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">

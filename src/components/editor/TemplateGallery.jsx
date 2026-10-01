@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Trash2, Search, FileStack } from 'lucide-react';
 import { getTemplates, createPageFromTemplate, deleteTemplate } from '../../services/templateService';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import { logger } from '../../utils/logger';
 
 // Accent → thumbnail gradient + marker color (Tailwind classes). Purely
 // decorative per-template variety, not a status signal — stock Tailwind
 // hues are fine here (unlike statusColors.js, nothing here needs to mean
-// "at risk"). `spark` no longer exists as a token (see PLAN "Petrol & Ink"),
+// "at risk"). `spark` no longer exists as a token,
 // so `amber` now uses stock Tailwind amber instead.
 const ACCENTS = {
   slate: { grad: 'from-slate-400/25 to-slate-500/5', dot: 'bg-slate-400' },
@@ -75,7 +76,7 @@ const Card = ({ tpl, onUse, onDelete, busy }) => {
                 e.stopPropagation();
                 onDelete(tpl);
               }}
-              className="text-light-muted dark:text-dark-muted hover:text-semantic-danger-500 dark:hover:text-semantic-danger-dark"
+              className="text-light-muted dark:text-dark-muted hover:text-semantic-danger-700 dark:hover:text-semantic-danger-dark"
               title="Delete template"
             >
               <Trash2 size={15} />
@@ -107,6 +108,7 @@ const CardSkeleton = () => (
 );
 
 const TemplateGallery = ({ onUse }) => {
+  const { workspace } = useWorkspace();
   const [data, setData] = useState({ builtIn: [], custom: [] });
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -132,7 +134,7 @@ const TemplateGallery = ({ onUse }) => {
   const handleUse = async (tpl) => {
     setBusyId(tpl.id);
     try {
-      const { data: res } = await createPageFromTemplate(tpl.id);
+      const { data: res } = await createPageFromTemplate(tpl.id, null, workspace?.id);
       onUse?.(res.page);
     } catch (e) {
       logger.warn('Failed to use template', { templateId: tpl.id, error: e.message });

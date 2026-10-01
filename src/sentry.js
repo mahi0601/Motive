@@ -2,6 +2,7 @@
 // so init-time errors are caught too. Opt-in: without VITE_SENTRY_DSN set,
 // this is a no-op and the app behaves exactly as before.
 import * as Sentry from '@sentry/react';
+import { scrubEvent, scrubBreadcrumb } from './utils/sentryScrub';
 
 const dsn = import.meta.env.VITE_SENTRY_DSN;
 
@@ -22,6 +23,10 @@ if (dsn) {
     // Low sample rate — this is a small app; full tracing isn't needed to
     // get value out of error tracking, just cheap enough to leave always on.
     tracesSampleRate: 0.1,
+    // Invite/status/reset tokens ride in URLs; keep them out of reports.
+    beforeSend: scrubEvent,
+    beforeSendTransaction: scrubEvent,
+    beforeBreadcrumb: scrubBreadcrumb,
   });
 }
 

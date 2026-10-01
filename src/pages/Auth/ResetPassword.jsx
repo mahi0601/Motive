@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import AuthField from '../../components/ui/AuthField';
@@ -6,8 +6,13 @@ import { resetPassword } from '../../services/authService';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || '';
+  // Read once, then strip it from the address bar: a reset token left in the
+  // URL ends up in browser history, screenshots and Referer/error reports.
+  const [token] = useState(() => searchParams.get('token') || '');
   const navigate = useNavigate();
+  useEffect(() => {
+    if (searchParams.has('token')) navigate('/reset-password', { replace: true });
+  }, [navigate, searchParams]);
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -37,7 +42,7 @@ const ResetPassword = () => {
   if (!token) {
     return (
       <>
-        <div className="flex items-center gap-2 text-semantic-danger-500 dark:text-semantic-danger-dark">
+        <div className="flex items-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
           <AlertCircle size={20} />
           <h2 className="font-display text-xl font-bold text-light-text dark:text-white">Invalid link</h2>
         </div>
@@ -54,7 +59,7 @@ const ResetPassword = () => {
   if (done) {
     return (
       <>
-        <div className="flex items-center gap-2 text-semantic-success-500 dark:text-semantic-success-dark">
+        <div className="flex items-center gap-2 text-semantic-success-700 dark:text-semantic-success-dark">
           <CheckCircle2 size={20} />
           <h2 className="font-display text-xl font-bold text-light-text dark:text-white">Password updated</h2>
         </div>
@@ -71,7 +76,7 @@ const ResetPassword = () => {
       </p>
 
       {error && (
-        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-500 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-4 py-3 text-sm text-semantic-danger-700 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
           <AlertCircle size={16} /> {error}
         </div>
       )}

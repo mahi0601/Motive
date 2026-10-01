@@ -4,6 +4,7 @@ import { getAccessToken } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { getNotifications } from '../services/notificationService';
+import { logger } from '../utils/logger';
 
 const NotificationSocketContext = createContext();
 
@@ -35,11 +36,20 @@ export const NotificationSocketProvider = ({ children }) => {
   useEffect(() => {
     if (bootstrapping || !isAuthenticated || !user) return undefined;
 
-    const socket = io(import.meta.env.VITE_API_BASE_URL);
+    // `auth` as a function so socket.io re-reads the access token on every
+    // (re)connect attempt instead of freezing in whatever was live when
+    // this effect first ran — see usePageSocket.js for the same pattern.
+    // The server now derives identity from this handshake and joins the
+    // socket to its `user:` room itself; there's no separate `identify`
+    // event to emit anymore.
+    const socket = io(import.meta.env.VITE_API_BASE_URL, {
+      auth: (cb) => cb({ token: getAccessToken() }),
+    });
     socketRef.current = socket;
 
-    const identify = () => socket.emit('identify', { token: getAccessToken() });
-    socket.on('connect', identify);
+    socket.on('connect_error', (err) => {
+      logger.warn('Notification socket connection rejected', { error: err.message });
+    });
 
     socket.on('notification:new', (notification) => {
       setUnreadCount((c) => c + 1);

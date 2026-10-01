@@ -4,7 +4,7 @@ import { BarChart2, Calendar, Filter, Plus, Search } from 'lucide-react';
 
 // Only the primary action (New Task) gets the brand gradient — five
 // gradient buttons in a row was the single worst offender in the "everything
-// looks equally important" design review (see PLAN §4). The rest are
+// looks equally important" design review. The rest are
 // tonal/outlined so New Task actually reads as the primary action.
 const QuickActions = ({ onAddTask, onFilter, onSearch, onCalendar, onMomentum }) => {
   const secondaryActions = [

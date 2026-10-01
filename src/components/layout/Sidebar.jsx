@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { PRIMARY_NAV, SECONDARY_NAV } from '../../config/nav';
 import PageTree from '../editor/PageTree';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
 import Logo from '../ui/Logo';
 
 const Sidebar = () => {
@@ -51,6 +52,8 @@ const Sidebar = () => {
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        <WorkspaceSwitcher onSwitch={closeOnMobile} />
 
         <ul className="space-y-1.5">
           {PRIMARY_NAV.map((item) => (
