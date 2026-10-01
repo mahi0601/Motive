@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Check, MessageSquare, Trash2 } from 'lucide-react';
+import { Check, Download, MessageSquare, Trash2 } from 'lucide-react';
 import { listFeedback, markFeedbackRead, deleteFeedback } from '../../services/workspaceService';
+import { downloadSignoffCsv } from '../../utils/signoffCsv';
 import { logger } from '../../utils/logger';
 
 const KIND_LABEL = { approve: 'Approved', changes: 'Requested changes', comment: 'Commented' };
@@ -13,10 +14,12 @@ const ClientFeedbackList = ({ workspaceId }) => {
   const [items, setItems] = useState(null);
   const [unread, setUnread] = useState(0);
   const [error, setError] = useState('');
+  // 'all' = everything clients sent; 'signoffs' = the approvals only (the record).
+  const [view, setView] = useState('all');
 
   const load = useCallback(async () => {
     try {
-      const { data } = await listFeedback(workspaceId);
+      const { data } = await (view === 'signoffs' ? listFeedback(workspaceId, { kind: 'approve' }) : listFeedback(workspaceId));
       setItems(data.items);
       setUnread(data.unread);
       setError('');
@@ -24,7 +27,7 @@ const ClientFeedbackList = ({ workspaceId }) => {
       logger.warn('Could not load client feedback', { status: err?.response?.status });
       setError('Could not load client feedback.');
     }
-  }, [workspaceId]);
+  }, [workspaceId, view]);
 
   useEffect(() => {
     load();
@@ -64,13 +67,43 @@ const ClientFeedbackList = ({ workspaceId }) => {
         Names are typed by the sender and not verified.
       </p>
 
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {[['all', 'All feedback'], ['signoffs', 'Sign-offs']].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={view === key}
+            onClick={() => setView(key)}
+            className={`rounded-lg border px-3 py-1 text-sm ${
+              view === key
+                ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
+                : 'border-light-border text-light-text dark:border-dark-border dark:text-dark-text'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        {view === 'signoffs' && (
+          <button
+            type="button"
+            onClick={() => downloadSignoffCsv(items || [])}
+            disabled={!items || items.length === 0}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-light-border px-3 py-1 text-sm text-light-text disabled:opacity-50 dark:border-dark-border dark:text-dark-text"
+          >
+            <Download size={14} aria-hidden="true" /> Download sign-off record (CSV)
+          </button>
+        )}
+      </div>
+
       {error && (
         <p role="alert" className="mt-2 text-sm text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>
       )}
 
       {items && items.length === 0 && !error && (
         <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">
-          Nothing yet. Responses from your client’s page will appear here.
+          {view === 'signoffs'
+            ? 'No sign-offs yet. When your client approves a milestone it is recorded here.'
+            : 'Nothing yet. Responses from your client’s page will appear here.'}
         </p>
       )}
 
