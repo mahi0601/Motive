@@ -28,6 +28,9 @@ export const leaveWorkspace = (workspaceId) => api.delete(`/api/workspaces/${wor
 // ONCE ({ token, shareEnabledAt }) — calling it again rotates the link and
 // kills the old one. DELETE turns sharing off.
 export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspaceId}/share`);
+// Owner-only: what the public status page says about the project. See
+// StatusPageDetailsForm and the backend's updateStatusPage for the fields.
+export const updateStatusPage = (workspaceId, data) => api.patch(`/api/workspaces/${workspaceId}/status-page`, data);
 export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/share`);
 
 // The /invite/:token public landing page — a different resource root

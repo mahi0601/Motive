@@ -129,7 +129,7 @@ const GettingStartedCard = ({ tasks, createTask, onAddTask }) => {
         </button>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-sm text-semantic-danger-500 dark:text-semantic-danger-dark">
+        <p role="alert" className="mt-2 text-sm text-semantic-danger-700 dark:text-semantic-danger-dark">
           {error}
         </p>
       )}

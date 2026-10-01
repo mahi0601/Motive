@@ -81,9 +81,9 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
       case 'invite_accepted':
         // Good news, not the generic Info default — see
         // workspace.service.js#acceptInvite for where this is created.
-        return <UserPlus className="w-5 h-5 text-semantic-success-500 dark:text-semantic-success-dark" />;
+        return <UserPlus className="w-5 h-5 text-semantic-success-700 dark:text-semantic-success-dark" />;
       default:
-        return <Info className="w-5 h-5 text-semantic-info-500 dark:text-semantic-info-dark" />;
+        return <Info className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;
     }
   };
 

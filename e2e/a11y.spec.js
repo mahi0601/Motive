@@ -9,12 +9,22 @@ import { API, createUser, signIn } from './helpers';
 // Only serious and critical findings fail the test.
 const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy']];
 
+async function firstWorkspaceId(request, auth) {
+  const res = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
+  const ws = res.workspaces[0];
+  await request.patch(`${API}/api/workspaces/${ws.id}/status-page`, {
+    headers: auth,
+    data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber' },
+  });
+  return ws.id;
+}
+
 async function violations(page) {
   await page.waitForTimeout(1500); // let entrance animations finish: axe would otherwise measure half-faded text
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   return result.violations
     .filter((v) => ['serious', 'critical'].includes(v.impact))
-    .map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
+    .map((v) => `${v.id} (${v.impact}): ${v.nodes.slice(0, 6).map((n) => `${n.target.join(' ')} [${(n.any[0]?.message || '').slice(0, 130)}]`).join(' | ')}`);
 }
 
 for (const theme of ['light', 'dark']) {
@@ -37,6 +47,12 @@ for (const theme of ['light', 'dark']) {
     const pageId = (created.page || created.data || created).id;
     await request.post(`${API}/api/pages/${pageId}/blocks`, { headers: auth, data: { type: 'paragraph', content: { html: 'hello' } } });
     await request.post(`${API}/api/tasks`, { headers: auth, data: { title: 'A task' } });
+
+    // The public status page, as a client sees it, with every part switched on.
+    const share = await (await request.post(`${API}/api/workspaces/${await firstWorkspaceId(request, auth)}/share`, { headers: auth })).json();
+    found['status page'] = [];
+    await page.goto(`/s/${share.share.token}`);
+    found['status page'] = await violations(page);
 
     await signIn(page, user);
     found.dashboard = await violations(page);

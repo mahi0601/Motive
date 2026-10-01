@@ -91,7 +91,7 @@ const BillingCard = () => {
           <h4 className="text-lg font-semibold">Motive Pro</h4>
         </div>
         {user?.isPro && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-500 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-700 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
             <CheckCircle /> {user.proLifetime ? 'Lifetime Pro' : "You're a Pro member"}
           </span>
         )}
@@ -122,7 +122,7 @@ const BillingCard = () => {
           >
             {openingPortal ? 'Opening…' : 'Manage billing'}
           </button>
-          {portalError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{portalError}</p>}
+          {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
         </div>
       ) : (
         <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
@@ -181,7 +181,7 @@ const BillingCard = () => {
         </>
       )}
 
-      {upgradeError && <p className="text-xs text-semantic-danger-500 dark:text-semantic-danger-dark mt-2">{upgradeError}</p>}
+      {upgradeError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark mt-2">{upgradeError}</p>}
       {upgradeStatus === 'cancelled' && !user?.isPro && (
         <p className="text-xs text-semantic-warning-700 dark:text-semantic-warning-dark mt-2">Checkout was cancelled — no charge was made.</p>
       )}

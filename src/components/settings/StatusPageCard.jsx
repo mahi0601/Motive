@@ -3,6 +3,7 @@ import { Check, Copy, Link2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { enableShare, disableShare } from '../../services/workspaceService';
+import StatusPageDetailsForm from './StatusPageDetailsForm';
 import { CARD_CLASS } from './cardStyles';
 
 // Where the public link points. In the browser that's simply this site; the
@@ -75,7 +76,7 @@ const StatusPageCard = () => {
           <h4 className="text-lg font-semibold">Client status page</h4>
         </div>
         {enabled && (
-          <span className="inline-flex items-center rounded-lg bg-semantic-success-50 px-3 py-1.5 text-sm font-medium text-semantic-success-500 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
+          <span className="inline-flex items-center rounded-lg bg-semantic-success-50 px-3 py-1.5 text-sm font-medium text-semantic-success-700 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
             Sharing is on
           </span>
         )}
@@ -120,7 +121,7 @@ const StatusPageCard = () => {
         </p>
       )}
 
-      {error && <p className="mt-2 text-xs text-semantic-danger-500 dark:text-semantic-danger-dark">{error}</p>}
+      {error && <p className="mt-2 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!enabled ? (
@@ -161,13 +162,15 @@ const StatusPageCard = () => {
             <button
               onClick={() => setConfirmingOff(true)}
               disabled={busy}
-              className="rounded-lg border border-light-border px-3 py-2 text-sm font-medium text-light-muted transition hover:border-semantic-danger-300 hover:text-semantic-danger-500 dark:border-dark-border dark:text-dark-muted"
+              className="rounded-lg border border-light-border px-3 py-2 text-sm font-medium text-light-muted transition hover:border-semantic-danger-300 hover:text-semantic-danger-700 dark:border-dark-border dark:text-dark-muted"
             >
               Turn off
             </button>
           </>
         )}
       </div>
+
+      {enabled && <StatusPageDetailsForm />}
     </div>
   );
 };
