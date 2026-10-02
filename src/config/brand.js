@@ -25,6 +25,6 @@ export const VALUE_PROPS = [
   },
   {
     title: 'Your clients never need an account.',
-    body: 'They open one link — no sign-up, no seat to buy. You pay for your team, not for the people you\'re accountable to.',
+    body: 'They open one link — no sign-up, no seat to buy. Your plan counts your team and your active client pages, never the people you\'re accountable to.',
   },
 ];

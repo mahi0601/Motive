@@ -1,17 +1,22 @@
 import React from 'react';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import StatusPage from './StatusPage';
 import { getStatus } from '../services/statusService';
 
 vi.mock('../services/statusService', () => ({ getStatus: vi.fn() }));
 
-const renderPage = () =>
+const LocationProbe = () => {
+  const l = useLocation();
+  return <div data-testid="location">{l.pathname + l.search}</div>;
+};
+
+const renderPage = (url = '/s/abc123') =>
   render(
-    <MemoryRouter initialEntries={['/s/abc123']}>
+    <MemoryRouter initialEntries={[url]}>
       <Routes>
-        <Route path="/s/:token" element={<StatusPage />} />
+        <Route path="/s/:token" element={<><StatusPage /><LocationProbe /></>} />
       </Routes>
     </MemoryRouter>
   );
@@ -50,7 +55,7 @@ describe('StatusPage', () => {
     expect(overdue).toHaveTextContent('Write copy');
     expect(screen.getByRole('region', { name: 'In flight' })).toHaveTextContent('Build API');
     expect(screen.getByRole('region', { name: 'Shipped' })).toHaveTextContent('Design homepage');
-    expect(getStatus).toHaveBeenCalledWith('abc123');
+    expect(getStatus).toHaveBeenCalledWith('abc123', { preview: false });
   });
 
   test('shows an unavailable message when the link is unknown, rotated or disabled', async () => {
@@ -83,5 +88,48 @@ describe('StatusPage', () => {
 
     expect(getStatus).toHaveBeenCalledTimes(2);
     expect(screen.getByRole('heading', { name: 'Acme' })).toBeInTheDocument();
+  });
+
+  describe('owner preview and the footer', () => {
+    const okStatus = {
+      data: {
+        status: {
+          workspace: { name: 'Acme', icon: '🚀' },
+          summary: { todo: 0, in_progress: 0, done: 1, total: 1, percent: 100 },
+          tasks: [{ title: 'Ship it', status: 'done', dueDate: null, completedAt: PAST }],
+          truncated: false,
+          page: { headline: null, summary: null, milestone: null, accent: 'teal', hideBranding: false, allowFeedback: false },
+        },
+      },
+    };
+
+    test('?preview=1 is passed to the API, and removed from the address bar so a copied URL is the plain link', async () => {
+      getStatus.mockResolvedValue(okStatus);
+      renderPage('/s/abc123?preview=1');
+      expect(await screen.findByRole('heading', { name: 'Acme' })).toBeInTheDocument();
+      expect(getStatus).toHaveBeenCalledWith('abc123', { preview: true });
+      expect(screen.getByTestId('location')).toHaveTextContent(/^\/s\/abc123$/);
+    });
+
+    test('other query parameters are left alone when preview is removed', async () => {
+      getStatus.mockResolvedValue(okStatus);
+      renderPage('/s/abc123?preview=1&utm=x');
+      await screen.findByRole('heading', { name: 'Acme' });
+      expect(screen.getByTestId('location')).toHaveTextContent('/s/abc123?utm=x');
+    });
+
+    test('a normal visit is not a preview', async () => {
+      getStatus.mockResolvedValue(okStatus);
+      renderPage();
+      await screen.findByRole('heading', { name: 'Acme' });
+      expect(getStatus).toHaveBeenCalledWith('abc123', { preview: false });
+    });
+
+    test('the "Powered by" link carries ?ref=status so visits from it can be counted', async () => {
+      getStatus.mockResolvedValue(okStatus);
+      renderPage();
+      await screen.findByRole('heading', { name: 'Acme' });
+      expect(screen.getByRole('link', { name: 'Clientglass' })).toHaveAttribute('href', '/?ref=status');
+    });
   });
 });
