@@ -42,7 +42,12 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
-            minifyEnabled false
+            // R8: removes unused code and resources from the release build and shrinks
+            // the APK. The rules in proguard-rules.pro keep what Capacitor loads by
+            // name at runtime (its bridge and plugins), without which the web view
+            // would start blank.
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
