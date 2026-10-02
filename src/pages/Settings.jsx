@@ -9,6 +9,7 @@ import MembersCard from '../components/settings/MembersCard';
 import StatusPageCard from '../components/settings/StatusPageCard';
 import AccountCard from '../components/settings/AccountCard';
 import BillingCard from '../components/settings/BillingCard';
+import PlanUsageCard from '../components/settings/PlanUsageCard';
 import DangerZoneCard from '../components/settings/DangerZoneCard';
 
 // Layout only — each card owns its own state and data (see
@@ -48,7 +49,11 @@ const Settings = () => {
           <MembersCard />
           <StatusPageCard />
           <AccountCard />
-          <BillingCard />
+          <PlanUsageCard />
+          {/* #billing is where "See plans" links land. */}
+          <div id="billing">
+            <BillingCard />
+          </div>
           <DangerZoneCard />
         </div>
       </motion.div>

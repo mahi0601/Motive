@@ -22,6 +22,7 @@ const StatusPageCard = () => {
   const [link, setLink] = useState(''); // only ever set right after enable/regenerate
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [limitHit, setLimitHit] = useState(false); // the plan's active-client limit (402)
   const [copied, setCopied] = useState(false);
   const [confirmingOff, setConfirmingOff] = useState(false);
 
@@ -33,6 +34,7 @@ const StatusPageCard = () => {
   const handleEnable = async () => {
     setBusy(true);
     setError('');
+    setLimitHit(false);
     setCopied(false);
     try {
       const { data } = await enableShare(workspace.id);
@@ -40,6 +42,7 @@ const StatusPageCard = () => {
       await loadWorkspace(); // picks up shareEnabledAt
     } catch (err) {
       setError(err?.response?.data?.message || 'Could not create the status link.');
+      setLimitHit(err?.response?.status === 402);
     } finally {
       setBusy(false);
     }
@@ -134,6 +137,11 @@ const StatusPageCard = () => {
       )}
 
       {error && <p className="mt-2 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{error}</p>}
+      {limitHit && (
+        <a href="#billing" className="mt-1 inline-block text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
+          See plans
+        </a>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!enabled ? (

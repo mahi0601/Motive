@@ -71,6 +71,21 @@ describe('StatusPageCard', () => {
     expect(await screen.findByText(/free includes 1 active client page/i)).toBeInTheDocument();
   });
 
+  test('hitting the plan limit offers a way to the plans; other errors do not', async () => {
+    enableShare.mockRejectedValueOnce({ response: { status: 402, data: { message: 'Free includes 1 active client page — upgrade to Clientglass Studio for more.' } } });
+    const { unmount } = render(<StatusPageCard />);
+    fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
+    expect(await screen.findByText(/free includes 1 active client page/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /see plans/i })).toHaveAttribute('href', '#billing');
+    unmount();
+
+    enableShare.mockRejectedValueOnce({ response: { status: 500, data: { message: 'Something broke' } } });
+    render(<StatusPageCard />);
+    fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
+    expect(await screen.findByText('Something broke')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /see plans/i })).not.toBeInTheDocument();
+  });
+
   test('when sharing is already on, the old link is not shown — only a way to replace it', () => {
     mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-29T00:00:00Z' };
     render(<StatusPageCard />);
