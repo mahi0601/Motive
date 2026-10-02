@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { getStatus } from '../services/statusService';
@@ -37,7 +37,8 @@ const Shell = ({ children, accent }) => (
 const Footer = () => (
   <p className="mt-10 text-center text-xs text-light-muted dark:text-dark-muted">
     Powered by{' '}
-    <Link to="/" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+    {/* ?ref=status lets the landing page count visits that came from here. */}
+    <Link to="/?ref=status" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
       Clientglass
     </Link>
   </p>
@@ -49,6 +50,18 @@ const Footer = () => (
 // on the next refresh.
 const StatusPage = () => {
   const { token } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // The owner opens their own link from Settings with ?preview=1 so the look isn't
+  // counted as a client viewing. Remembered here, then removed from the address bar
+  // so that copying the URL from it gives the plain link, never one that would hide
+  // a client's views.
+  const [preview] = useState(() => searchParams.get('preview') === '1');
+  useEffect(() => {
+    if (!searchParams.has('preview')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('preview');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
@@ -56,7 +69,7 @@ const StatusPage = () => {
 
   const load = useCallback(async () => {
     try {
-      const { data } = await getStatus(token);
+      const { data } = await getStatus(token, { preview });
       setStatus(data.status);
       setUnavailable(false);
       setUpdatedAt(new Date());
@@ -68,7 +81,7 @@ const StatusPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, preview]);
 
   useEffect(() => {
     load();

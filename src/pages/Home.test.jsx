@@ -1,8 +1,11 @@
 import React from 'react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Home from './Home';
+import { reportLandingFromStatus } from '../services/statusService';
+
+vi.mock('../services/statusService', () => ({ reportLandingFromStatus: vi.fn().mockResolvedValue(undefined) }));
 
 const renderHome = (url = '/') =>
   render(
@@ -44,5 +47,35 @@ describe('Home pricing', () => {
     expect(links).toHaveLength(3);
     for (const l of links) expect(l).toHaveAttribute('href', '/register');
     expect(pricing).not.toHaveTextContent(/trial|discount|save \d|% off/i);
+  });
+});
+
+describe('Home landing report', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+  });
+
+  test('a visit from a status page footer (?ref=status) is reported once', () => {
+    renderHome('/?ref=status');
+    expect(reportLandingFromStatus).toHaveBeenCalledTimes(1);
+  });
+
+  test('a reload or re-render in the same session is not counted twice', () => {
+    renderHome('/?ref=status');
+    cleanup();
+    renderHome('/?ref=status');
+    expect(reportLandingFromStatus).toHaveBeenCalledTimes(1);
+  });
+
+  test.each(['/', '/?ref=other', '/?ref=', '/?ref=STATUS'])('%s is not reported', (url) => {
+    renderHome(url);
+    expect(reportLandingFromStatus).not.toHaveBeenCalled();
+  });
+
+  test('a failed report never breaks the page', async () => {
+    reportLandingFromStatus.mockRejectedValueOnce(new Error('offline'));
+    renderHome('/?ref=status');
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 });

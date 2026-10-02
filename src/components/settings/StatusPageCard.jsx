@@ -111,6 +111,17 @@ const StatusPageCard = () => {
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
+            {/* ?preview=1 tells the server this look is the owner's, not a client's,
+                so it isn't counted as a view. The page strips it from the address bar,
+                and the field above (what gets copied and shared) stays the plain link. */}
+            <a
+              href={`${link}?preview=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg border border-light-border px-3 py-2 text-sm font-medium text-light-text transition hover:bg-light-border/40 dark:border-dark-border dark:text-dark-text dark:hover:bg-dark-raised"
+            >
+              Preview
+            </a>
           </div>
         </div>
       )}

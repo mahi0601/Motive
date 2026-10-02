@@ -1,16 +1,37 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle, Link2, AlertTriangle, Users } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { BRAND, VALUE_PROPS } from '../config/brand';
 import { PLANS, PLAN_ORDER, planBenefits } from '../config/plans';
+import { reportLandingFromStatus } from '../services/statusService';
 
 // One icon per VALUE_PROPS entry, in order — kept alongside the copy in
 // brand.js so a reorder there doesn't silently misalign icons and text.
 const VALUE_ICONS = [Link2, AlertTriangle, Users];
 
+// A visit that came from a status page's "Powered by" link arrives as /?ref=status.
+// Reported once per browser session (a reload doesn't count again), fire and
+// forget: the server stores only a daily-rotating hash, and a failure never shows.
+const LANDING_KEY = 'cg_landing_reported';
+const useLandingReport = () => {
+  const [searchParams] = useSearchParams();
+  const fromStatus = searchParams.get('ref') === 'status';
+  useEffect(() => {
+    if (!fromStatus) return;
+    try {
+      if (sessionStorage.getItem(LANDING_KEY)) return;
+      sessionStorage.setItem(LANDING_KEY, '1');
+    } catch {
+      // Storage blocked: still report, at worst a reload counts twice.
+    }
+    Promise.resolve(reportLandingFromStatus()).catch(() => {});
+  }, [fromStatus]);
+};
+
 const Home = () => {
+  useLandingReport();
   return (
     <motion.div
       initial={{ opacity: 0 }}
