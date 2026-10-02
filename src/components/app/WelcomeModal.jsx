@@ -91,7 +91,7 @@ const WelcomeModal = ({ onClose }) => {
           ref={panelRef}
           role="dialog"
           aria-modal="true"
-          aria-label="Welcome to Motive"
+          aria-label="Welcome to Clientglass"
           tabIndex={-1}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -100,7 +100,7 @@ const WelcomeModal = ({ onClose }) => {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--surface-border)' }}>
-            <span className="text-sm font-semibold text-brand-500">Welcome to Motive</span>
+            <span className="text-sm font-semibold text-brand-500">Welcome to Clientglass</span>
             <button onClick={dismiss} className="rounded p-1 hover:bg-black/10" aria-label="Close">
               <X className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
             </button>

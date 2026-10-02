@@ -38,7 +38,7 @@ const Footer = () => (
   <p className="mt-10 text-center text-xs text-light-muted dark:text-dark-muted">
     Powered by{' '}
     <Link to="/" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
-      Motive
+      Clientglass
     </Link>
   </p>
 );

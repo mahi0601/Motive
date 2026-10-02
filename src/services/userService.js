@@ -16,7 +16,7 @@ export const downloadMyData = async () => {
   const url = URL.createObjectURL(res.data);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `motive-export-${new Date().toISOString().slice(0, 10)}.json`;
+  link.download = `clientglass-export-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(link);
   link.click();
   link.remove();

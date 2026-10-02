@@ -93,7 +93,7 @@ const Invite = () => {
         </div>
         <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">{message}</p>
         <Link to="/" className="mt-6 inline-block text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
-          Go to Motive
+          Go to Clientglass
         </Link>
       </Shell>
     );
@@ -105,7 +105,7 @@ const Invite = () => {
         Join {invite.workspaceName}
       </h1>
       <p className="mt-2 text-sm text-light-muted dark:text-dark-muted">
-        <strong className="text-light-text dark:text-dark-text">{invite.inviterName}</strong> invited you as {ROLE_LABEL[invite.role] || invite.role} on Motive.
+        <strong className="text-light-text dark:text-dark-text">{invite.inviterName}</strong> invited you as {ROLE_LABEL[invite.role] || invite.role} on Clientglass.
       </p>
     </>
   );

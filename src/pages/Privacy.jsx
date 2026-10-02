@@ -14,7 +14,7 @@ const Privacy = () => (
   <div className="min-h-screen bg-white px-6 py-12 dark:bg-dark-background">
     <div className="mx-auto max-w-2xl">
       <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm text-light-muted hover:text-brand-600 dark:text-dark-muted">
-        <ArrowLeft size={16} /> Back to Motive
+        <ArrowLeft size={16} /> Back to Clientglass
       </Link>
 
       <div className="mb-6 flex items-center gap-3">
@@ -24,8 +24,8 @@ const Privacy = () => (
       <p className="text-sm text-light-muted dark:text-dark-muted">Last updated: September 30, 2026</p>
 
       <p className="mt-6 text-light-muted dark:text-dark-muted">
-        Motive (“we”, “us”) is a productivity workspace. This policy explains what data we
-        collect, how we use it, and the choices you have. By using Motive you agree to this policy.
+        Clientglass (“we”, “us”) is a productivity workspace. This policy explains what data we
+        collect, how we use it, and the choices you have. By using Clientglass you agree to this policy.
       </p>
 
       <Section title="Information we collect">
@@ -61,7 +61,7 @@ const Privacy = () => (
       </Section>
 
       <Section title="Data sharing">
-        <p>We do not sell or rent your personal data. We share data only with the service providers required to run Motive, and only as needed to operate it, or where required by law:</p>
+        <p>We do not sell or rent your personal data. We share data only with the service providers required to run Clientglass, and only as needed to operate it, or where required by law:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li><strong>Neon</strong> — database hosting.</li>
           <li><strong>Render</strong> (and, for some deployments, Netlify) — application and website hosting.</li>

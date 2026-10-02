@@ -16,7 +16,7 @@ export const BRAND = {
 // Ordered series palette for multi-bar/pie charts — a monochrome petrol ramp
 // by design. Anything that needs to mean a delivery STATE (shipped/at
 // risk/overdue/etc.) must come from statusColors.js instead, never from
-// here: brand hue is reserved for "this is Motive," never for "this needs
+// here: brand hue is reserved for "this is Clientglass," never for "this needs
 // attention."
 export const CHART_SERIES = [BRAND[500], BRAND[300], BRAND[700], BRAND[400]];
 

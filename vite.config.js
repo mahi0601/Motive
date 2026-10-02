@@ -45,8 +45,8 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['motive.svg'],
       manifest: {
-        name: 'Motive — client-ready project delivery',
-        short_name: 'Motive',
+        name: 'Clientglass — client-ready project delivery',
+        short_name: 'Clientglass',
         description: 'Client-ready project delivery for small agencies. Run your work on a board; your client gets a live status page.',
         id: '/',
         start_url: '/',

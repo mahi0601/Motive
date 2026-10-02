@@ -11,7 +11,7 @@ import { describe, test, expect } from 'vitest';
 import sharp from 'sharp';
 import tailwind from '../../tailwind.config.js';
 import { BRAND_COLORS, MARK, WORDMARK, glyphBounds, glyphRadius } from './brandMark.js';
-import { tileSvg, bleedSvg, animatedSvg, lockup, wordmarkInkRatio } from '../../scripts/lib/brand-svg.mjs';
+import { tileSvg, bleedSvg, animatedSvg, lockup, wordmarkRenderDeviation } from '../../scripts/lib/brand-svg.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -151,16 +151,26 @@ describe('design invariants', () => {
 });
 
 describe('outlined wordmark', () => {
-  test('renders completely — ink scales by ~4 from 1× to 2× (guards a silent glyph-clipping bug seen in sharp/librsvg)', async () => {
-    const ratio = await wordmarkInkRatio(sharp);
-    expect(ratio).toBeGreaterThan(3.88);
-    expect(ratio).toBeLessThan(4.12);
+  test('renders completely at every font size the lockups use (guards a silent glyph smearing bug in sharp/librsvg)', async () => {
+    // Ink scales with size squared; no size from 40px to 200px may be more than 3% off.
+    expect(await wordmarkRenderDeviation(sharp)).toBeLessThan(0.03);
   });
 
-  test('the lockup contains an outlined "Motive" (paths, no <text> that would need a font)', () => {
+  test('the lockup contains an outlined "Clientglass" (paths, no <text> that would need a font)', () => {
     const { svg } = lockup({ tile: true, ink: '#fff' });
     expect(svg).not.toContain('<text');
-    expect(svg).toMatch(/<path d="M[^"]+" fill="#fff"\/>/);
-    expect(WORDMARK.text).toBe('Motive');
+    expect(svg).toMatch(/<g fill="#fff"><path d="M[^"]+"\/>/);
+    expect(WORDMARK.text).toBe('Clientglass');
+  });
+
+  test('uses cubic curves only: the renderer mishandles the font\'s quadratic "Q" segments', () => {
+    const { svg } = lockup({ tile: true, ink: '#fff' });
+    const wordPaths = svg.match(/<g fill="#fff">(.*)<\/g>/s)[1];
+    expect(wordPaths).toMatch(/C[\d.-]/);
+    expect(wordPaths).not.toMatch(/Q[\d.-]/);
+  });
+
+  test('the whole lockup fits the Android splash crop (central ~1200px) at the sizes used', () => {
+    for (const tile of [true, false]) expect(lockup({ markSize: 240, tile, ink: '#fff' }).width).toBeLessThanOrEqual(1200);
   });
 });

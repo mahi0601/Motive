@@ -36,7 +36,7 @@ const VerifyEmail = () => {
         </div>
         <p className="mt-3 text-light-muted dark:text-dark-muted">You can now invite teammates to your workspaces.</p>
         <Link to="/dashboard" className="mt-6 inline-block font-medium text-brand-600 dark:text-brand-300">
-          Continue to Motive
+          Continue to Clientglass
         </Link>
       </>
     );

@@ -28,18 +28,26 @@ const Header = () => {
       className="z-30 flex w-full items-center justify-between border-b border-light-border bg-light-surface pb-3 pl-16 pr-4 pt-[calc(0.75rem+env(safe-area-inset-top))] dark:border-dark-border dark:bg-dark-surface sm:pr-6 lg:pl-6"
     >
       {/* pl-16 on mobile leaves room for the floating menu button */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3 pr-2">
         <Link to="/" className="inline-block transition-transform duration-300 hover:scale-[1.03]">
-          <Logo size={28} />
+          {/* The wordmark is 11 letters: on a phone it does not fit beside the
+              menu button and the toolbar, so there the header shows the mark
+              alone (the wordmark is in the menu) and the full lockup from sm up. */}
+          <span className="sm:hidden">
+            <Logo size={28} showText={false} />
+          </span>
+          <span className="hidden sm:inline-block">
+            <Logo size={28} />
+          </span>
         </Link>
       </div>
 
-      <nav className="flex items-center gap-2 sm:gap-3">
+      <nav className="flex shrink-0 items-center gap-2 sm:gap-3">
         {canInstall && (
           <button
             onClick={promptInstall}
             className="hidden items-center gap-1.5 rounded-full border border-light-border bg-light-surface px-3 py-2 text-sm font-medium text-light-text transition hover:bg-light-border/40 dark:border-dark-border dark:bg-dark-raised dark:text-dark-text dark:hover:bg-dark-border sm:flex"
-            title="Install Motive"
+            title="Install Clientglass"
           >
             <Download className="h-4 w-4" />
             Install

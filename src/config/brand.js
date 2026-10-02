@@ -1,4 +1,4 @@
-// Single source of truth for Motive's positioning copy. Before this file,
+// Single source of truth for Clientglass's positioning copy. Before this file,
 // Home.jsx and AuthLayout.jsx each hardcoded their own, different value
 // prop — three competing taglines across two files ("Momentum you can
 // actually see", the "no databases to configure" sub-paragraph, and "Turn
@@ -8,7 +8,7 @@
 // Positioning: B2B, agencies and small studios running client work.
 
 export const BRAND = {
-  name: 'Motive',
+  name: 'Clientglass',
   tagline: 'Client-ready project delivery for small agencies.',
   subhead: 'Run your work on a board. Your client gets a live status page. Stop writing update emails.',
   eyebrow: 'Built for agencies and studios',

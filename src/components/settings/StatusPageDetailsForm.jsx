@@ -12,7 +12,7 @@ const counterClass = 'text-xs font-normal text-light-muted dark:text-dark-muted'
 
 // What the public status page says about the project, set by the workspace
 // owner: a headline, a short summary, the next milestone, an accent colour and,
-// on Pro, hiding the "Powered by Motive" footer. Rendered inside
+// on Pro, hiding the "Powered by Clientglass" footer. Rendered inside
 // StatusPageCard once sharing is on. All of it is public plain text.
 const StatusPageDetailsForm = () => {
   const { user } = useAuth();
@@ -139,10 +139,10 @@ const StatusPageDetailsForm = () => {
               setForm((f) => ({ ...f, hideBranding: e.target.checked }));
             }}
           />
-          Hide “Powered by Motive”
+          Hide “Powered by Clientglass”
         </label>
         {!canHide && (
-          <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Hiding it is part of Motive Pro.</p>
+          <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Hiding it is part of Clientglass Pro.</p>
         )}
       </div>
 

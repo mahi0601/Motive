@@ -1,4 +1,4 @@
-// Single source of truth for the Motive mark. Plain ESM with no JSX/React so the
+// Single source of truth for the Clientglass mark. Plain ESM with no JSX/React so the
 // same numbers feed BOTH the in-app <Logo> component (src/components/ui/Logo.jsx)
 // and the asset generator (scripts/generate-brand-assets.mjs) — the favicon, PWA
 // and Android icons, social image, README banner and email logo are all
@@ -80,7 +80,7 @@ export const glyphRadius = () => {
 // lockup: weight, tracking, size relative to the mark, and the gap between them.
 // Used by <Logo> (live text) and by the generator (outlined paths).
 export const WORDMARK = {
-  text: 'Motive',
+  text: 'Clientglass',
   weight: 700,
   letterSpacingEm: -0.015,
   sizeRatio: 0.62, // font-size as a fraction of the mark's size

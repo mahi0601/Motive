@@ -208,13 +208,13 @@ const MembersCard = () => {
         </form>
       )}
       <p className="text-sm text-light-muted dark:text-dark-muted mb-3">
-        Invite a teammate by email — they'll get a link to join, whether or not they have a Motive account yet.
+        Invite a teammate by email — they'll get a link to join, whether or not they have a Clientglass account yet.
       </p>
 
       {isOwner && (
         atMemberCap ? (
           <p className="text-sm rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 px-3 py-2">
-            Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Motive Pro below to invite more.
+            Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Clientglass Pro below to invite more.
           </p>
         ) : (
           <form onSubmit={handleInvite} className="flex flex-wrap gap-2">
