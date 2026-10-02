@@ -10,7 +10,7 @@ import { CARD_CLASS } from './cardStyles';
 const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : null;
 
-// Motive Pro — a monthly subscription. Three states: lifetime (bought the old
+// Clientglass Pro — a monthly subscription. Three states: lifetime (bought the old
 // one-time upgrade, never charged again), subscriber (status, renewal date,
 // Manage billing), and free (upgrade).
 const BillingCard = () => {
@@ -88,7 +88,7 @@ const BillingCard = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Star className="text-brand-500" />
-          <h4 className="text-lg font-semibold">Motive Pro</h4>
+          <h4 className="text-lg font-semibold">Clientglass Pro</h4>
         </div>
         {user?.isPro && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-700 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
@@ -99,7 +99,7 @@ const BillingCard = () => {
 
       {user?.proLifetime ? (
         <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
-          Thanks for backing Motive early — you have Pro for life, with nothing more to pay.
+          Thanks for backing Clientglass early — you have Pro for life, with nothing more to pay.
         </p>
       ) : user?.isPro ? (
         <div className="mt-2 space-y-2">

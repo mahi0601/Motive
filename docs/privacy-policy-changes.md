@@ -20,6 +20,6 @@
 
 ## Open questions for the reviewer
 
-- Does Motive act as a controller or a processor when a workspace is used by an organisation (for example a school)? Do those customers need a data processing agreement?
+- Does Clientglass act as a controller or a processor when a workspace is used by an organisation (for example a school)? Do those customers need a data processing agreement?
 - Is a "last updated" date and a change notice to existing users needed when this changes?
 - Do the retention periods above match what you are comfortable promising?

@@ -213,7 +213,7 @@ const Momentum = () => {
       {!loading && data?.periodLocked && (
         <div className="panel panel-bd flex flex-wrap items-center gap-2 border-brand-200 bg-brand-50/60 text-sm dark:border-brand-800/60 dark:bg-brand-900/10">
           <Lock className="h-4 w-4 shrink-0 text-brand-600 dark:text-brand-400" />
-          <span className="text-light-text dark:text-dark-text">Month and quarter views are part of Motive Pro — showing this week instead.</span>
+          <span className="text-light-text dark:text-dark-text">Month and quarter views are part of Clientglass Pro — showing this week instead.</span>
           <Link to="/settings" className="ml-auto shrink-0 font-medium text-brand-600 hover:underline dark:text-brand-400">
             Upgrade →
           </Link>

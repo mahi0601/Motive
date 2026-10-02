@@ -63,18 +63,18 @@ describe('StatusPageDetailsForm', () => {
     expect(updateStatusPage.mock.calls[0][1].milestoneDate).toBeNull();
   });
 
-  test('hiding "Powered by Motive" is disabled for a free account, with the reason', () => {
+  test('hiding "Powered by Clientglass" is disabled for a free account, with the reason', () => {
     render(<StatusPageDetailsForm />);
-    const toggle = screen.getByRole('checkbox', { name: /hide .powered by motive./i });
+    const toggle = screen.getByRole('checkbox', { name: /hide .powered by clientglass./i });
     expect(toggle).toBeDisabled();
-    expect(screen.getByText(/part of motive pro/i)).toBeInTheDocument();
+    expect(screen.getByText(/part of clientglass pro/i)).toBeInTheDocument();
   });
 
   test('a Pro account can turn it on and it is saved', async () => {
     mockUser = { id: 'o1', isPro: true };
     updateStatusPage.mockResolvedValue({ data: { page: {} } });
     render(<StatusPageDetailsForm />);
-    const toggle = screen.getByRole('checkbox', { name: /hide .powered by motive./i });
+    const toggle = screen.getByRole('checkbox', { name: /hide .powered by clientglass./i });
     expect(toggle).not.toBeDisabled();
     fireEvent.click(toggle);
     fireEvent.click(screen.getByRole('button', { name: /save/i }));

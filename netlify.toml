@@ -1,4 +1,4 @@
-# Netlify deploy config for the Motive web app (Vite static build + PWA).
+# Netlify deploy config for the Clientglass web app (Vite static build + PWA).
 # Backend stays on Render — see motive-backend/render.yaml. Set VITE_API_BASE_URL
 # in Netlify's dashboard (Site settings → Environment variables) or via
 # `netlify env:set VITE_API_BASE_URL https://motive-api-u7xg.onrender.com`

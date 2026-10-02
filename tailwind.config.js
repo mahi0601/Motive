@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-// Motive brand palette — "Petrol & Ink". Replaces "Motive Violet" + "Spark"
+// Clientglass brand palette — "Petrol & Ink". Replaces "Motive Violet" + "Spark"
 // amber: the old brand accent (amber) collided with the "at risk" status
 // color, and violet read as consumer/creative rather than a delivery
 // instrument a client is meant to trust. Petrol is deliberately pulled off

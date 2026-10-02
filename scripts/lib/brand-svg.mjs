@@ -1,4 +1,4 @@
-// Pure SVG-string builders for the Motive brand assets. Everything is derived
+// Pure SVG-string builders for the Clientglass brand assets. Everything is derived
 // from src/config/brandMark.js — nothing here hard-codes geometry or colours —
 // and everything returns a string, so the generator writes the files and the
 // tests can compare the committed files against what these functions produce.
@@ -77,18 +77,65 @@ const loadFont = () => {
   return cachedFont;
 };
 
-// The wordmark as an outlined path, vertically centred on `cy`. Outlines mean it
-// renders identically anywhere (email, README, OG image) without the font.
-// Only ever used for the short word "Motive": outlined text through sharp/librsvg
-// was seen to intermittently lose glyph edges in LONG strings (see
-// wordmarkInkRatio below, which guards the real wordmark).
+// Quadratic -> cubic. The font's outlines are quadratic Beziers (SVG "Q"). The
+// librsvg build behind sharp renders Q segments unreliably: the same word came out
+// with a glyph smeared or its counter filled in at some font sizes and not at
+// others (an "e" at 118px, a "g" at 124px), by amounts that moved with the size.
+// Cubic Beziers (SVG "C") describe exactly the same curve and render correctly at
+// every size tested (see wordmarkRenderDeviation), so glyphs are written as cubics.
+const num = (v) => Number(v.toFixed(2));
+const toCubicPath = (p) => {
+  let cx = 0;
+  let cy = 0;
+  let sx = 0;
+  let sy = 0;
+  const out = [];
+  for (const c of p.commands) {
+    if (c.type === 'M') {
+      out.push(`M${num(c.x)} ${num(c.y)}`);
+      cx = sx = c.x;
+      cy = sy = c.y;
+    } else if (c.type === 'L') {
+      out.push(`L${num(c.x)} ${num(c.y)}`);
+      cx = c.x;
+      cy = c.y;
+    } else if (c.type === 'Q') {
+      const c1x = cx + (2 / 3) * (c.x1 - cx);
+      const c1y = cy + (2 / 3) * (c.y1 - cy);
+      const c2x = c.x + (2 / 3) * (c.x1 - c.x);
+      const c2y = c.y + (2 / 3) * (c.y1 - c.y);
+      out.push(`C${num(c1x)} ${num(c1y)} ${num(c2x)} ${num(c2y)} ${num(c.x)} ${num(c.y)}`);
+      cx = c.x;
+      cy = c.y;
+    } else if (c.type === 'C') {
+      out.push(`C${num(c.x1)} ${num(c.y1)} ${num(c.x2)} ${num(c.y2)} ${num(c.x)} ${num(c.y)}`);
+      cx = c.x;
+      cy = c.y;
+    } else if (c.type === 'Z') {
+      out.push('Z');
+      cx = sx;
+      cy = sy;
+    }
+  }
+  return out.join('');
+};
+
+// The wordmark as outlined glyph paths, vertically centred on `cy`. Outlines mean
+// it renders identically anywhere (email, README, OG image) without the font.
+// One <path> per glyph, each written with cubic curves (see above).
 export const wordmark = ({ fontSize, x = 0, cy, fill }) => {
   const font = loadFont();
   const opts = { letterSpacing: WORDMARK.letterSpacingEm };
   const bb = font.getPath(WORDMARK.text, 0, 0, fontSize, opts).getBoundingBox();
   const baseline = cy - (bb.y1 + bb.y2) / 2;
-  const d = font.getPath(WORDMARK.text, x, baseline, fontSize, opts).toPathData(2);
-  return { svg: `<path d="${d}" fill="${fill}"/>`, width: font.getAdvanceWidth(WORDMARK.text, fontSize, opts) };
+  const glyphs = font
+    .getPaths(WORDMARK.text, x, baseline, fontSize, opts)
+    .map(toCubicPath)
+    .filter((d) => d);
+  return {
+    svg: `<g fill="${fill}">${glyphs.map((d) => `<path d="${d}"/>`).join('')}</g>`,
+    width: font.getAdvanceWidth(WORDMARK.text, fontSize, opts),
+  };
 };
 
 // ── Lockup: mark + wordmark ───────────────────────────────────────────────────
@@ -144,8 +191,8 @@ export const animatedSvg = ({ size = 128 } = {}) => {
   const headLen = n(dist(p3, p2) + dist(p2, p4));
   const draw = (len, keyTimes, values) =>
     `<animate attributeName="stroke-dashoffset" values="${values.map((v) => (v ? len : 0)).join(';')}" keyTimes="${keyTimes}" dur="4s" repeatCount="indefinite"/>`;
-  return `<svg ${XMLNS} width="${size}" height="${size}" viewBox="0 0 ${MARK.viewBox} ${MARK.viewBox}" fill="none" role="img" aria-label="Motive">
-  <title>Motive</title>
+  return `<svg ${XMLNS} width="${size}" height="${size}" viewBox="0 0 ${MARK.viewBox} ${MARK.viewBox}" fill="none" role="img" aria-label="Clientglass">
+  <title>Clientglass</title>
   <defs>${tileGradient()}</defs>
   ${tileRect('url(#g)')}
   <path d="${MARK.check}" ${strokeAttrs('#fff')} stroke-dasharray="${checkLen}" stroke-dashoffset="0">${draw(checkLen, '0;0.12;0.9;1', [1, 0, 0, 1])}</path>
@@ -155,20 +202,28 @@ export const animatedSvg = ({ size = 128 } = {}) => {
 };
 
 // ── Guard: the outlined wordmark must render completely ───────────────────────
-// sharp/librsvg was seen to drop the right-hand part of some glyphs in outlined
-// text, silently. A real failure would change the ink amount non-uniformly, so
-// render the wordmark at 1× and at 2× and check the ink scales by ~4 (2² area).
-// Returns the measured ratio; callers assert it is within tolerance of 4.
-export const wordmarkInkRatio = async (sharp) => {
-  const ink = async (scale) => {
-    const fontSize = 100;
-    const w = wordmark({ fontSize, x: 4, cy: 70, fill: '#000' });
-    const W = Math.ceil(w.width) + 8;
-    const svg = `<svg ${XMLNS} width="${W * scale}" height="${140 * scale}" viewBox="0 0 ${W} 140">${w.svg}</svg>`;
+// sharp/librsvg was seen to smear or fill glyphs in outlined text, at some font
+// sizes and not others, silently. Ink (opaque pixels) scales with the square of the
+// font size, so render the real wordmark at a sweep of sizes covering everything
+// the lockups use and compare each with the size-100 rendering scaled by (s/100)^2.
+// Returns the WORST relative deviation (0 = perfect); the generator refuses to write
+// anything if it exceeds 3%.
+export const wordmarkRenderDeviation = async (sharp) => {
+  const ink = async (fontSize) => {
+    const w = wordmark({ fontSize, x: 6, cy: fontSize * 0.75, fill: '#000' });
+    const W = Math.ceil(w.width) + 12;
+    const H = Math.ceil(fontSize * 1.5);
+    const svg = `<svg ${XMLNS} width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${w.svg}</svg>`;
     const { data, info } = await sharp(Buffer.from(svg)).raw().toBuffer({ resolveWithObject: true });
     let sum = 0;
     for (let i = 3; i < data.length; i += info.channels) sum += data[i];
     return sum / 255;
   };
-  return (await ink(2)) / (await ink(1));
+  const base = await ink(100);
+  let worst = 0;
+  for (let size = 40; size <= 200; size += 4) {
+    const expected = base * (size / 100) ** 2;
+    worst = Math.max(worst, Math.abs((await ink(size)) / expected - 1));
+  }
+  return worst;
 };

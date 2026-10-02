@@ -46,7 +46,7 @@ const NotificationsCard = () => {
           ? 'Blocked in your browser settings — allow notifications for this site to enable.'
           : notifPermission === 'unsupported'
           ? 'Not supported in this browser.'
-          : 'Show a desktop notification when Motive notifies you (comments, mentions).'}
+          : 'Show a desktop notification when Clientglass notifies you (comments, mentions).'}
       </p>
     </div>
   );

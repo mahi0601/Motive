@@ -26,7 +26,7 @@ export const downloadSignoffCsv = (items) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `motive-sign-offs-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `clientglass-sign-offs-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();

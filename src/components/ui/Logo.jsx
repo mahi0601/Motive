@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 import { BRAND_COLORS, MARK, WORDMARK } from '../../config/brandMark';
 
 /**
- * Motive brand mark.
+ * Clientglass brand mark.
  *
  * A check whose long arm rises into an arrow — "done, and moving" — in white on
  * a petrol tile. Deliberately quiet: petrol is the brand hue and is kept off the
@@ -16,7 +16,7 @@ import { BRAND_COLORS, MARK, WORDMARK } from '../../config/brandMark';
  *
  * LogoMark props:
  *   size       – icon size in px (default 32)
- *   decorative – hide from assistive tech; use when the name "Motive" is already
+ *   decorative – hide from assistive tech; use when the name "Clientglass" is already
  *                present as text next to it (Logo does this when showText)
  *
  * Logo props:

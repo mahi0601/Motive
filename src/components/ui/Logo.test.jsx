@@ -5,9 +5,9 @@ import Logo, { LogoMark } from './Logo';
 import { MARK, WORDMARK } from '../../config/brandMark';
 
 describe('LogoMark', () => {
-  test('is an accessible image named "Motive" at the requested size', () => {
+  test('is an accessible image named "Clientglass" at the requested size', () => {
     render(<LogoMark size={48} />);
-    const svg = screen.getByRole('img', { name: 'Motive' });
+    const svg = screen.getByRole('img', { name: 'Clientglass' });
     expect(svg).toHaveAttribute('width', '48');
     expect(svg).toHaveAttribute('height', '48');
     expect(svg).toHaveAttribute('viewBox', `0 0 ${MARK.viewBox} ${MARK.viewBox}`);
@@ -45,7 +45,7 @@ describe('LogoMark', () => {
 });
 
 describe('Logo', () => {
-  test('shows the wordmark once, and does not announce "Motive" twice', () => {
+  test('shows the wordmark once, and does not announce "Clientglass" twice', () => {
     render(<Logo />);
     expect(screen.getAllByText(WORDMARK.text)).toHaveLength(1);
     // The mark is decorative next to visible text, so there is no separate image.
@@ -55,7 +55,7 @@ describe('Logo', () => {
   test('without text the mark carries the accessible name', () => {
     render(<Logo showText={false} />);
     expect(screen.queryByText(WORDMARK.text)).not.toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Motive' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Clientglass' })).toBeInTheDocument();
   });
 
   test('wordmark size and gap scale with the mark, using the shared lockup values', () => {

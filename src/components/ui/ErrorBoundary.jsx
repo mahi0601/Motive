@@ -45,7 +45,7 @@ class ErrorBoundary extends React.Component {
           onClick={this.handleReload}
           className="rounded-lg bg-brand-gradient px-6 py-2.5 font-semibold text-white shadow-brand-sm transition hover:shadow-brand"
         >
-          Reload Motive
+          Reload Clientglass
         </button>
       </div>
     );

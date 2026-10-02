@@ -18,7 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { BRAND_COLORS as C } from '../src/config/brandMark.js';
-import { tileSvg, bleedSvg, bleedGradient, lockup, animatedSvg, wordmarkInkRatio } from './lib/brand-svg.mjs';
+import { tileSvg, bleedSvg, bleedGradient, lockup, animatedSvg, wordmarkRenderDeviation } from './lib/brand-svg.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = (...p) => path.join(root, ...p);
@@ -41,12 +41,12 @@ const writePng = async (rel, svg, { opaque = false } = {}) => {
 };
 
 // 0. Guard first — a wordmark that renders incompletely must never ship.
-const ratio = await wordmarkInkRatio(sharp);
-if (Math.abs(ratio - 4) > 0.12) {
-  console.error(`Wordmark failed its render check: ink scaled by ${ratio.toFixed(3)} between 1× and 2× (expected ≈4). Aborting.`);
+const deviation = await wordmarkRenderDeviation(sharp);
+if (deviation > 0.03) {
+  console.error(`Wordmark failed its render check: ink is off by ${(deviation * 100).toFixed(1)}% at some font size (limit 3%). Aborting.`);
   process.exit(1);
 }
-console.log(`wordmark render check ok (ink ratio ${ratio.toFixed(3)} ≈ 4)`);
+console.log(`wordmark render check ok (worst deviation ${(deviation * 100).toFixed(2)}% across sizes 40-200px)`);
 
 // 1. Web / PWA ──────────────────────────────────────────────────────────────
 writeText('public/motive.svg', tileSvg());
@@ -75,8 +75,12 @@ await writePng('public/icons/apple-touch-icon.png', bleedSvg({ size: 180 }), { o
 // gradient strip, where a petrol tile would disappear. 2× size; displayed at half.
 {
   const l = lockup({ markSize: 80, tile: false, ink: '#FFFFFF' });
-  await writePng('public/brand/logo-email.png', l.svg);
-  written.push(`   ↳ email logo is ${l.width}×${l.height}px — display it at ${l.width / 2}×${l.height / 2}`);
+  // Even pixel dimensions, so the half-size display size is a whole number of px
+  // (the longer name came out 345px wide: one transparent column fixes that).
+  const W = l.width + (l.width % 2);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${l.height}" viewBox="0 0 ${W} ${l.height}" fill="none">${l.inner}</svg>`;
+  await writePng('public/brand/logo-email.png', svg);
+  written.push(`   ↳ email logo is ${W}×${l.height}px — display it at ${W / 2}×${l.height / 2}`);
 }
 
 // 4. README banner (animated) — also copied into the backend repo.
@@ -108,8 +112,9 @@ await writePng(
   <g transform="translate(${Math.round((S - l.width) / 2)} ${Math.round((S - l.height) / 2)})">${l.inner}</g>
 </svg>`;
   // Keep the lockup inside the central ~1200px the Android splash crop guarantees.
-  await writePng('assets/splash.png', splash({ defs: bleedGradient(), fill: 'url(#g)' }, lockup({ markSize: 300, tile: false, ink: '#FFFFFF' })));
-  await writePng('assets/splash-dark.png', splash({ defs: '', fill: C.surfaceDark }, lockup({ markSize: 300, tile: true, ink: '#FFFFFF' })));
+  // The wordmark is long ("Clientglass"), so the mark is 240px here: ~1050px wide.
+  await writePng('assets/splash.png', splash({ defs: bleedGradient(), fill: 'url(#g)' }, lockup({ markSize: 240, tile: false, ink: '#FFFFFF' })));
+  await writePng('assets/splash-dark.png', splash({ defs: '', fill: C.surfaceDark }, lockup({ markSize: 240, tile: true, ink: '#FFFFFF' })));
 }
 
 console.log(written.map((w) => `  ${w}`).join('\n'));

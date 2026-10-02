@@ -16,7 +16,7 @@ describe('WelcomeModal', () => {
 
   test('is an accessible modal dialog that takes focus', () => {
     renderModal();
-    const dialog = screen.getByRole('dialog', { name: /welcome to motive/i });
+    const dialog = screen.getByRole('dialog', { name: /welcome to clientglass/i });
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(document.activeElement).toBe(dialog);
   });

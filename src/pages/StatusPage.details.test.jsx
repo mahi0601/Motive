@@ -65,7 +65,7 @@ describe('StatusPage: owner-written details', () => {
     expect(window.__xss).toBeUndefined();
   });
 
-  test('shows "Powered by Motive" unless the owner (on Pro) hid it', async () => {
+  test('shows "Powered by Clientglass" unless the owner (on Pro) hid it', async () => {
     const { unmount } = renderWith(PAGE);
     expect(await screen.findByText(/powered by/i)).toBeInTheDocument();
     unmount();

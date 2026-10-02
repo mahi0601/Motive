@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="assets/logo-animated.svg" width="120" height="120" alt="Motive logo" />
+  <img src="assets/logo-animated.svg" width="120" height="120" alt="Clientglass logo" />
 
-  # Motive
+  # Clientglass
 
   A calm, fast workspace to capture ideas, organize pages, and get things done.
 

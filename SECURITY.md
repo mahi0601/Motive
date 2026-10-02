@@ -10,4 +10,4 @@ We aim to acknowledge a report within 5 business days and to tell you what we pl
 
 ## Scope
 
-This repository is Motive's web app and Android shell (React, Vite, Capacitor). The API lives in the companion `motive-backend` repository; report issues in either there or here.
+This repository is Clientglass's web app and Android shell (React, Vite, Capacitor). The API lives in the companion `motive-backend` repository; report issues in either there or here.
