@@ -34,9 +34,17 @@ export default [
       'react/jsx-uses-vars': 'error',
       'react/jsx-uses-react': 'error',
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // A context file exports its Provider component and the one `useX` hook
+      // that reads it. That pairing is the standard pattern and costs nothing
+      // at runtime; only editing such a file reloads the page instead of hot-
+      // swapping. These exact hooks are allowed; any other non-component export
+      // from a component file still warns.
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          allowExportNames: ['useAuth', 'useCommandPalette', 'useNotificationSocket', 'useTheme', 'useToast', 'useWorkspace'],
+        },
       ],
       // Everything now goes through src/utils/logger.js — see that file's
       // header comment — so a stray console.* fails lint instead of quietly
