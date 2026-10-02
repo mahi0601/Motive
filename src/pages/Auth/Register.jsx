@@ -25,6 +25,9 @@ const Register = () => {
   // Arriving from an invite link prefills the email it was sent to — see
   // Invite.jsx, which builds this URL.
   const [form, setForm] = useState({ name: '', email: searchParams.get('email') || '', password: '' });
+  // The age and terms confirmation. Never pre-ticked, and the server refuses a
+  // sign-up without it (it records when and which version).
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,6 +46,7 @@ const Register = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email';
     if (form.password.length < 8) next.password = 'At least 8 characters';
     else if (!/\d/.test(form.password)) next.password = 'Include at least one number';
+    if (!acceptTerms) next.terms = 'Please confirm you are 16 or older and agree to the Terms and Privacy Policy';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -53,7 +57,7 @@ const Register = () => {
     setLoading(true);
     setServerError('');
     try {
-      const { data } = await registerRequest(form);
+      const { data } = await registerRequest({ ...form, acceptTerms: true });
       // Backend returns an access token on register → log the user straight in.
       setAuthUser(data.user, data.accessToken);
       // Same hand-off as Login.jsx: let Invite.jsx do the actual accept once
@@ -128,6 +132,31 @@ const Register = () => {
           )}
         </div>
 
+        <div>
+          <label className="flex items-start gap-2 text-sm text-light-muted dark:text-dark-muted">
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => {
+                setAcceptTerms(e.target.checked);
+                setErrors((prev) => ({ ...prev, terms: undefined }));
+              }}
+              aria-invalid={!!errors.terms}
+              aria-describedby={errors.terms ? 'terms-error' : undefined}
+              className="mt-0.5 h-4 w-4 rounded border-light-border text-brand-600 focus:ring-brand-500"
+            />
+            <span>
+              I am 16 or older and agree to the{' '}
+              <Link to="/terms" target="_blank" rel="noopener noreferrer" className="font-medium text-brand-600 hover:underline dark:text-brand-400">Terms</Link>
+              {' '}and{' '}
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-brand-600 hover:underline dark:text-brand-400">Privacy Policy</Link>.
+            </span>
+          </label>
+          {errors.terms && (
+            <p id="terms-error" role="alert" className="mt-1 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{errors.terms}</p>
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -143,6 +172,11 @@ const Register = () => {
         <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
       </div>
       <GoogleSignInButton inviteToken={searchParams.get('invite')} />
+      <p className="mt-2 text-center text-xs text-light-muted dark:text-dark-muted">
+        By continuing with Google you agree to the{' '}
+        <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline">Terms</Link> and{' '}
+        <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline">Privacy Policy</Link>.
+      </p>
 
       <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Already have an account?{' '}

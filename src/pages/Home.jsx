@@ -167,6 +167,11 @@ const Home = () => {
         >
           Fewer status calls. More shipped work.
         </motion.p>
+
+        <nav aria-label="Legal" className="flex justify-center gap-6 text-xs text-light-muted dark:text-dark-muted">
+          <Link to="/terms" className="hover:underline">Terms of Service</Link>
+          <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
+        </nav>
       </div>
     </motion.div>
   );

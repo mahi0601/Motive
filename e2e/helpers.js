@@ -4,7 +4,7 @@ export const API = 'http://localhost:5055';
 export async function createUser(request, label) {
   const email = `e2e-${Date.now()}-${label}@example.invalid`;
   const password = 'e2e-password-1';
-  const res = await request.post(`${API}/api/auth/register`, { data: { name: `E2E ${label}`, email, password } });
+  const res = await request.post(`${API}/api/auth/register`, { data: { name: `E2E ${label}`, email, password, acceptTerms: true } });
   if (!res.ok()) throw new Error(`register failed: ${res.status()}`);
   const body = await res.json();
   return { email, password, accessToken: body.accessToken, userId: body.user.id };
