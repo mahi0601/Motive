@@ -5,7 +5,7 @@ import CommentSection from '../collab/CommentSection';
 import SubtaskList from './SubtaskList';
 import AttachmentList from '../collab/AttachmentList';
 import TaskTimer from './TaskTimer';
-import { TASK_CATEGORIES, TASK_PRIORITIES } from '../../utils/constants';
+import { DEFAULT_TASK_CATEGORY, TASK_PRIORITIES, categoryOptions } from '../../utils/constants';
 
 const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
   const [formData, setFormData] = useState({
@@ -16,13 +16,13 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
     // full ISO datetime, which the input silently rejects (renders blank).
     dueDate: initialData?.dueDate ? initialData.dueDate.slice(0, 10) : '',
     tags: initialData?.tags || [],
-    category: initialData?.category || 'Personal',
+    category: initialData?.category || DEFAULT_TASK_CATEGORY,
     recurrence: initialData?.recurrence || ''
   });
   const [tagInput, setTagInput] = useState('');
 
   const priorities = TASK_PRIORITIES;
-  const categories = TASK_CATEGORIES;
+  const categories = categoryOptions(initialData?.category);
   const recurrenceOptions = [
     { value: '', label: 'Does not repeat' },
     { value: 'daily', label: 'Daily' },
@@ -58,7 +58,7 @@ const TaskForm = ({ onSubmit, onClose, initialData = null }) => {
           priority: 'Medium',
           dueDate: '',
           tags: [],
-          category: 'Personal',
+          category: DEFAULT_TASK_CATEGORY,
           recurrence: ''
         });
       }

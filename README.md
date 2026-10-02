@@ -3,7 +3,7 @@
 
   # Clientglass
 
-  A calm, fast workspace to capture ideas, organize pages, and get things done.
+  Client-ready project delivery for small agencies. Run your work on a board; your client gets a live status page and never needs an account.
 
   [![CI](https://github.com/mahi0601/Motive/actions/workflows/ci.yml/badge.svg)](https://github.com/mahi0601/Motive/actions/workflows/ci.yml)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -13,12 +13,13 @@
 
 <br>
 
-A Notion/Todoist-style productivity app — React + Vite on the web, a native Android app via Capacitor, and an offline-capable PWA.
+Built for agencies and small studios running client work — React + Vite on the web, a native Android app via Capacitor, and an offline-capable PWA.
 
 ## Features
 
-- Quick-add tasks with natural-language dates, subtasks, drag-and-drop, and templates
-- Calendar view and a Momentum view for tracking progress over time
+- A live, branded client status page per workspace: milestone, progress, client sign-off and responses, no client login
+- Quick-add tasks with natural-language dates, subtasks, drag-and-drop, and agency templates (onboarding, project plan, weekly update, retainer)
+- Calendar view and a Momentum view that flags at-risk and overdue work
 - Comments, attachments, and an activity feed for shared workspaces
 - Realtime notifications and a keyboard-driven command palette
 - Email or Google sign-in, installable as a PWA or a native Android app
