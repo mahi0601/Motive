@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle, Star } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { createCheckoutSession, createPortalSession, reconcileCheckoutSession } from '../../services/paymentService';
+import { changePlan, createCheckoutSession, createPortalSession, reconcileCheckoutSession } from '../../services/paymentService';
 import { PLANS, PAID_PLAN_KEYS, planBenefits, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
@@ -33,6 +33,14 @@ const BillingCard = () => {
   const billingReturn = searchParams.get('billing'); // 'updated' after the Customer Portal
   const [openingPortal, setOpeningPortal] = useState(false);
   const [portalError, setPortalError] = useState('');
+
+  // Studio -> Agency on the existing subscription. Asks first (it charges the
+  // difference), and the button is disabled while the request is in flight so a
+  // double click cannot send it twice.
+  const [confirmingSwitch, setConfirmingSwitch] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState('');
+  const [switched, setSwitched] = useState(false);
 
   // Coming back from Stripe Checkout — reconcile directly against Stripe first
   // (covers UPI/delayed-notification methods, and a webhook that was ever
@@ -70,6 +78,22 @@ const BillingCard = () => {
     } catch (err) {
       setPortalError(err?.response?.data?.message || 'Could not open billing. Try again.');
       setOpeningPortal(false);
+    }
+  };
+
+  const handleSwitch = async () => {
+    if (switching) return;
+    setSwitching(true);
+    setSwitchError('');
+    try {
+      await changePlan('agency');
+      await refreshUser();
+      setSwitched(true);
+      setConfirmingSwitch(false);
+    } catch (err) {
+      setSwitchError(err?.response?.data?.message || 'Could not change your plan. Try again.');
+    } finally {
+      setSwitching(false);
     }
   };
 
@@ -126,9 +150,50 @@ const BillingCard = () => {
           </button>
           {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
           {tier === 'studio' && (
-            <p className="text-xs text-light-muted dark:text-dark-muted">
-              To move to Agency, cancel Studio under Manage billing and subscribe to Agency once it ends. Switching plans in one step isn't available yet.
-            </p>
+            <div className="pt-1 space-y-2">
+              {switched && (
+                <p role="status" className="text-sm text-semantic-success-700 dark:text-semantic-success-dark">
+                  You're now on Agency. The difference for this billing period is prorated on your next invoice.
+                </p>
+              )}
+              {user.subscriptionStatus === 'past_due' ? (
+                <p className="text-xs text-light-muted dark:text-dark-muted">Fix your payment to switch to Agency.</p>
+              ) : user.subscriptionCancelAtPeriodEnd ? (
+                <p className="text-xs text-light-muted dark:text-dark-muted">Resume your subscription to switch to Agency.</p>
+              ) : confirmingSwitch ? (
+                <div role="group" aria-label="Confirm switch to Agency" className="rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 p-3 space-y-2">
+                  <p className="text-sm text-light-text dark:text-dark-text">
+                    Agency is {PLANS.agency.price.usd} / {PLANS.agency.price.inr} a month, charged in the currency you already pay in. You'll pay the prorated difference for the rest of this billing period, then the Agency price each month.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSwitch}
+                      disabled={switching}
+                      className="px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white transition-all duration-300 shadow-brand-sm hover:shadow-brand disabled:opacity-60"
+                    >
+                      {switching ? 'Switching…' : 'Confirm switch'}
+                    </button>
+                    <button
+                      onClick={() => { setConfirmingSwitch(false); setSwitchError(''); }}
+                      disabled={switching}
+                      className="px-4 py-2 text-sm rounded-lg font-medium border border-light-border dark:border-dark-border text-light-text dark:text-dark-text disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                !switched && (
+                  <button
+                    onClick={() => setConfirmingSwitch(true)}
+                    className="px-4 py-2 text-sm rounded-lg font-medium border border-brand-600 text-brand-600 transition hover:bg-brand-600 hover:text-white dark:border-white dark:text-white"
+                  >
+                    Switch to Agency
+                  </button>
+                )
+              )}
+              {switchError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{switchError}</p>}
+            </div>
           )}
         </div>
       ) : (

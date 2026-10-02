@@ -3,12 +3,13 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import BillingCard from './BillingCard';
-import { createCheckoutSession, createPortalSession, reconcileCheckoutSession } from '../../services/paymentService';
+import { createCheckoutSession, createPortalSession, reconcileCheckoutSession, changePlan } from '../../services/paymentService';
 
 vi.mock('../../services/paymentService', () => ({
   createCheckoutSession: vi.fn(),
   createPortalSession: vi.fn(),
   reconcileCheckoutSession: vi.fn(),
+  changePlan: vi.fn(),
 }));
 
 const refreshUser = vi.fn().mockResolvedValue(undefined);
@@ -44,6 +45,7 @@ describe('BillingCard', () => {
     expect(screen.getByText(/pro for life/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /manage billing/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /switch to agency/i })).not.toBeInTheDocument();
   });
 
   test('a subscriber sees the renewal date and can open the billing portal', async () => {
@@ -136,19 +138,95 @@ describe('BillingCard', () => {
     expect(screen.getByText(/you're on free/i)).toHaveTextContent('1 active client page');
   });
 
-  test('a Studio subscriber sees their plan and is told how to move up', () => {
-    mockUser = { isPro: true, tier: 'studio', proLifetime: false, subscriptionStatus: 'active', proPeriodEnd: FUTURE };
-    renderCard();
-    expect(screen.getByText('Studio plan')).toBeInTheDocument();
-    expect(screen.getByText(/to move to agency/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /subscribe/i })).not.toBeInTheDocument();
+  describe('switching from Studio to Agency', () => {
+    const studio = (extra = {}) => ({ isPro: true, tier: 'studio', proLifetime: false, subscriptionStatus: 'active', proPeriodEnd: FUTURE, ...extra });
+
+    test('a healthy Studio subscriber sees their plan and a Switch to Agency button, not a purchase button', () => {
+      mockUser = studio();
+      renderCard();
+      expect(screen.getByText('Studio plan')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /switch to agency/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^subscribe/i })).not.toBeInTheDocument();
+    });
+
+    test('clicking it asks first, naming both prices and saying the change is prorated; nothing is charged yet', () => {
+      mockUser = studio();
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /switch to agency/i }));
+      const panel = screen.getByRole('group', { name: /confirm switch to agency/i });
+      expect(panel).toHaveTextContent('$49');
+      expect(panel).toHaveTextContent('₹2,499');
+      expect(panel).toHaveTextContent(/prorated/i);
+      expect(changePlan).not.toHaveBeenCalled();
+    });
+
+    test('Cancel closes the question without calling the server', () => {
+      mockUser = studio();
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /switch to agency/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
+      expect(screen.queryByRole('group', { name: /confirm switch to agency/i })).not.toBeInTheDocument();
+      expect(changePlan).not.toHaveBeenCalled();
+    });
+
+    test('confirming switches the plan once, then refreshes the profile and says it worked', async () => {
+      mockUser = studio();
+      changePlan.mockResolvedValue({ data: { success: true, tier: 'agency' } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /switch to agency/i }));
+      fireEvent.click(screen.getByRole('button', { name: /confirm switch/i }));
+
+      await waitFor(() => expect(changePlan).toHaveBeenCalledWith('agency'));
+      await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+      expect(changePlan).toHaveBeenCalledTimes(1);
+      expect(await screen.findByText(/you're now on agency/i)).toBeInTheDocument();
+    });
+
+    test('the confirm button is disabled while the switch is in flight, so a double click cannot send it twice', async () => {
+      mockUser = studio();
+      let resolve;
+      changePlan.mockReturnValue(new Promise((r) => { resolve = r; }));
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /switch to agency/i }));
+      fireEvent.click(screen.getByRole('button', { name: /confirm switch/i }));
+      expect(screen.getByRole('button', { name: /switching/i })).toBeDisabled();
+      fireEvent.click(screen.getByRole('button', { name: /switching/i }));
+      expect(changePlan).toHaveBeenCalledTimes(1);
+      resolve({ data: { tier: 'agency' } });
+      await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+    });
+
+    test('a refusal from the server is shown as the reason and the plan is not reported as changed', async () => {
+      mockUser = studio();
+      changePlan.mockRejectedValue({ response: { data: { message: 'Could not change your plan, so nothing was changed. Try again, or contact support.' } } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /switch to agency/i }));
+      fireEvent.click(screen.getByRole('button', { name: /confirm switch/i }));
+      expect(await screen.findByText(/nothing was changed/i)).toBeInTheDocument();
+      expect(screen.queryByText(/you're now on agency/i)).not.toBeInTheDocument();
+      expect(refreshUser).not.toHaveBeenCalled();
+    });
+
+    test('with a failed payment the switch is replaced by what to fix first', () => {
+      mockUser = studio({ subscriptionStatus: 'past_due' });
+      renderCard();
+      expect(screen.queryByRole('button', { name: /switch to agency/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/fix your payment to switch to agency/i)).toBeInTheDocument();
+    });
+
+    test('with a subscription set to end, the switch is replaced by how to resume it', () => {
+      mockUser = studio({ subscriptionCancelAtPeriodEnd: true });
+      renderCard();
+      expect(screen.queryByRole('button', { name: /switch to agency/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/resume your subscription to switch to agency/i)).toBeInTheDocument();
+    });
   });
 
   test('an Agency subscriber sees their plan and no move-up hint', () => {
     mockUser = { isPro: true, tier: 'agency', proLifetime: false, subscriptionStatus: 'active', proPeriodEnd: FUTURE };
     renderCard();
     expect(screen.getByText('Agency plan')).toBeInTheDocument();
-    expect(screen.queryByText(/to move to agency/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /switch to agency/i })).not.toBeInTheDocument();
   });
 
   test('a checkout error from the server is shown and nothing redirects', async () => {
