@@ -3,26 +3,28 @@ import { CheckCircle, Star } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { createCheckoutSession, createPortalSession, reconcileCheckoutSession } from '../../services/paymentService';
-import { FREE_MEMBER_LIMIT } from '../../config/limits';
+import { PLANS, PAID_PLAN_KEYS, planBenefits, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
 
 const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : null;
 
-// Clientglass Pro — a monthly subscription. Three states: lifetime (bought the old
-// one-time upgrade, never charged again), subscriber (status, renewal date,
-// Manage billing), and free (upgrade).
+// Plan and billing. Three plans (Free, Studio, Agency), priced by active client;
+// see config/plans.js. Three states: lifetime (bought the old one-time upgrade,
+// never charged again, Agency features), subscriber (plan, status, renewal date,
+// Manage billing), and free (pick a plan).
 const BillingCard = () => {
   const { user, refreshUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const tier = tierOf(user);
 
-  // Upgrade flow — the buyer picks a currency for the monthly price. Which
-  // payment methods Checkout then offers is Stripe's call (see paymentService.js),
-  // so none are promised here.
+  // Upgrade flow — the buyer picks a plan and a currency for the monthly price.
+  // Which payment methods Checkout then offers is Stripe's call (see
+  // paymentService.js), so none are promised here.
   const CURRENCIES = [
-    { code: 'usd', label: '$9.99 USD / month' },
-    { code: 'inr', label: '₹799 INR / month' },
+    { code: 'usd', label: 'USD' },
+    { code: 'inr', label: 'INR' },
   ];
   const [currency, setCurrency] = useState('usd');
   const [upgrading, setUpgrading] = useState(false);
@@ -71,11 +73,11 @@ const BillingCard = () => {
     }
   };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan) => {
     setUpgrading(true);
     setUpgradeError('');
     try {
-      const { data } = await createCheckoutSession(currency);
+      const { data } = await createCheckoutSession(currency, plan);
       window.location.href = data.url; // hand off to Stripe Checkout
     } catch (err) {
       setUpgradeError(err?.response?.data?.message || 'Could not start checkout. Try again.');
@@ -88,18 +90,18 @@ const BillingCard = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Star className="text-brand-500" />
-          <h4 className="text-lg font-semibold">Clientglass Pro</h4>
+          <h4 className="text-lg font-semibold">Plan and billing</h4>
         </div>
         {user?.isPro && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-semantic-success-50 text-semantic-success-700 dark:bg-semantic-success-500/10 dark:text-semantic-success-dark">
-            <CheckCircle /> {user.proLifetime ? 'Lifetime Pro' : "You're a Pro member"}
+            <CheckCircle /> {user.proLifetime ? 'Lifetime Pro' : `${PLANS[tier].name} plan`}
           </span>
         )}
       </div>
 
       {user?.proLifetime ? (
         <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
-          Thanks for backing Clientglass early — you have Pro for life, with nothing more to pay.
+          Thanks for backing Clientglass early — you have Pro for life, with every Agency feature and nothing more to pay.
         </p>
       ) : user?.isPro ? (
         <div className="mt-2 space-y-2">
@@ -108,11 +110,11 @@ const BillingCard = () => {
               ? `Your subscription is cancelled — Pro stays on until ${formatDate(user.proPeriodEnd) || 'the end of this billing period'}.`
               : user.proPeriodEnd
               ? `Monthly subscription — renews on ${formatDate(user.proPeriodEnd)}.`
-              : 'Monthly subscription — all Pro features are unlocked.'}
+              : `Monthly subscription — everything in ${PLANS[tier].name} is unlocked.`}
           </p>
           {user.subscriptionStatus === 'past_due' && (
             <p className="text-sm rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
-              Your last payment didn't go through. Update your payment method to keep Pro.
+              Your last payment didn't go through. Update your payment method to keep your plan.
             </p>
           )}
           <button
@@ -123,61 +125,75 @@ const BillingCard = () => {
             {openingPortal ? 'Opening…' : 'Manage billing'}
           </button>
           {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
+          {tier === 'studio' && (
+            <p className="text-xs text-light-muted dark:text-dark-muted">
+              To move to Agency, cancel Studio under Manage billing and subscribe to Agency once it ends. Switching plans in one step isn't available yet.
+            </p>
+          )}
         </div>
       ) : (
-        <p className="text-sm text-light-muted dark:text-dark-muted mt-2">
-          Unlock Pro features with a monthly subscription. Cancel any time.
-        </p>
-      )}
-
-      {/* Naming what Pro actually unlocks — was previously left
-          implicit (just "Pro features"), which is a bad look when
-          there's more than one gate to be honest about. */}
-      {!user?.isPro && (
-        <ul className="mt-3 space-y-1.5 text-sm text-light-text dark:text-dark-text">
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 shrink-0 text-brand-500" />
-            Month and quarter views on Momentum, not just this week
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 shrink-0 text-brand-500" />
-            Invite more than {FREE_MEMBER_LIMIT} workspace members
-          </li>
-        </ul>
+        <div className="mt-2 space-y-1">
+          <p className="text-sm text-light-muted dark:text-dark-muted">
+            You're on Free: {PLANS.free.clients} active client page and up to {PLANS.free.members} team members per workspace.
+          </p>
+          <p className="text-sm text-light-muted dark:text-dark-muted">
+            Upgrade with a monthly subscription, priced by active client. Cancel any time.
+          </p>
+        </div>
       )}
 
       {!user?.isPro && (
         <>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className="mt-4 flex items-center gap-2" role="group" aria-label="Currency">
             {CURRENCIES.map((c) => (
               <button
                 key={c.code}
                 type="button"
+                aria-pressed={currency === c.code}
                 onClick={() => setCurrency(c.code)}
-                className={`text-left rounded-lg border px-3 py-2 transition-all duration-200 ${
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
                   currency === c.code
-                    ? 'border-brand-500 ring-1 ring-brand-500 bg-brand-50 dark:bg-brand-900/20'
-                    : 'border-light-border dark:border-dark-border hover:border-brand-400'
+                    ? 'border-brand-500 ring-1 ring-brand-500 bg-brand-50 dark:bg-brand-900/20 text-light-text dark:text-dark-text'
+                    : 'border-light-border dark:border-dark-border text-light-muted dark:text-dark-muted hover:border-brand-400'
                 }`}
               >
-                <span className="block text-sm font-semibold text-light-text dark:text-dark-text">{c.label}</span>
+                {c.label}
               </button>
             ))}
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {PAID_PLAN_KEYS.map((key) => {
+              const plan = PLANS[key];
+              return (
+                <div key={key} className="flex flex-col rounded-xl border border-light-border dark:border-dark-border p-4">
+                  <h5 className="text-base font-semibold text-light-text dark:text-dark-text">{plan.name}</h5>
+                  <p className="text-sm text-light-muted dark:text-dark-muted">{plan.blurb}</p>
+                  <p className="mt-2 text-lg font-bold text-light-text dark:text-dark-text">{plan.price[currency]} / month</p>
+                  <ul className="mt-3 flex-1 space-y-1.5 text-sm text-light-text dark:text-dark-text">
+                    {planBenefits(key).map((line) => (
+                      <li key={line} className="flex items-start gap-2">
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                  {/* The one gradient on this screen — the highest-value action
+                      here, so it keeps the spotlight; the rest are tonal. */}
+                  <button
+                    onClick={() => handleUpgrade(key)}
+                    disabled={upgrading}
+                    className="mt-4 px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white transition-all duration-300 shadow-brand-sm hover:shadow-brand disabled:opacity-60"
+                  >
+                    {upgrading ? 'Redirecting…' : `Subscribe to ${plan.name}`}
+                  </button>
+                </div>
+              );
+            })}
           </div>
           <p className="text-xs text-light-muted dark:text-dark-muted mt-2">
             You'll pick how to pay on Stripe's secure checkout — the methods offered depend on your currency and region.
           </p>
-          {/* The one gradient on this screen — the highest-value action
-              here, so it's the one that keeps the spotlight. Avatar badge /
-              Enable Alerts / Invite above are all tonal now for that
-              reason. */}
-          <button
-            onClick={handleUpgrade}
-            disabled={upgrading}
-            className="mt-3 px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white transition-all duration-300 shadow-brand-sm hover:shadow-brand disabled:opacity-60"
-          >
-            {upgrading ? 'Redirecting…' : 'Subscribe to Pro'}
-          </button>
         </>
       )}
 

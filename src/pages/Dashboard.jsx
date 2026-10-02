@@ -18,6 +18,7 @@ import { useTasks } from '../hooks/useTasks';
 import { logger } from '../utils/logger';
 import { parseQuickAdd } from '../utils/quickAddParser';
 import { STATUS, getStatusLabel, getStatusDotClass } from '../utils/statusColors';
+import { DEFAULT_TASK_CATEGORY } from '../utils/constants';
 
 const PRIORITIES = ['High', 'Medium', 'Low'];
 // Keep in sync with AT_RISK_WINDOW_MS in motive-backend/src/services/momentum.service.js
@@ -182,7 +183,7 @@ const Dashboard = () => {
         description: payload.description || '',
         priority: priority || 'Medium',
         status: data ? (payload.status || 'todo') : columnKey,
-        category: payload.category,
+        category: payload.category || DEFAULT_TASK_CATEGORY,
         dueDate: dueDate || null,
         tags: payload.tags || [],
         recurrence: payload.recurrence || null,

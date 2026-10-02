@@ -50,6 +50,27 @@ describe('StatusPageCard', () => {
     expect(loadWorkspace).toHaveBeenCalled();
   });
 
+  test('the new link has a Preview that opens it as a preview, so the owner\'s look is not counted as a client view', async () => {
+    enableShare.mockResolvedValue({ data: { share: { token: 'abc123', shareEnabledAt: '2026-09-30T00:00:00Z' } } });
+    render(<StatusPageCard />);
+    fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
+    await screen.findByLabelText('Status page link');
+
+    const preview = screen.getByRole('link', { name: /preview/i });
+    expect(preview).toHaveAttribute('href', `${window.location.origin}/s/abc123?preview=1`);
+    expect(preview).toHaveAttribute('target', '_blank');
+    expect(preview.getAttribute('rel')).toMatch(/noopener/);
+    // What gets copied and shared stays the plain link.
+    expect(screen.getByLabelText('Status page link').value).toBe(`${window.location.origin}/s/abc123`);
+  });
+
+  test('a plan limit from the server is shown as the reason, not a generic failure', async () => {
+    enableShare.mockRejectedValue({ response: { status: 402, data: { message: 'Free includes 1 active client page — upgrade to Clientglass Studio for more.' } } });
+    render(<StatusPageCard />);
+    fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
+    expect(await screen.findByText(/free includes 1 active client page/i)).toBeInTheDocument();
+  });
+
   test('when sharing is already on, the old link is not shown — only a way to replace it', () => {
     mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-29T00:00:00Z' };
     render(<StatusPageCard />);

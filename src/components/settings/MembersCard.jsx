@@ -6,7 +6,7 @@ import {
   createInvite, listInvites, resendInvite, revokeInvite,
   updateMemberRole, removeMember, transferOwnership, leaveWorkspace, createWorkspace,
 } from '../../services/workspaceService';
-import { FREE_MEMBER_LIMIT } from '../../config/limits';
+import { PLANS, memberLimit, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
 
@@ -27,7 +27,13 @@ const MembersCard = () => {
   const [pendingInvites, setPendingInvites] = useState([]);
   const [invitesLoading, setInvitesLoading] = useState(false);
 
-  const atMemberCap = !user?.isPro && (workspace?.members?.length || 0) >= FREE_MEMBER_LIMIT;
+  // Team size per workspace follows the plan (Free 2, Studio 5, Agency 15). Purely
+  // a UI hint: the backend enforces it when the invite is sent and again when it
+  // is accepted.
+  const tier = tierOf(user);
+  const seatLimit = memberLimit(tier);
+  const atMemberCap = (workspace?.members?.length || 0) >= seatLimit;
+  const nextPlan = tier === 'free' ? PLANS.studio : tier === 'studio' ? PLANS.agency : null;
 
   // Pending invites only matter to someone who can act on them.
   useEffect(() => {
@@ -214,7 +220,7 @@ const MembersCard = () => {
       {isOwner && (
         atMemberCap ? (
           <p className="text-sm rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 px-3 py-2">
-            Free workspaces are limited to {FREE_MEMBER_LIMIT} members — upgrade to Clientglass Pro below to invite more.
+            {PLANS[tier].name} workspaces are limited to {seatLimit} members{nextPlan ? ` — upgrade to Clientglass ${nextPlan.name} below to invite more.` : '.'}
           </p>
         ) : (
           <form onSubmit={handleInvite} className="flex flex-wrap gap-2">
