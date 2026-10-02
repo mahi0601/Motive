@@ -17,7 +17,7 @@ import {
   Link as LinkIcon,
 } from 'lucide-react';
 
-export const BLOCK_OPTIONS = [
+const BLOCK_OPTIONS = [
   { type: 'paragraph', label: 'Text', icon: Type, keywords: 'text paragraph' },
   { type: 'heading1', label: 'Heading 1', icon: Heading1, keywords: 'h1 title big' },
   { type: 'heading2', label: 'Heading 2', icon: Heading2, keywords: 'h2 subtitle' },

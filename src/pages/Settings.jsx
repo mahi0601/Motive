@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, User } from 'lucide-react';
-import { Menu } from '@headlessui/react';
-import { Link } from 'react-router-dom';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AccountMenu from '../components/ui/AccountMenu';
 import ThemeCard from '../components/settings/ThemeCard';
 import NotificationsCard from '../components/settings/NotificationsCard';
 import MembersCard from '../components/settings/MembersCard';
@@ -25,48 +24,7 @@ const Settings = () => {
   return (
     <>
       <div className="flex justify-end px-4">
-        <Menu as="div" className="relative inline-block text-left z-50">
-          <Menu.Button className="rounded-full w-10 h-10 bg-brand-500 text-white flex items-center justify-center transition duration-300 hover:bg-brand-600">
-            {user ? (
-              <div className="w-full h-full rounded-full bg-brand-500 flex items-center justify-center text-sm font-bold">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            ) : (
-              <User className="text-xl" />
-            )}
-          </Menu.Button>
-          <Menu.Items className="absolute right-0 mt-2 w-44 bg-light-surface dark:bg-dark-raised border border-light-border dark:border-dark-border rounded-xl shadow-xl py-1 text-sm">
-            <Menu.Item>
-              {({ active }) => (
-                <Link
-                  to="/profile"
-                  className={`block px-4 py-2 transition duration-300 rounded-md ${
-                    active
-                      ? 'bg-brand-100 text-brand-700 dark:bg-brand-800 dark:text-white'
-                      : 'text-light-text dark:text-dark-text'
-                  } hover:bg-brand-100 hover:text-brand-700 dark:hover:bg-brand-800 dark:hover:text-white`}
-                >
-                  Profile
-                </Link>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-  {() => (
-    <button
-      onClick={handleLogout}
-      className={`w-full text-left px-4 py-2 rounded-md font-medium transition duration-300
-        bg-light-border/40 dark:bg-dark-surface
-        text-brand-600 dark:text-brand-300
-        hover:bg-brand-350 hover:text-brand-700
-        dark:hover:bg-brand-800 dark:hover:text-white`}
-    >
-      Logout
-    </button>
-  )}
-</Menu.Item>
-
-          </Menu.Items>
-        </Menu>
+        <AccountMenu name={user?.name} onLogout={handleLogout} />
       </div>
 
       <motion.div

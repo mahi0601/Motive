@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GripVertical, Plus, Link as LinkIcon, ExternalLink } from 'lucide-react';
-import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink, safeUrl } from '../../utils/richText';
+import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink, safeUrl, insertPastedContent } from '../../utils/richText';
 
 // Markdown prefixes that auto-convert a block on space.
 const MD_SHORTCUTS = [
@@ -245,6 +245,19 @@ const Block = ({
     // would silently never receive focus.
   }, [shouldFocus, block.type]);
 
+  // Paste is cleaned before it reaches the page: only the editor's own inline
+  // marks survive (see insertPastedContent). The same input handler then runs,
+  // exactly as for typing.
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const node = e.currentTarget;
+    const inserted = insertPastedContent(node, {
+      html: e.clipboardData?.getData('text/html'),
+      text: e.clipboardData?.getData('text/plain'),
+    });
+    if (inserted) handleInput({ currentTarget: node });
+  };
+
   const handleInput = (e) => {
     // Markdown-shortcut/slash detection stays plain-text — unaffected by
     // whatever inline marks are present.
@@ -354,6 +367,7 @@ const Block = ({
             suppressContentEditableWarning
             data-placeholder="Toggle"
             onInput={handleInput}
+            onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             onBlur={() => setToolbar(null)}
             className="flex-1 font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted"
@@ -379,6 +393,7 @@ const Block = ({
       suppressContentEditableWarning
       data-placeholder={placeholderFor(block.type)}
       onInput={handleInput}
+      onPaste={handlePaste}
       onKeyDown={handleKeyDown}
       onBlur={() => setToolbar(null)}
       className={`flex-1 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-light-muted dark:empty:before:text-dark-muted [&_code]:rounded [&_code]:bg-light-border/40 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] dark:[&_code]:bg-dark-raised [&_a]:text-brand-500 [&_a]:underline [&_mark]:rounded-sm [&_mark]:bg-yellow-200 [&_mark]:px-0.5 dark:[&_mark]:bg-yellow-300 dark:[&_mark]:text-black ${

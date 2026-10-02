@@ -69,6 +69,41 @@ const escapeHtml = (text) =>
 export const htmlForContent = (content) =>
   content?.html != null ? sanitizeInlineHtml(content.html) : escapeHtml(content?.text);
 
+// Inserts pasted content at the caret (replacing any selection) inside `root`,
+// the contentEditable node. Clipboard HTML from Word, Google Docs or a web page
+// carries styles, spans, scripts and handlers; the editor keeps only its own
+// inline marks, so the HTML is cleaned first (sanitizeInlineHtml) and then turned
+// into nodes in an inert document and imported: untrusted markup is never parsed
+// into the live document. With no (usable) HTML, plain text is inserted as text
+// nodes, newlines becoming <br>. Returns true if something was inserted.
+export const insertPastedContent = (root, { html, text } = {}) => {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return false;
+  const range = sel.getRangeAt(0);
+  if (!root.contains(range.commonAncestorContainer)) return false;
+
+  const fragment = document.createDocumentFragment();
+  const cleaned = html ? sanitizeInlineHtml(html) : '';
+  if (cleaned.trim()) {
+    const inert = new DOMParser().parseFromString(cleaned, 'text/html');
+    inert.body.childNodes.forEach((node) => fragment.appendChild(document.importNode(node, true)));
+  } else if (text) {
+    text.replace(/\r\n?/g, '\n').split('\n').forEach((line, i) => {
+      if (i > 0) fragment.appendChild(document.createElement('br'));
+      if (line) fragment.appendChild(document.createTextNode(line));
+    });
+  } else {
+    return false;
+  }
+
+  range.deleteContents();
+  range.insertNode(fragment);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  return true;
+};
+
 // Allowlists http(s) — a `javascript:`/`data:` URL written straight into an
 // `href` runs the instant it's clicked. DOMPurify's own URI scheme allowlist
 // already blocks those on the *saved* string (sanitizeInlineHtml, above),

@@ -2,14 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CheckSquare, Command, FileText, Layout, Link2, X } from 'lucide-react';
-
-const STORAGE_KEY = 'motive_onboarded';
+import { markWelcomeSeen as markSeen } from '../../utils/welcome';
 
 // Shown once for a genuinely new account (see Dashboard.jsx: only rendered
 // when the user has zero tasks yet) — dismissing it (any way) sets a
-// per-browser flag so it never reappears.
-export const hasSeenWelcome = () => localStorage.getItem(STORAGE_KEY) === 'true';
-const markSeen = () => localStorage.setItem(STORAGE_KEY, 'true');
+// per-browser flag (utils/welcome.js) so it never reappears.
 
 const STEPS = [
   {

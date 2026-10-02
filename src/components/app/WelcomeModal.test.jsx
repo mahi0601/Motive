@@ -2,7 +2,8 @@ import React from 'react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import WelcomeModal, { hasSeenWelcome } from './WelcomeModal';
+import WelcomeModal from './WelcomeModal';
+import { hasSeenWelcome } from '../../utils/welcome';
 
 const renderModal = (onClose = vi.fn()) =>
   render(

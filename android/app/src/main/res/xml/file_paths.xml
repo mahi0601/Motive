@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Which files this app may hand to other apps through FileProvider. Nothing in the
+     app shares files today (it uses only the App and Browser plugins), so this is a
+     single, narrow subfolder of the app's own cache. The previous version exposed the
+     whole external-storage root and the whole cache directory. A plugin that needs to
+     share files (camera, share sheet) should get its own specific entry here. -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
-    <cache-path name="my_cache_images" path="." />
+    <cache-path name="shared_cache" path="shared/" />
 </paths>
