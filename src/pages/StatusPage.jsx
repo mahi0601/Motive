@@ -6,6 +6,7 @@ import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
 import { publicMilestones } from '../utils/milestones';
 import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
+import ThroughputChart from '../components/status/ThroughputChart';
 import {
   STATUS,
   getTaskDisplayStatus,
@@ -165,6 +166,8 @@ export const StatusPageView = ({ status, token, updatedAt = null, demo = false, 
           )}
         </section>
       )}
+
+      <ThroughputChart throughput={status.throughput} />
 
       <section
         aria-label="Overall progress"

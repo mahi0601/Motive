@@ -32,6 +32,23 @@ export const buildDemoStatus = (now = new Date()) => {
     { id: 'demo-3', title: 'Launch', date: at(30), approvedAt: null },
   ];
 
+  // Tasks finished in each of the last 8 weeks (Monday to Sunday, UTC), oldest first, the
+  // last being this week so far. Made up, but shaped like the real thing.
+  const weekStart = (daysBack) => {
+    const d = new Date(now.getTime() - daysBack * DAY);
+    const monday = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - ((d.getUTCDay() + 6) % 7) * DAY);
+    return monday.toISOString().slice(0, 10);
+  };
+  const thisMonday = weekStart(0);
+  const counts = [1, 2, 0, 3, 2, 4, 3, 2];
+  const throughput = {
+    weeks: counts.length,
+    items: counts.map((count, i) => ({
+      start: new Date(new Date(`${thisMonday}T00:00:00Z`).getTime() - (counts.length - 1 - i) * 7 * DAY).toISOString().slice(0, 10),
+      count,
+    })),
+  };
+
   return {
     workspace: { name: 'Example Co. website redesign', icon: '🧭' },
     page: {
@@ -44,6 +61,7 @@ export const buildDemoStatus = (now = new Date()) => {
       allowFeedback: true,
     },
     summary: { todo: count('todo'), in_progress: count('in_progress'), done, total: tasks.length, percent: Math.round((done / tasks.length) * 100) },
+    throughput,
     recent: { days: 7, count: recentDone.length, items: recentDone.map((t) => ({ title: t.title, completedAt: t.completedAt })) },
     tasks,
     truncated: false,

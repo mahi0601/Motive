@@ -26,6 +26,7 @@ describe('Demo page', () => {
     expect(within(milestones).getAllByRole('listitem').length).toBeGreaterThanOrEqual(3);
     expect(milestones).toHaveTextContent(/approved on/i);
     expect(screen.getByRole('region', { name: /shipped this week/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /shipped each week/i })).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: /percent of tasks shipped/i })).toBeInTheDocument();
     for (const name of ['Overdue', 'In flight', 'Not started', 'Shipped']) expect(screen.getByRole('region', { name })).toBeInTheDocument();
   });

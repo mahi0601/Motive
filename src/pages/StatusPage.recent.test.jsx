@@ -74,4 +74,33 @@ describe('StatusPage: shipped this week', () => {
     renderWith({ days: 14, count: 1, items: [{ title: 'X', completedAt: '2026-10-02T09:00:00Z' }] });
     expect(await screen.findByRole('region', { name: /shipped in the last 14 days/i })).toBeInTheDocument();
   });
+
+  describe('shipped each week', () => {
+    const throughput = { weeks: 8, items: ['2026-08-17', '2026-08-24', '2026-08-31', '2026-09-07', '2026-09-14', '2026-09-21', '2026-09-28', '2026-10-05'].map((start, i) => ({ start, count: [1, 2, 0, 3, 2, 4, 3, 2][i] })) };
+    const renderThroughput = (t) => {
+      getStatus.mockResolvedValue({ data: { status: { ...base, ...(t === undefined ? {} : { throughput: t }) } } });
+      return render(
+        <MemoryRouter initialEntries={['/s/tok']}>
+          <Routes>
+            <Route path="/s/:token" element={<StatusPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
+    };
+
+    test('shows the chart when the server sends the weekly counts', async () => {
+      renderThroughput(throughput);
+      expect(await screen.findByRole('region', { name: /shipped each week/i })).toHaveTextContent('17 tasks shipped in the last 8 weeks');
+    });
+
+    test('leaves it out for an older server that sends none, and when nothing shipped', async () => {
+      const { unmount } = renderThroughput(undefined);
+      await screen.findByText('Acme Redesign');
+      expect(screen.queryByRole('region', { name: /shipped each week/i })).toBeNull();
+      unmount();
+      renderThroughput({ weeks: 8, items: throughput.items.map((w) => ({ ...w, count: 0 })) });
+      await screen.findByText('Acme Redesign');
+      expect(screen.queryByRole('region', { name: /shipped each week/i })).toBeNull();
+    });
+  });
 });
