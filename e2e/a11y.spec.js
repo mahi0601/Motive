@@ -84,6 +84,15 @@ for (const theme of ['light', 'dark']) {
       found[name] = await violations(page);
     }
 
+    // The "new client from this one" dialog, open.
+    await page.goto('/settings');
+    const welcomeAgain = page.locator('.fixed.inset-0.z-\\[70\\]');
+    if (await welcomeAgain.count()) await welcomeAgain.click({ position: { x: 5, y: 5 } });
+    await page.getByRole('button', { name: /new client from this one/i }).click();
+    await expect(page.getByRole('dialog', { name: /new client from this one/i })).toBeVisible();
+    found['new client dialog'] = await violations(page);
+    await page.keyboard.press('Escape');
+
     const failing = Object.fromEntries(Object.entries(found).filter(([, v]) => v.length));
     expect(failing).toEqual({});
   });
