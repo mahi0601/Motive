@@ -48,3 +48,7 @@ export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${works
 export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComponent(token)}`);
 export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
 export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);
+
+// Owner-only: when the client status page was last opened, and its views and visits in the last
+// 7 days (a visit is a distinct visitor on a day). Numbers and a time only.
+export const getEngagement = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/engagement`);
