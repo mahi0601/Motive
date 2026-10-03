@@ -7,7 +7,7 @@ import { API, createUser, signIn } from './helpers';
 // and selects, nested interactive controls, text that is too faint — not the
 // whole of accessibility (that still needs keyboard and screen-reader testing).
 // Only serious and critical findings fail the test.
-const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy']];
+const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy'], ['terms', '/terms']];
 
 async function firstWorkspaceId(request, auth) {
   const res = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
