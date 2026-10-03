@@ -48,3 +48,9 @@ export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${works
 export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComponent(token)}`);
 export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
 export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);
+
+// Owner-only: copies this workspace's structure into a NEW workspace (tasks reset to To do,
+// pages, milestones, optionally the status page wording; never comments, files, people or
+// sign-offs). `include` says what to copy; `startDate` is where the earliest date lands.
+// Resolves to { workspace: { id, name }, counts }.
+export const duplicateWorkspace = (workspaceId, data) => api.post(`/api/workspaces/${workspaceId}/duplicate`, data);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Crown, LogOut as LeaveIcon, Plus, RefreshCw, Users, X } from 'lucide-react';
+import { Copy, Crown, LogOut as LeaveIcon, Plus, RefreshCw, Users, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import {
@@ -9,6 +9,7 @@ import {
 import { PLANS, memberLimit, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
+import DuplicateWorkspaceModal from './DuplicateWorkspaceModal';
 
 // Members — invite lifecycle, role changes, leaving, and creating a workspace.
 const MembersCard = () => {
@@ -142,6 +143,18 @@ const MembersCard = () => {
   // in this file's own service import) with no UI entry point at all; this
   // is the only one. Same inline-reveal weight as Dashboard's per-column
   // quick-add, not a full modal.
+  // "New client from this one" (owner only): copies this workspace's structure.
+  const [duplicating, setDuplicating] = useState(false);
+  const handleDuplicated = async ({ workspace: created, counts }) => {
+    await loadWorkspace();
+    switchWorkspace(created.id);
+    setDuplicating(false);
+    const part = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+    setInviteStatus({
+      type: 'success',
+      message: `Created “${created.name}” from this one: ${part(counts.tasks ?? 0, 'task', 'tasks')}, ${part(counts.pages ?? 0, 'page', 'pages')}, ${part(counts.milestones ?? 0, 'milestone', 'milestones')}.`,
+    });
+  };
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [creatingWorkspaceBusy, setCreatingWorkspaceBusy] = useState(false);
@@ -177,6 +190,14 @@ const MembersCard = () => {
         {/* createWorkspace has existed on the backend (and even in
             this file's own service import) with no UI entry point at
             all — this is the only one. */}
+        {isOwner && !creatingWorkspace && (
+          <button
+            onClick={() => setDuplicating(true)}
+            className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+          >
+            <Copy className="h-3.5 w-3.5" /> New client from this one
+          </button>
+        )}
         {!creatingWorkspace && (
           <button
             onClick={() => setCreatingWorkspace(true)}
@@ -376,6 +397,7 @@ const MembersCard = () => {
           </div>
         </div>
       )}
+      {duplicating && <DuplicateWorkspaceModal workspace={workspace} onClose={() => setDuplicating(false)} onCreated={handleDuplicated} />}
     </div>
   );
 };
