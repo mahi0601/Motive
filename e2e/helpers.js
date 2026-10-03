@@ -28,3 +28,9 @@ export async function backendSupportsMilestones(request, user) {
   const res = await request.put(`${API}/api/workspaces/${list.workspaces[0].id}/milestones`, { headers: auth, data: { milestones: [] } });
   return res.status() !== 404;
 }
+
+// Importing tasks needs a backend that has the endpoint; see backendSupportsMilestones.
+export async function backendSupportsImport(request, user) {
+  const res = await request.post(`${API}/api/tasks/import`, { headers: { Authorization: `Bearer ${user.accessToken}` }, data: { tasks: [] } });
+  return res.status() !== 404;
+}

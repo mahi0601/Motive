@@ -29,3 +29,7 @@ export const createTask = (task) => api.post('/api/tasks', task);
 export const updateTask = (id, task) => api.patch(`/api/tasks/${id}`, task);
 export const deleteTask = (id) => api.delete(`/api/tasks/${id}`);
 export const searchTasks = (q) => api.get('/api/tasks/search', { params: { q } });
+
+// Bulk import: the CSV is parsed in the browser (utils/taskImport.js) and the rows
+// are sent here. All or nothing on the server: one invalid row refuses the batch.
+export const importTasks = (workspaceId, tasks) => api.post('/api/tasks/import', { workspaceId, tasks });
