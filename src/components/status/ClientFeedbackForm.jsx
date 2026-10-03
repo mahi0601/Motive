@@ -13,7 +13,7 @@ const inputClass =
 // sender needs no account; the name is whatever they type. `website` is a
 // honeypot, a field people never see (and screen readers skip) but bots fill:
 // the server quietly discards any post that has it set.
-const ClientFeedbackForm = ({ token, milestone, milestones }) => {
+const ClientFeedbackForm = ({ token, milestone, milestones, demo = false }) => {
   const nameId = useId();
   const milestoneId = useId();
   const messageId = useId();
@@ -35,6 +35,11 @@ const ClientFeedbackForm = ({ token, milestone, milestones }) => {
     setError('');
     if (!name.trim()) return setError('Please enter your name.');
     if (kind !== 'approve' && !message.trim()) return setError('Please write a message.');
+    // The example page behaves like the real form (same checks) but sends nothing.
+    if (demo) {
+      setSent(true);
+      return;
+    }
     setBusy(true);
     try {
       // Approve and Request changes are about the chosen milestone; a comment is about
@@ -85,6 +90,7 @@ const ClientFeedbackForm = ({ token, milestone, milestones }) => {
             <CheckCircle2 size={18} className="shrink-0 text-semantic-success-700 dark:text-semantic-success-dark" aria-hidden="true" />
             Thanks — your response has been sent.
           </p>
+          {demo && <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Example only: nothing was sent. On a real page this goes to your inbox.</p>}
           <button
             type="button"
             onClick={again}

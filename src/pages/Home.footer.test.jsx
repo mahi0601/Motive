@@ -14,4 +14,9 @@ describe('Home footer', () => {
     expect(screen.getByRole('link', { name: /terms of service/i })).toHaveAttribute('href', '/terms');
     expect(screen.getByRole('link', { name: /privacy policy/i })).toHaveAttribute('href', '/privacy');
   });
+
+  test('has a link to the example client page near the top', () => {
+    render(<MemoryRouter><Home /></MemoryRouter>);
+    expect(screen.getByRole('link', { name: /see an example client page/i })).toHaveAttribute('href', '/demo');
+  });
 });
