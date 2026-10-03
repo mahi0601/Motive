@@ -22,3 +22,7 @@ export const downloadMyData = async () => {
   link.remove();
   URL.revokeObjectURL(url);
 };
+
+// A brand-new Google account has no sign-up checkbox, so the app asks once. The server
+// records the agreement with its own time and version, and only takes a real `true`.
+export const acceptTerms = (acceptTerms = true) => api.post('/api/users/me/accept-terms', { acceptTerms });
