@@ -8,7 +8,7 @@ const demo = () => buildDemoStatus(NOW);
 describe('buildDemoStatus (the example page on the landing site)', () => {
   test('has the same shape the real public endpoint returns', () => {
     const d = demo();
-    expect(Object.keys(d).sort()).toEqual(['page', 'recent', 'summary', 'tasks', 'truncated', 'workspace']);
+    expect(Object.keys(d).sort()).toEqual(['page', 'recent', 'summary', 'tasks', 'throughput', 'truncated', 'workspace']);
     expect(Object.keys(d.page).sort()).toEqual(['accent', 'allowFeedback', 'headline', 'hideBranding', 'milestone', 'milestones', 'summary']);
     expect(d.truncated).toBe(false);
   });
@@ -67,5 +67,14 @@ describe('buildDemoStatus (the example page on the landing site)', () => {
     const ids = demo().page.milestones.map((m) => m.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.every((id) => id.startsWith('demo-'))).toBe(true);
+  });
+
+  test('its weekly chart has 8 Monday-starting weeks ending this week, and some work in them', () => {
+    const t = demo().throughput;
+    expect(t.items).toHaveLength(8);
+    expect(t.items.every((w) => new Date(`${w.start}T00:00:00Z`).getUTCDay() === 1)).toBe(true);
+    const monday = new Date(Date.UTC(NOW.getUTCFullYear(), NOW.getUTCMonth(), NOW.getUTCDate()) - ((NOW.getUTCDay() + 6) % 7) * DAY).toISOString().slice(0, 10);
+    expect(t.items[7].start).toBe(monday);
+    expect(t.items.reduce((n, w) => n + w.count, 0)).toBeGreaterThan(0);
   });
 });
