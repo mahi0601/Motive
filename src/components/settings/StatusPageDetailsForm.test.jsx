@@ -42,6 +42,7 @@ describe('StatusPageDetailsForm', () => {
       accent: 'violet',
       hideBranding: false,
       allowFeedback: false,
+      notifyViews: true,
     });
     expect(saveMilestones).not.toHaveBeenCalled(); // nothing about the milestones changed
     expect(loadWorkspace).toHaveBeenCalled();
@@ -90,6 +91,35 @@ describe('StatusPageDetailsForm', () => {
     render(<StatusPageDetailsForm />);
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/at most 120/);
+  });
+
+  describe('telling me when my client opens the page', () => {
+    test('is on by default, with a plain explanation of how quiet it is', () => {
+      render(<StatusPageDetailsForm />);
+      expect(screen.getByRole('checkbox', { name: /tell me when my client opens the page/i })).toBeChecked();
+      expect(screen.getByText(/at most one notice every 12 hours/i)).toBeInTheDocument();
+    });
+
+    test('follows what is saved, including an older workspace that has no value yet (on)', () => {
+      mockWorkspace = { ...mockWorkspace, statusNotifyViews: false };
+      const { unmount } = render(<StatusPageDetailsForm />);
+      expect(screen.getByRole('checkbox', { name: /tell me when my client opens the page/i })).not.toBeChecked();
+      unmount();
+      const older = { ...mockWorkspace };
+      delete older.statusNotifyViews; // a workspace saved before the setting existed
+      mockWorkspace = older;
+      render(<StatusPageDetailsForm />);
+      expect(screen.getByRole('checkbox', { name: /tell me when my client opens the page/i })).toBeChecked();
+    });
+
+    test('switching it off is saved', async () => {
+      updateStatusPage.mockResolvedValue({ data: { page: {} } });
+      render(<StatusPageDetailsForm />);
+      fireEvent.click(screen.getByRole('checkbox', { name: /tell me when my client opens the page/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+      await waitFor(() => expect(updateStatusPage).toHaveBeenCalled());
+      expect(updateStatusPage.mock.calls[0][1].notifyViews).toBe(false);
+    });
   });
 
   describe('milestones', () => {
