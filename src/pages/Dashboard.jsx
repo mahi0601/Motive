@@ -15,6 +15,8 @@ import { hasSeenWelcome } from '../utils/welcome';
 import GettingStartedCard from '../components/app/GettingStartedCard';
 import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
+import { useWorkspace } from '../context/WorkspaceContext';
+import ImportTasksModal from '../components/tasks/ImportTasksModal';
 import { logger } from '../utils/logger';
 import { parseQuickAdd } from '../utils/quickAddParser';
 import { STATUS, getStatusLabel, getStatusDotClass } from '../utils/statusColors';
@@ -84,7 +86,9 @@ const HIGHLIGHT_LABELS = {
 const highlightLabel = (h) => (h?.startsWith('category:') ? h.slice('category:'.length) : HIGHLIGHT_LABELS[h] || h);
 
 const Dashboard = () => {
-  const { tasks, setTasks, loading, create, patch, remove } = useTasks();
+  const { tasks, setTasks, loading, load, create, patch, remove } = useTasks();
+  const { workspace } = useWorkspace();
+  const [showImport, setShowImport] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [drafts, setDrafts] = useState(
     BOARD_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: { title: '', description: '', priority: 'Medium', open: false } }), {})
@@ -324,6 +328,7 @@ const Dashboard = () => {
               onSearch={() => document.querySelector('input[type="text"]')?.focus()}
               onCalendar={() => navigate('/calendar')}
               onMomentum={() => navigate('/momentum')}
+              onImport={workspace ? () => setShowImport(true) : undefined}
             />
           </div>
           <div className="lg:w-80 space-y-6">
@@ -470,6 +475,17 @@ const Dashboard = () => {
           onSubmit={editingTask ? editTask : (data) => addTask(null, data)}
           onClose={() => { setShowTaskForm(false); setEditingTask(null); }}
           initialData={editingTask}
+        />
+      )}
+
+      {showImport && workspace && (
+        <ImportTasksModal
+          workspace={workspace}
+          onClose={() => setShowImport(false)}
+          onImported={async (n) => {
+            await load();
+            notify('success', 'Tasks imported', `${n} ${n === 1 ? 'task' : 'tasks'} added`);
+          }}
         />
       )}
 

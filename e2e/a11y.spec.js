@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { API, createUser, signIn } from './helpers';
@@ -58,6 +59,20 @@ for (const theme of ['light', 'dark']) {
 
     await signIn(page, user);
     found.dashboard = await violations(page);
+    // The import dialog with a file chosen, so the preview table and warnings are audited.
+    // (The one-time welcome dialog may be showing over a brand-new dashboard.)
+    const welcome = page.locator('.fixed.inset-0.z-\\[70\\]');
+    if (await welcome.count()) await welcome.click({ position: { x: 5, y: 5 } });
+    await page.getByRole('button', { name: 'Import' }).click();
+    await page.getByLabel(/choose a csv file/i).setInputFiles({
+      name: 'tasks.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from('Card Name,List Name,Due Date,Owner\nDesign homepage,Doing,2026-11-05,Bob\n,Done,,Ann\nSend invoice,Sprint 12,03/04/2026,Ann'),
+    });
+    await expect(page.getByRole('table', { name: /preview/i })).toBeVisible();
+    found['import dialog'] = await violations(page);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: /import tasks/i })).toHaveCount(0);
     for (const [name, path] of [['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
       await page.goto(path);
       found[name] = await violations(page);
