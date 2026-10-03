@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { PLANS, PLAN_ORDER, PAID_PLAN_KEYS, tierOf, memberLimit, planBenefits } from './plans';
+import { PLANS, PLAN_ORDER, PAID_PLAN_KEYS, tierOf, memberLimit, planBenefits, activeClients, nextPlanOf } from './plans';
 
 describe('plans config', () => {
   test('the numbers the backend enforces (motive-backend src/utils/plans.js)', () => {
@@ -80,5 +80,33 @@ describe('planBenefits lists every real difference, so the billing card cannot l
       '2 GB file storage',
       'Momentum month and quarter views',
     ]);
+  });
+});
+
+describe('activeClients', () => {
+  const live = '2026-10-01T00:00:00.000Z';
+  test('counts only the workspaces you own that have a live status link', () => {
+    const list = [
+      { id: 'a', ownerId: 'me', shareEnabledAt: live },
+      { id: 'b', ownerId: 'me', shareEnabledAt: null },
+      { id: 'c', ownerId: 'someone-else', shareEnabledAt: live }, // you are only a member
+      { id: 'd', ownerId: 'me', shareEnabledAt: live },
+    ];
+    expect(activeClients(list, 'me')).toBe(2);
+  });
+
+  test('is zero for an empty, missing or signed-out input', () => {
+    expect(activeClients([], 'me')).toBe(0);
+    expect(activeClients(undefined, 'me')).toBe(0);
+    expect(activeClients(null, 'me')).toBe(0);
+    expect(activeClients([{ ownerId: 'me', shareEnabledAt: live }], undefined)).toBe(0);
+  });
+});
+
+describe('nextPlanOf', () => {
+  test('is the plan above, and nothing above Agency', () => {
+    expect(nextPlanOf('free')).toBe('studio');
+    expect(nextPlanOf('studio')).toBe('agency');
+    expect(nextPlanOf('agency')).toBeNull();
   });
 });

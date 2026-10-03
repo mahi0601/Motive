@@ -14,6 +14,7 @@ const Profile = lazyWithRetry(() => import('../pages/Profile'));
 const Templates = lazyWithRetry(() => import('../pages/Templates'));
 const PageView = lazyWithRetry(() => import('../pages/PageView'));
 const Privacy = lazyWithRetry(() => import('../pages/Privacy'));
+const Terms = lazyWithRetry(() => import('../pages/Terms'));
 const Invite = lazyWithRetry(() => import('../pages/Invite'));
 const StatusPage = lazyWithRetry(() => import('../pages/StatusPage'));
 import PageFallback from '../components/ui/PageFallback';
@@ -36,6 +37,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       {/* Deliberately outside ProtectedRoute and AuthLayout — it has to work
           for someone with no account yet, and handles its own
           authenticated/unauthenticated branching (see Invite.jsx). */}

@@ -70,3 +70,11 @@ export const planBenefits = (key) => {
     p.longMomentum ? 'Momentum month and quarter views' : 'Momentum for the current week',
   ];
 };
+
+// How many client pages are live that YOU run: workspaces you own with a status
+// link switched on. (A workspace you only belong to is somebody else's client.)
+export const activeClients = (workspaces, userId) =>
+  userId ? (workspaces || []).filter((w) => w.ownerId === userId && w.shareEnabledAt).length : 0;
+
+// The plan above, for "upgrade to X" wording; null at the top.
+export const nextPlanOf = (tier) => PLAN_ORDER[PLAN_ORDER.indexOf(tier) + 1] || null;

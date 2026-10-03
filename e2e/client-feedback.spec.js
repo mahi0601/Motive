@@ -3,7 +3,8 @@ import { createUser, signIn } from './helpers';
 
 // The loop that replaces the update email: the owner switches responses on, a
 // client with only the link asks for changes, and the owner sees it, both in the
-// notification bell and in the inbox under the status page settings.
+// notification bell and in the inbox under the status page settings. (Which
+// milestone a response names is covered by milestones.spec.js and signoff.spec.js.)
 test('a client requests changes from the status page and the owner sees it', async ({ page, browser, request }) => {
   const user = await createUser(request, 'feedback');
   await signIn(page, user);
@@ -13,7 +14,6 @@ test('a client requests changes from the status page and the owner sees it', asy
 
   await page.getByRole('button', { name: /create status link/i }).click();
   const link = await page.getByLabel('Status page link').inputValue();
-  await page.getByLabel(/next milestone name/i).fill('Design sign-off');
   await page.getByRole('checkbox', { name: /let clients respond/i }).check();
   await page.getByRole('button', { name: /^save$/i }).click();
   await expect(page.getByRole('status').filter({ hasText: /saved/i })).toBeVisible();
@@ -33,7 +33,6 @@ test('a client requests changes from the status page and the owner sees it', asy
   const inbox = page.getByRole('listitem', { name: 'Ann from Acme' });
   await expect(inbox).toContainText('Please make the logo bigger.');
   await expect(inbox).toContainText('Requested changes');
-  await expect(inbox).toContainText('Design sign-off');
   await expect(page.getByText(/1 unread/)).toBeVisible();
 
   await page.getByRole('button', { name: /mark ann from acme.s feedback as read/i }).click();

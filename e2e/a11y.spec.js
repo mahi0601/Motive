@@ -8,7 +8,7 @@ import { API, createUser, signIn } from './helpers';
 // and selects, nested interactive controls, text that is too faint — not the
 // whole of accessibility (that still needs keyboard and screen-reader testing).
 // Only serious and critical findings fail the test.
-const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy']];
+const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy'], ['terms', '/terms']];
 
 async function firstWorkspaceId(request, auth) {
   const res = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
@@ -16,6 +16,12 @@ async function firstWorkspaceId(request, auth) {
   await request.patch(`${API}/api/workspaces/${ws.id}/status-page`, {
     headers: auth,
     data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber', allowFeedback: true },
+  });
+  // A longer timeline too, so the several-milestones layout is audited. A backend
+  // without milestones answers 404 and the single milestone above is what is audited.
+  await request.put(`${API}/api/workspaces/${ws.id}/milestones`, {
+    headers: auth,
+    data: { milestones: [{ title: 'Design sign-off', date: '2026-12-01' }, { title: 'Build complete', date: '2027-01-15' }, { title: 'Launch' }] },
   });
   return ws.id;
 }

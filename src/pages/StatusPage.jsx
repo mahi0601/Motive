@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
+import { publicMilestones } from '../utils/milestones';
 import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
 import {
   STATUS,
@@ -125,6 +126,9 @@ const StatusPage = () => {
   // Owner-written details (an older server may not send them at all). All of it
   // is rendered as text by React, never as HTML.
   const page = status.page || {};
+  const milestones = publicMilestones(page);
+  // On a longer timeline, the first milestone not yet approved is the one coming up.
+  const upNextId = milestones.find((m) => !m.approvedAt)?.id;
 
   return (
     <Shell accent={page.accent}>
@@ -140,7 +144,7 @@ const StatusPage = () => {
         <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-light-text dark:text-dark-text">{page.summary}</p>
       )}
 
-      {page.milestone && (
+      {milestones.length === 1 && (
         <section
           aria-label="Next milestone"
           className="mt-4 rounded-xl border border-light-border bg-light-surface px-4 py-3 dark:border-dark-border dark:bg-dark-raised"
@@ -149,17 +153,51 @@ const StatusPage = () => {
             Next milestone
           </p>
           <p className="mt-0.5 text-sm font-medium text-light-text dark:text-dark-text">
-            {page.milestone.title}
-            {formatDate(page.milestone.date) && (
-              <span className="font-normal text-light-muted dark:text-dark-muted"> · {formatDate(page.milestone.date)}</span>
+            {milestones[0].title}
+            {formatDate(milestones[0].date) && (
+              <span className="font-normal text-light-muted dark:text-dark-muted"> · {formatDate(milestones[0].date)}</span>
             )}
           </p>
-          {page.milestone.approvedAt && (
+          {milestones[0].approvedAt && (
             <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-semantic-success-700 dark:text-semantic-success-dark">
               <CheckCircle2 size={16} aria-hidden="true" />
-              Approved on {formatDate(page.milestone.approvedAt)}
+              Approved on {formatDate(milestones[0].approvedAt)}
             </p>
           )}
+        </section>
+      )}
+
+      {milestones.length > 1 && (
+        <section
+          aria-label="Milestones"
+          className="mt-4 rounded-xl border border-light-border bg-light-surface px-4 py-3 dark:border-dark-border dark:bg-dark-raised"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-l)] dark:text-[color:var(--accent-d)]">
+            Milestones
+          </p>
+          <ol className="mt-2 space-y-2">
+            {milestones.map((m, i) => (
+              <li key={m.id || i} className="text-sm">
+                <p className="font-medium text-light-text dark:text-dark-text">
+                  {m.title}
+                  {formatDate(m.date) && (
+                    <span className="font-normal text-light-muted dark:text-dark-muted"> · {formatDate(m.date)}</span>
+                  )}
+                  {m.id === upNextId && !m.approvedAt && (
+                    <span className="ml-2 rounded-full bg-light-border/60 px-2 py-0.5 text-xs font-medium text-light-text dark:bg-dark-border dark:text-dark-text">
+                      Next
+                    </span>
+                  )}
+                </p>
+                {m.approvedAt && (
+                  <p className="mt-0.5 flex items-center gap-1.5 font-medium text-semantic-success-700 dark:text-semantic-success-dark">
+                    <CheckCircle2 size={16} aria-hidden="true" />
+                    Approved on {formatDate(m.approvedAt)}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 
@@ -223,7 +261,7 @@ const StatusPage = () => {
         );
       })}
 
-      {page.allowFeedback && <ClientFeedbackForm token={token} milestone={page.milestone} />}
+      {page.allowFeedback && <ClientFeedbackForm token={token} milestones={milestones} />}
 
       {status.truncated && (
         <p className="mt-4 text-center text-xs text-light-muted dark:text-dark-muted">

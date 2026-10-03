@@ -108,6 +108,11 @@ const Login = () => {
         <div className="h-px flex-1 bg-light-border dark:bg-dark-border" />
       </div>
       <GoogleSignInButton inviteToken={searchParams.get('invite')} />
+      <p className="mt-2 text-center text-xs text-light-muted dark:text-dark-muted">
+        By continuing with Google you agree to the{' '}
+        <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline">Terms</Link> and{' '}
+        <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline">Privacy Policy</Link>.
+      </p>
 
       <p className="mt-8 text-center text-sm text-light-muted dark:text-dark-muted">
         Don’t have an account?{' '}
