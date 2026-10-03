@@ -17,6 +17,7 @@ import { useToast } from '../context/ToastContext';
 import { useTasks } from '../hooks/useTasks';
 import { useWorkspace } from '../context/WorkspaceContext';
 import ImportTasksModal from '../components/tasks/ImportTasksModal';
+import WeeklyUpdateModal from '../components/tasks/WeeklyUpdateModal';
 import { logger } from '../utils/logger';
 import { parseQuickAdd } from '../utils/quickAddParser';
 import { STATUS, getStatusLabel, getStatusDotClass } from '../utils/statusColors';
@@ -89,6 +90,7 @@ const Dashboard = () => {
   const { tasks, setTasks, loading, load, create, patch, remove } = useTasks();
   const { workspace } = useWorkspace();
   const [showImport, setShowImport] = useState(false);
+  const [showUpdate, setShowUpdate] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [drafts, setDrafts] = useState(
     BOARD_COLUMNS.reduce((acc, col) => ({ ...acc, [col.key]: { title: '', description: '', priority: 'Medium', open: false } }), {})
@@ -329,6 +331,7 @@ const Dashboard = () => {
               onCalendar={() => navigate('/calendar')}
               onMomentum={() => navigate('/momentum')}
               onImport={workspace ? () => setShowImport(true) : undefined}
+              onWeeklyUpdate={workspace ? () => setShowUpdate(true) : undefined}
             />
           </div>
           <div className="lg:w-80 space-y-6">
@@ -477,6 +480,8 @@ const Dashboard = () => {
           initialData={editingTask}
         />
       )}
+
+      {showUpdate && workspace && <WeeklyUpdateModal workspace={workspace} tasks={tasks} onClose={() => setShowUpdate(false)} />}
 
       {showImport && workspace && (
         <ImportTasksModal
