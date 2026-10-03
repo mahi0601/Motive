@@ -127,6 +127,9 @@ const StatusPage = () => {
   // is rendered as text by React, never as HTML.
   const page = status.page || {};
   const milestones = publicMilestones(page);
+  // What finished lately (an older server sends none). The window is 7 days today.
+  const recent = status.recent;
+  const recentLabel = recent?.days && recent.days !== 7 ? `Shipped in the last ${recent.days} days` : 'Shipped this week';
   // On a longer timeline, the first milestone not yet approved is the one coming up.
   const upNextId = milestones.find((m) => !m.approvedAt)?.id;
 
@@ -198,6 +201,34 @@ const StatusPage = () => {
               </li>
             ))}
           </ol>
+        </section>
+      )}
+
+      {recent?.count > 0 && (
+        <section
+          aria-label={recentLabel}
+          className="mt-4 rounded-xl border border-light-border bg-light-surface px-4 py-3 dark:border-dark-border dark:bg-dark-raised"
+        >
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-l)] dark:text-[color:var(--accent-d)]">
+            <CheckCircle2 size={14} aria-hidden="true" />
+            {recentLabel}
+          </p>
+          <p className="mt-0.5 text-sm font-medium text-light-text dark:text-dark-text">
+            {recent.count} {recent.count === 1 ? 'task shipped' : 'tasks shipped'}
+          </p>
+          <ul className="mt-2 space-y-1">
+            {recent.items.map((item, i) => (
+              <li key={`${item.title}-${i}`} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="text-light-text dark:text-dark-text">{item.title}</span>
+                {formatDate(item.completedAt) && (
+                  <span className="shrink-0 text-xs text-light-muted dark:text-dark-muted">{formatDate(item.completedAt)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          {recent.count > recent.items.length && (
+            <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">and {recent.count - recent.items.length} more</p>
+          )}
         </section>
       )}
 
