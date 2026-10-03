@@ -31,6 +31,11 @@ export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspac
 // Owner-only: what the public status page says about the project. See
 // StatusPageDetailsForm and the backend's updateStatusPage for the fields.
 export const updateStatusPage = (workspaceId, data) => api.patch(`/api/workspaces/${workspaceId}/status-page`, data);
+// Owner-only: replaces the status page's whole ordered list of milestones. An item
+// with an `id` keeps its row (and its sign-off unless its name or date changed);
+// without one it is new; any milestone left out is removed. Resolves to the saved
+// list, with ids, in order.
+export const saveMilestones = (workspaceId, milestones) => api.put(`/api/workspaces/${workspaceId}/milestones`, { milestones });
 // The owner's inbox of client feedback from the public status page.
 export const listFeedback = (workspaceId, params) => api.get(`/api/workspaces/${workspaceId}/feedback`, { params });
 export const markFeedbackRead = (workspaceId, id) => api.patch(`/api/workspaces/${workspaceId}/feedback/${id}/read`);
