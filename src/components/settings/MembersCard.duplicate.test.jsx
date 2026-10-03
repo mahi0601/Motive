@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import MembersCard from './MembersCard';
 
 vi.mock('../../services/workspaceService', () => ({
-  createInvite: vi.fn(), listInvites: vi.fn().mockResolvedValue({ data: { items: [] } }), resendInvite: vi.fn(), revokeInvite: vi.fn(),
+  createInvite: vi.fn(), listInvites: vi.fn().mockResolvedValue({ data: { invites: [] } }), resendInvite: vi.fn(), revokeInvite: vi.fn(),
   updateMemberRole: vi.fn(), removeMember: vi.fn(), transferOwnership: vi.fn(), leaveWorkspace: vi.fn(), createWorkspace: vi.fn(),
   duplicateWorkspace: vi.fn(),
 }));
