@@ -19,7 +19,7 @@ test('a new account sees the getting-started checklist and can add a sample clie
   await expect(card.getByText('0 of 5 done')).toBeVisible();
 
   await card.getByRole('button', { name: /add a sample client project/i }).click();
-  await expect(page.getByText('Sample: Draft homepage design')).toBeVisible();
+  await expect(page.getByText('Sample: Draft homepage design', { exact: true })).toBeVisible();
   // The sample is not the user's own work, so progress has not moved.
   await expect(card.getByText('0 of 5 done')).toBeVisible();
   // With tasks present the sample offer is gone.
@@ -28,6 +28,6 @@ test('a new account sees the getting-started checklist and can add a sample clie
   // Hiding is remembered across a reload.
   await card.getByRole('button', { name: /hide getting started/i }).click();
   await page.reload();
-  await expect(page.getByText('Sample: Draft homepage design')).toBeVisible();
+  await expect(page.getByText('Sample: Draft homepage design', { exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: /getting started/i })).toHaveCount(0);
 });
