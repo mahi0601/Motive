@@ -33,6 +33,9 @@ export default defineConfig({
         FRONTEND_URL: `http://localhost:${WEB_PORT}`,
         NODE_ENV: 'development',
         COOKIE_SAMESITE: 'lax',
+        // The suite signs in and registers about as often as the default limit allows from
+        // one address. A backend that does not know this setting just ignores it.
+        CREDENTIAL_RATE_MAX: '1000',
         LOG_LEVEL: 'warn',
       },
     },

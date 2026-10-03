@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { createUser, signIn } from './helpers';
+import { createUser, signIn, backendSupportsMilestones } from './helpers';
 
 // A client approves the milestone: the public page shows it as approved (with
 // the date, never the client's name), the owner has it in the sign-off record,
 // and changing the milestone starts over.
 test('a client approval is recorded, shown as a date, and cleared when the milestone changes', async ({ page, browser, request }) => {
+  // The milestone fields in Settings now save through the milestones endpoint.
   const user = await createUser(request, 'signoff');
+  test.skip(!(await backendSupportsMilestones(request, user)), 'needs a backend with milestones');
   await signIn(page, user);
   await page.goto('/settings');
   const welcome = page.locator('.fixed.inset-0.z-\\[70\\]');

@@ -16,6 +16,12 @@ async function firstWorkspaceId(request, auth) {
     headers: auth,
     data: { headline: 'Website redesign', summary: 'Phase 2 of 3.', milestoneTitle: 'Design sign-off', milestoneDate: '2026-12-01', accent: 'amber', allowFeedback: true },
   });
+  // A longer timeline too, so the several-milestones layout is audited. A backend
+  // without milestones answers 404 and the single milestone above is what is audited.
+  await request.put(`${API}/api/workspaces/${ws.id}/milestones`, {
+    headers: auth,
+    data: { milestones: [{ title: 'Design sign-off', date: '2026-12-01' }, { title: 'Build complete', date: '2027-01-15' }, { title: 'Launch' }] },
+  });
   return ws.id;
 }
 

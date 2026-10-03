@@ -96,4 +96,71 @@ describe('ClientFeedbackForm', () => {
     fireEvent.click(await screen.findByRole('button', { name: /send another/i }));
     expect(screen.getByLabelText(/message/i).value).toBe('');
   });
+
+  describe('several milestones', () => {
+    const MS = [
+      { id: 'a', title: 'Design sign-off', date: null, approvedAt: '2026-10-01T00:00:00.000Z' },
+      { id: 'b', title: 'Build complete', date: null, approvedAt: null },
+      { id: 'c', title: 'Launch', date: null, approvedAt: null },
+    ];
+    const renderMany = (milestones = MS) => render(<ClientFeedbackForm token="tok" milestones={milestones} />);
+
+    test('offers a choice of milestone, starting on the first one not yet approved', () => {
+      renderMany();
+      const select = screen.getByLabelText(/milestone/i);
+      expect(select.value).toBe('b');
+      expect([...select.options].map((o) => o.text)).toEqual(['Design sign-off', 'Build complete', 'Launch']);
+      expect(screen.getByRole('button', { name: /approve "build complete"/i })).toBeInTheDocument();
+    });
+
+    test('choosing another milestone changes what Approve names', () => {
+      renderMany();
+      fireEvent.change(screen.getByLabelText(/milestone/i), { target: { value: 'c' } });
+      expect(screen.getByRole('button', { name: /approve "launch"/i })).toBeInTheDocument();
+    });
+
+    test('approving sends the chosen milestone id', async () => {
+      sendFeedback.mockResolvedValue({});
+      renderMany();
+      fireEvent.change(screen.getByLabelText(/milestone/i), { target: { value: 'c' } });
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Ann' } });
+      fireEvent.click(screen.getByRole('button', { name: /approve "launch"/i }));
+      await waitFor(() => expect(sendFeedback).toHaveBeenCalled());
+      expect(sendFeedback).toHaveBeenCalledWith('tok', { kind: 'approve', name: 'Ann', message: '', website: '', milestoneId: 'c' });
+    });
+
+    test('requesting changes also names the milestone; a comment is about the page and does not', async () => {
+      sendFeedback.mockResolvedValue({});
+      const { unmount } = renderMany();
+      fill();
+      fireEvent.click(screen.getByRole('button', { name: /request changes/i }));
+      await waitFor(() => expect(sendFeedback).toHaveBeenCalled());
+      expect(sendFeedback.mock.calls[0][1]).toMatchObject({ kind: 'changes', milestoneId: 'b' });
+      unmount();
+      sendFeedback.mockClear();
+      renderMany();
+      fill();
+      fireEvent.click(screen.getByRole('button', { name: /send comment/i }));
+      await waitFor(() => expect(sendFeedback).toHaveBeenCalled());
+      expect(sendFeedback.mock.calls[0][1]).not.toHaveProperty('milestoneId');
+    });
+
+    test('with one milestone there is no picker, but its id is still sent', async () => {
+      sendFeedback.mockResolvedValue({});
+      renderMany([MS[1]]);
+      expect(screen.queryByLabelText(/milestone/i)).toBeNull();
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Ann' } });
+      fireEvent.click(screen.getByRole('button', { name: /approve "build complete"/i }));
+      await waitFor(() => expect(sendFeedback).toHaveBeenCalled());
+      expect(sendFeedback.mock.calls[0][1]).toMatchObject({ milestoneId: 'b' });
+    });
+
+    test('if the milestone was removed meanwhile, the server\'s reason is shown', async () => {
+      sendFeedback.mockRejectedValue({ response: { status: 422, data: { message: 'That milestone is no longer on this page. Please reload.' } } });
+      renderMany();
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Ann' } });
+      fireEvent.click(screen.getByRole('button', { name: /approve/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/no longer on this page/i);
+    });
+  });
 });
