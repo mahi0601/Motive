@@ -6,11 +6,12 @@
 // `Icon` is exported as the component itself (not JSX) so each consumer can
 // size/style it independently (the sidebar renders it inline; a future tab
 // bar renders it above a label).
-import { BarChart2, Calendar, LayoutGrid, Settings, User } from 'lucide-react';
+import { BarChart2, Calendar, LayoutGrid, Settings, User, Users } from 'lucide-react';
 
 // Daily destinations — co-equal, one tap/click away.
 export const PRIMARY_NAV = [
   { id: 'my-work', label: 'My Work', path: '/dashboard', Icon: LayoutGrid },
+  { id: 'clients', label: 'Clients', path: '/clients', Icon: Users },
   { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
   { id: 'momentum', label: 'Momentum', path: '/momentum', Icon: BarChart2 },
 ];

@@ -54,3 +54,7 @@ export const declineInvite = (token) => api.post(`/api/invites/${encodeURICompon
 // sign-offs). `include` says what to copy; `startDate` is where the earliest date lands.
 // Resolves to { workspace: { id, name }, counts }.
 export const duplicateWorkspace = (workspaceId, data) => api.post(`/api/workspaces/${workspaceId}/duplicate`, data);
+
+// Every client the caller owns, with the numbers that say who needs attention, most in need
+// first. Numbers, dates and flags only.
+export const getClientsOverview = () => api.get('/api/workspaces/overview');

@@ -15,4 +15,14 @@ describe('QuickActions', () => {
     render(<QuickActions onAddTask={() => {}} onFilter={() => {}} onSearch={() => {}} onCalendar={() => {}} onMomentum={() => {}} />);
     expect(screen.queryByRole('button', { name: /import/i })).toBeNull();
   });
+
+  test('has a Weekly update button that calls onWeeklyUpdate, and leaves it out when nothing handles it', () => {
+    const onWeeklyUpdate = vi.fn();
+    const { unmount } = render(<QuickActions onAddTask={() => {}} onFilter={() => {}} onSearch={() => {}} onCalendar={() => {}} onMomentum={() => {}} onWeeklyUpdate={onWeeklyUpdate} />);
+    fireEvent.click(screen.getByRole('button', { name: /weekly update/i }));
+    expect(onWeeklyUpdate).toHaveBeenCalledTimes(1);
+    unmount();
+    render(<QuickActions onAddTask={() => {}} onFilter={() => {}} onSearch={() => {}} onCalendar={() => {}} onMomentum={() => {}} />);
+    expect(screen.queryByRole('button', { name: /weekly update/i })).toBeNull();
+  });
 });
