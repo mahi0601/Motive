@@ -36,6 +36,30 @@ const setPending = (on) => {
   }
 };
 
+// An Indian mobile number: ten digits starting 6 to 9, optionally with +91, 91 or 0 in front (the same
+// rule the server applies; the server is what decides).
+const PHONE_PATTERN = /^(?:\+?91|0)?[6-9]\d{9}$/;
+
+// Cashfree opens its checkout with its own script from a session id. Loaded on demand, once, from
+// Cashfree's host (which a Content-Security-Policy must allow; see the README). A blocked or failed
+// load becomes a plain message, never a hung button.
+const CASHFREE_SDK = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+const loadCashfree = () =>
+  new Promise((resolve, reject) => {
+    if (window.Cashfree) return resolve(window.Cashfree);
+    const script = document.createElement('script');
+    script.src = CASHFREE_SDK;
+    script.async = true;
+    script.onload = () => (window.Cashfree ? resolve(window.Cashfree) : reject(new Error('The payment window did not load.')));
+    script.onerror = () => reject(new Error('Could not load the payment window. Check your connection or ad blocker, then try again.'));
+    document.head.appendChild(script);
+  });
+const openCashfreeCheckout = async ({ sessionId, mode }) => {
+  const Cashfree = await loadCashfree();
+  // Same tab, so Cashfree sends the buyer back to the billing card when it is done.
+  await Cashfree({ mode: mode === 'production' ? 'production' : 'sandbox' }).subscriptionsCheckout({ subsSessionId: sessionId, redirectTarget: '_self' });
+};
+
 const formatDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : null;
 
@@ -56,9 +80,13 @@ const BillingCard = () => {
     { code: 'inr', label: 'INR' },
   ];
   const [currency, setCurrency] = useState('usd');
-  // Which provider takes each currency ({ usd, inr }; a value of null means unavailable).
-  // null here means "not known yet", in which case checkout is allowed and the server decides.
-  const [providers, setProviders] = useState(null);
+  // The gateways that take each currency ({ usd: [...], inr: [...] }). null = not known yet, in which
+  // case checkout is allowed and the server decides. An empty list = nothing takes that currency.
+  const [options, setOptions] = useState(null);
+  // The buyer's pick from "Pay with" (the first available is used until they choose) and, for a
+  // gateway that needs one, their phone number (sent to it, never kept here beyond this form).
+  const [providerChoice, setProviderChoice] = useState(null);
+  const [phone, setPhone] = useState('');
   const [upgrading, setUpgrading] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
   const upgradeStatus = searchParams.get('upgrade'); // 'success' | 'cancelled' | null
@@ -79,7 +107,8 @@ const BillingCard = () => {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
-  const isRazorpay = user?.paymentProvider === 'razorpay';
+  // Subscriptions held by a gateway with no hosted billing page: cancelled here, at the period end.
+  const inAppBilling = ['razorpay', 'paypal', 'cashfree'].includes(user?.paymentProvider);
 
   // Back from paying on Razorpay: ask whether it went through, now, whenever the tab regains
   // focus, and every few seconds for a couple of minutes. Stops once the plan is on.
@@ -131,12 +160,14 @@ const BillingCard = () => {
   useEffect(() => {
     if (user?.isPro) return;
     getPaymentOptions()
-      .then(({ data }) => setProviders(data?.providers ?? null))
+      .then(({ data }) => setOptions(data?.options ?? null))
       .catch((e) => logger.warn('Could not read payment options', { error: e?.message }));
   }, [user?.isPro]);
 
-  const providerNow = providers ? providers[currency] : undefined; // undefined = unknown yet
-  const unavailable = providers !== null && !providerNow;
+  const list = options ? options[currency] || [] : null; // null = unknown yet
+  const selected = list ? list.find((g) => g.id === providerChoice) || list[0] || null : null;
+  const unavailable = list !== null && list.length === 0;
+  const otherCurrencyOffered = !!options && (options.usd?.length > 0 || options.inr?.length > 0);
 
   // Coming back from Stripe Checkout — reconcile directly against Stripe first
   // (covers UPI/delayed-notification methods, and a webhook that was ever
@@ -155,6 +186,15 @@ const BillingCard = () => {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [upgradeStatus, refreshUser, setSearchParams]);
+
+  // Back from a gateway whose checkout has no result in the address (PayPal, Cashfree): start
+  // confirming the payment, which is what the "Confirming your payment…" notice and the checks do.
+  useEffect(() => {
+    if (upgradeStatus !== 'pending') return;
+    setPending(true);
+    setAwaitingPayment(true);
+    setSearchParams({}, { replace: true });
+  }, [upgradeStatus, setSearchParams]);
 
   // Back from the Customer Portal (card changed, plan cancelled, …): the
   // webhook may already have updated the subscription — re-read the profile.
@@ -209,18 +249,28 @@ const BillingCard = () => {
   };
 
   const handleUpgrade = async (plan) => {
-    setUpgrading(true);
     setUpgradeError('');
+    if (selected?.needsPhone && !PHONE_PATTERN.test(phone.replace(/[\s-]/g, ''))) {
+      setUpgradeError('Enter a valid 10-digit Indian mobile number to continue.');
+      return;
+    }
+    setUpgrading(true);
     try {
-      const { data } = await createCheckoutSession(currency, plan);
-      // Razorpay has no redirect back, so remember to check on return.
-      if (data.provider === 'razorpay') {
+      const { data } = await createCheckoutSession(currency, plan, { provider: selected?.id, phone: selected?.needsPhone ? phone.trim() : undefined });
+      // Everything but Stripe has no result in the address on return, so remember to check.
+      if (data.provider && data.provider !== 'stripe') {
         setPending(true);
         setAwaitingPayment(true);
       }
-      window.location.href = data.url; // hand off to the provider's checkout
+      if (data.sessionId) {
+        await openCashfreeCheckout(data);
+      } else {
+        window.location.href = data.url; // hand off to the provider's checkout
+      }
     } catch (err) {
-      setUpgradeError(err?.response?.data?.message || 'Could not start checkout. Try again.');
+      setPending(false);
+      setAwaitingPayment(false);
+      setUpgradeError(err?.response?.data?.message || err?.message || 'Could not start checkout. Try again.');
       setUpgrading(false);
     }
   };
@@ -254,12 +304,12 @@ const BillingCard = () => {
           </p>
           {user.subscriptionStatus === 'past_due' && (
             <p className="text-sm rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
-              {isRazorpay
+              {inAppBilling
                 ? "Your last payment didn't go through. It will be tried again; make sure your card or UPI account can cover it to keep your plan."
                 : "Your last payment didn't go through. Update your payment method to keep your plan."}
             </p>
           )}
-          {isRazorpay ? (
+          {inAppBilling ? (
             <div className="space-y-2">
               {user.subscriptionCancelAtPeriodEnd ? (
                 <p className="text-xs text-light-muted dark:text-dark-muted">
@@ -309,12 +359,12 @@ const BillingCard = () => {
               {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
             </>
           )}
-          {tier === 'studio' && isRazorpay && !user.subscriptionCancelAtPeriodEnd && (
+          {tier === 'studio' && inAppBilling && !user.subscriptionCancelAtPeriodEnd && (
             <p className="text-xs text-light-muted dark:text-dark-muted">
               To move to Agency, cancel at the end of this period and subscribe to Agency, or contact support.
             </p>
           )}
-          {tier === 'studio' && !isRazorpay && (
+          {tier === 'studio' && !inAppBilling && (
             <div className="pt-1 space-y-2">
               {switched && (
                 <p role="status" className="text-sm text-semantic-success-700 dark:text-semantic-success-dark">
@@ -407,8 +457,57 @@ const BillingCard = () => {
           )}
           {unavailable && (
             <p role="alert" className="mt-3 rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-sm text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
-              Payments in {currency.toUpperCase()} aren't available yet. Please try again later{providers && (providers.usd || providers.inr) ? ' or choose the other currency' : ''}.
+              Payments in {currency.toUpperCase()} aren't available yet. Please try again later{otherCurrencyOffered ? ' or choose the other currency' : ''}.
             </p>
+          )}
+
+          {list && list.length > 1 && (
+            <fieldset className="mt-3">
+              <legend className="text-sm font-medium text-light-text dark:text-dark-text">Pay with</legend>
+              <div role="radiogroup" aria-label="Pay with" className="mt-1.5 flex flex-wrap gap-2">
+                {list.map((g) => (
+                  <label
+                    key={g.id}
+                    className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-all duration-200 ${
+                      selected?.id === g.id
+                        ? 'border-brand-500 ring-1 ring-brand-500 bg-brand-50 dark:bg-brand-900/20 text-light-text dark:text-dark-text'
+                        : 'border-light-border dark:border-dark-border text-light-muted dark:text-dark-muted hover:border-brand-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-provider"
+                      value={g.id}
+                      checked={selected?.id === g.id}
+                      onChange={() => setProviderChoice(g.id)}
+                      className="accent-brand-600"
+                    />
+                    {g.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {selected?.needsPhone && (
+            <div className="mt-3">
+              <label htmlFor="billing-phone" className="block text-sm font-medium text-light-text dark:text-dark-text">
+                Mobile number
+              </label>
+              <input
+                id="billing-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={20}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="98765 43210"
+                className="mt-1 w-56 rounded-lg border border-light-border bg-light-surface px-3 py-2 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
+              />
+              <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+                {selected.label} needs it to set up your subscription. It is sent to {selected.label} only and is not saved by Clientglass.
+              </p>
+            </div>
           )}
 
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -441,9 +540,9 @@ const BillingCard = () => {
             })}
           </div>
           <p className="text-xs text-light-muted dark:text-dark-muted mt-2">
-            {providerNow === 'razorpay'
-              ? "You'll pay on Razorpay's secure checkout. The methods offered (cards, UPI) depend on what your bank supports."
-              : providerNow === 'stripe'
+            {selected && selected.id !== 'stripe'
+              ? `You'll pay on ${selected.label}'s secure checkout. The methods offered depend on what your bank and account support.`
+              : selected?.id === 'stripe'
                 ? "You'll pick how to pay on Stripe's secure checkout — the methods offered depend on your currency and region."
                 : "You'll pick how to pay on our payment provider's secure checkout — the methods offered depend on your currency and region."}
           </p>

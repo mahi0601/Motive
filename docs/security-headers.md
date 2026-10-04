@@ -16,7 +16,7 @@ Differences from the README's starter policy:
 
 - **No `'unsafe-inline'` for scripts.** `index.html` has one small inline script (it applies the saved theme before first paint). Allow it by hash instead: build, then run
   `node -e "const h=require('fs').readFileSync('dist/index.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1];console.log('sha256-'+require('crypto').createHash('sha256').update(h).digest('base64'))"`
-  and put the output in `script-src`. The hash changes whenever that script changes, so redo this when it does.
+  and put the output in `script-src`. If Cashfree INR payments are enabled, also allow `https://sdk.cashfree.com` there: its checkout is opened by a script from that host. The hash changes whenever that script changes, so redo this when it does.
 - **`connect-src` is pinned to the API origin** instead of any `https:`/`wss:` host, which limits where a compromised script could send data.
 - **`Referrer-Policy: no-referrer`** so URLs carrying tokens (invite, status, reset) are never sent as a Referer.
 
