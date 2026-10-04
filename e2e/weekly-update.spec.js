@@ -25,6 +25,10 @@ test('shipped work shows on the client page and in the owner\'s weekly update', 
   await expect(shipped).toContainText('1 task shipped');
   await expect(shipped).toContainText('Launch banner');
   await expect(shipped).not.toContainText('Build API');
+  // The weekly chart too, when the backend sends it: one task finished this week.
+  if (status.status.throughput) {
+    await expect(clientPage.getByRole('region', { name: /shipped each week/i })).toContainText('1 task shipped in the last 8 weeks');
+  }
   await client.close();
 
   // The owner's weekly update.
