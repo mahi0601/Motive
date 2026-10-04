@@ -22,3 +22,13 @@ export const createPortalSession = () => api.post('/api/payments/portal');
 // directly from Stripe, in case the webhook was delayed or dropped — e.g. a
 // delayed-notification payment method.
 export const reconcileCheckoutSession = (sessionId) => api.get(`/api/payments/session/${sessionId}`);
+
+// Which payment provider takes each currency right now: { usd, inr }, each 'stripe',
+// 'razorpay' or null (nothing can take it). Lets the billing card say so before a click.
+export const getPaymentOptions = () => api.get('/api/payments/options');
+
+// Razorpay has no redirect back to the site and no customer portal. After paying there the
+// app asks for the current state (the fallback for a late webhook), and a subscriber cancels
+// here, at the end of the paid period.
+export const syncPayment = () => api.post('/api/payments/sync');
+export const cancelSubscription = () => api.post('/api/payments/cancel');

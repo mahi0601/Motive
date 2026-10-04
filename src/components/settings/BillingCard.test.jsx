@@ -3,13 +3,24 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import BillingCard from './BillingCard';
-import { createCheckoutSession, createPortalSession, reconcileCheckoutSession, changePlan } from '../../services/paymentService';
+import {
+  createCheckoutSession,
+  createPortalSession,
+  reconcileCheckoutSession,
+  changePlan,
+  getPaymentOptions,
+  syncPayment,
+  cancelSubscription,
+} from '../../services/paymentService';
 
 vi.mock('../../services/paymentService', () => ({
   createCheckoutSession: vi.fn(),
   createPortalSession: vi.fn(),
   reconcileCheckoutSession: vi.fn(),
   changePlan: vi.fn(),
+  getPaymentOptions: vi.fn(),
+  syncPayment: vi.fn(),
+  cancelSubscription: vi.fn(),
 }));
 
 const refreshUser = vi.fn().mockResolvedValue(undefined);
@@ -32,6 +43,14 @@ describe('BillingCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Most tests do not care which provider takes the money; both are available unless a test says not.
+    getPaymentOptions.mockResolvedValue({ data: { providers: { usd: 'stripe', inr: 'stripe' } } });
+    syncPayment.mockResolvedValue({ data: { isPro: false } });
+    try {
+      localStorage.clear();
+    } catch {
+      // not available in this environment
+    }
     Object.defineProperty(window, 'location', { configurable: true, value: { href: '' } });
   });
   afterEach(() => {
@@ -251,5 +270,169 @@ describe('BillingCard', () => {
     mockUser = { isPro: true, proLifetime: false, subscriptionStatus: 'active', proPeriodEnd: FUTURE };
     renderCard('/settings?billing=updated');
     await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+  });
+
+  describe('which provider takes the payment', () => {
+    test('INR on Razorpay and USD on Stripe: the note names the provider for the chosen currency', async () => {
+      mockUser = { isPro: false };
+      getPaymentOptions.mockResolvedValue({ data: { providers: { usd: 'stripe', inr: 'razorpay' } } });
+      renderCard();
+      expect(await screen.findByText(/stripe's secure checkout/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'INR' }));
+      expect(await screen.findByText(/razorpay's secure checkout/i)).toBeInTheDocument();
+    });
+
+    test('an unavailable currency says so up front and disables the buttons, instead of failing at the click', async () => {
+      mockUser = { isPro: false };
+      getPaymentOptions.mockResolvedValue({ data: { providers: { usd: null, inr: 'razorpay' } } });
+      renderCard();
+      expect(await screen.findByRole('alert')).toHaveTextContent(/payments in usd aren't available yet/i);
+      expect(screen.getByRole('alert')).toHaveTextContent(/choose the other currency/i);
+      expect(screen.getByRole('button', { name: /subscribe to studio/i })).toBeDisabled();
+      fireEvent.click(screen.getByRole('button', { name: 'INR' }));
+      await waitFor(() => expect(screen.getByRole('button', { name: /subscribe to studio/i })).toBeEnabled());
+    });
+
+    test('with no provider at all it does not suggest another currency', async () => {
+      mockUser = { isPro: false };
+      getPaymentOptions.mockResolvedValue({ data: { providers: { usd: null, inr: null } } });
+      renderCard();
+      expect(await screen.findByRole('alert')).not.toHaveTextContent(/other currency/i);
+    });
+
+    test('if the options cannot be read, checkout is still allowed and the server decides', async () => {
+      mockUser = { isPro: false };
+      getPaymentOptions.mockRejectedValue(new Error('offline'));
+      renderCard();
+      await waitFor(() => expect(getPaymentOptions).toHaveBeenCalled());
+      expect(screen.getByRole('button', { name: /subscribe to studio/i })).toBeEnabled();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('paying on Razorpay (no redirect back)', () => {
+    test('going to Razorpay remembers to check for the payment on return', async () => {
+      mockUser = { isPro: false };
+      getPaymentOptions.mockResolvedValue({ data: { providers: { usd: 'stripe', inr: 'razorpay' } } });
+      createCheckoutSession.mockResolvedValue({ data: { url: 'https://rzp.io/i/abc', provider: 'razorpay' } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: 'INR' }));
+      fireEvent.click(screen.getByRole('button', { name: /subscribe to studio/i }));
+      await waitFor(() => expect(window.location.href).toBe('https://rzp.io/i/abc'));
+      expect(Number(localStorage.getItem('cg-pending-payment'))).toBeGreaterThan(0);
+    });
+
+    test('a Stripe checkout does not set the flag', async () => {
+      mockUser = { isPro: false };
+      createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.test/x', provider: 'stripe' } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /subscribe to studio/i }));
+      await waitFor(() => expect(window.location.href).toBe('https://checkout.stripe.test/x'));
+      expect(localStorage.getItem('cg-pending-payment')).toBeNull();
+    });
+
+    test('coming back, it confirms the payment and says so while it waits', async () => {
+      mockUser = { isPro: false };
+      localStorage.setItem('cg-pending-payment', String(Date.now()));
+      renderCard();
+      expect(await screen.findByText(/confirming your payment/i)).toBeInTheDocument();
+      await waitFor(() => expect(syncPayment).toHaveBeenCalled());
+      await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+    });
+
+    test('"Check again" asks again', async () => {
+      mockUser = { isPro: false };
+      localStorage.setItem('cg-pending-payment', String(Date.now()));
+      renderCard();
+      await waitFor(() => expect(syncPayment).toHaveBeenCalledTimes(1));
+      fireEvent.click(await screen.findByRole('button', { name: /check again/i }));
+      await waitFor(() => expect(syncPayment).toHaveBeenCalledTimes(2));
+    });
+
+    test('an old flag (over 30 minutes) is ignored and never checks', async () => {
+      mockUser = { isPro: false };
+      localStorage.setItem('cg-pending-payment', String(Date.now() - 31 * 60 * 1000));
+      renderCard();
+      await waitFor(() => expect(getPaymentOptions).toHaveBeenCalled());
+      expect(syncPayment).not.toHaveBeenCalled();
+      expect(screen.queryByText(/confirming your payment/i)).not.toBeInTheDocument();
+    });
+
+    test('once the plan is on, the flag is cleared and nothing more is checked', async () => {
+      mockUser = { isPro: true, proLifetime: false, paymentProvider: 'razorpay', subscriptionStatus: 'active', proPeriodEnd: FUTURE };
+      localStorage.setItem('cg-pending-payment', String(Date.now()));
+      renderCard();
+      await waitFor(() => expect(localStorage.getItem('cg-pending-payment')).toBeNull());
+      expect(syncPayment).not.toHaveBeenCalled();
+    });
+
+    test('a failed check is not an error shown to the buyer; it simply tries again later', async () => {
+      mockUser = { isPro: false };
+      localStorage.setItem('cg-pending-payment', String(Date.now()));
+      syncPayment.mockRejectedValue(new Error('502'));
+      renderCard();
+      await waitFor(() => expect(syncPayment).toHaveBeenCalled());
+      expect(screen.getByText(/confirming your payment/i)).toBeInTheDocument();
+      expect(screen.queryByText(/502/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('a Razorpay subscriber', () => {
+    const sub = (over = {}) => ({ isPro: true, proLifetime: false, paymentProvider: 'razorpay', subscriptionStatus: 'active', proPeriodEnd: FUTURE, plan: 'studio', tier: 'studio', ...over });
+
+    test('has Cancel subscription instead of Manage billing, and no in-app Agency switch', () => {
+      mockUser = sub();
+      renderCard();
+      expect(screen.getByRole('button', { name: /cancel subscription/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /manage billing/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /switch to agency/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/to move to agency, cancel at the end of this period/i)).toBeInTheDocument();
+    });
+
+    test('cancelling asks first, explains it cannot be resumed, then cancels and refreshes', async () => {
+      mockUser = sub();
+      cancelSubscription.mockResolvedValue({ data: { cancelAtPeriodEnd: true } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /cancel subscription/i }));
+      const group = screen.getByRole('group', { name: /confirm cancel subscription/i });
+      expect(group).toHaveTextContent(/can't be resumed/i);
+      expect(cancelSubscription).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: /yes, cancel at period end/i }));
+      await waitFor(() => expect(cancelSubscription).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+    });
+
+    test('"Keep my plan" backs out without calling the server', () => {
+      mockUser = sub();
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /cancel subscription/i }));
+      fireEvent.click(screen.getByRole('button', { name: /keep my plan/i }));
+      expect(cancelSubscription).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: /cancel subscription/i })).toBeInTheDocument();
+    });
+
+    test('a refusal from the server is shown', async () => {
+      mockUser = sub();
+      cancelSubscription.mockRejectedValue({ response: { data: { message: 'There is no active subscription to cancel' } } });
+      renderCard();
+      fireEvent.click(screen.getByRole('button', { name: /cancel subscription/i }));
+      fireEvent.click(screen.getByRole('button', { name: /yes, cancel at period end/i }));
+      expect(await screen.findByText(/no active subscription to cancel/i)).toBeInTheDocument();
+    });
+
+    test('once cancelled it says when Pro ends and to subscribe again then, with no cancel button', () => {
+      mockUser = sub({ subscriptionCancelAtPeriodEnd: true });
+      renderCard();
+      expect(screen.getByText(/subscription is cancelled/i)).toBeInTheDocument();
+      expect(screen.getByText(/subscribe again once this period ends/i)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /cancel subscription/i })).not.toBeInTheDocument();
+    });
+
+    test('a failed charge says it will be retried, not "update your payment method" (there is no portal)', () => {
+      mockUser = sub({ subscriptionStatus: 'past_due' });
+      renderCard();
+      expect(screen.getByText(/will be tried again/i)).toBeInTheDocument();
+      expect(screen.queryByText(/update your payment method/i)).not.toBeInTheDocument();
+    });
   });
 });
