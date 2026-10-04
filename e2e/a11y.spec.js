@@ -93,6 +93,19 @@ for (const theme of ['light', 'dark']) {
     found['new client dialog'] = await violations(page);
     await page.keyboard.press('Escape');
 
+    // The client template dialogs, open (a backend without templates shows the list's error state).
+    await page.getByRole('button', { name: /save as client template/i }).click();
+    await expect(page.getByRole('dialog', { name: /save as client template/i })).toBeVisible();
+    found['save template dialog'] = await violations(page);
+    await page.keyboard.press('Escape');
+    const wsId = (await (await request.get(`${API}/api/workspaces`, { headers: auth })).json()).workspaces[0].id;
+    await request.post(`${API}/api/client-templates`, { headers: auth, data: { workspaceId: wsId, name: 'Website project', description: 'Our standard build' } });
+    await page.getByRole('button', { name: /^client templates$/i }).click();
+    await expect(page.getByRole('dialog', { name: /^client templates$/i })).toBeVisible();
+    await page.waitForTimeout(500);
+    found['client templates dialog'] = await violations(page);
+    await page.keyboard.press('Escape');
+
     const failing = Object.fromEntries(Object.entries(found).filter(([, v]) => v.length));
     expect(failing).toEqual({});
   });
