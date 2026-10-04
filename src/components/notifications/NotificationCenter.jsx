@@ -81,6 +81,9 @@ const NotificationCenter = ({ isOpen, onClose, onUnreadChange }) => {
       case 'client_feedback':
         // A client responded on the public status page.
         return <MessageSquare className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;
+      case 'client_request':
+        // A client asked for something on the public status page.
+        return <MessageSquare className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;
       case 'client_view':
         // Someone opened the client status page (see the backend's notifyOwnerOfView).
         return <Eye className="w-5 h-5 text-semantic-info-700 dark:text-semantic-info-dark" />;

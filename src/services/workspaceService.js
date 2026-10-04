@@ -40,6 +40,12 @@ export const saveMilestones = (workspaceId, milestones) => api.put(`/api/workspa
 export const listFeedback = (workspaceId, params) => api.get(`/api/workspaces/${workspaceId}/feedback`, { params });
 export const markFeedbackRead = (workspaceId, id) => api.patch(`/api/workspaces/${workspaceId}/feedback/${id}/read`);
 export const deleteFeedback = (workspaceId, id) => api.delete(`/api/workspaces/${workspaceId}/feedback/${id}`);
+// The owner's inbox of client requests. Accepting one makes a task on the board.
+export const listRequests = (workspaceId, params) => api.get(`/api/workspaces/${workspaceId}/requests`, { params });
+export const acceptRequest = (workspaceId, id, data) => api.post(`/api/workspaces/${workspaceId}/requests/${id}/accept`, data);
+export const declineRequest = (workspaceId, id, data) => api.post(`/api/workspaces/${workspaceId}/requests/${id}/decline`, data);
+export const updateRequest = (workspaceId, id, data) => api.patch(`/api/workspaces/${workspaceId}/requests/${id}`, data);
+export const deleteRequest = (workspaceId, id) => api.delete(`/api/workspaces/${workspaceId}/requests/${id}`);
 export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/share`);
 
 // The /invite/:token public landing page — a different resource root

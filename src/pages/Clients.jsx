@@ -11,6 +11,7 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const REASON = {
   overdue: (c) => `${plural(c.overdue, 'task', 'tasks')} overdue`,
   responses: (c) => plural(c.unreadResponses, 'unread reply', 'unread replies'),
+  requests: (c) => plural(c.unreadRequests, 'new request', 'new requests'),
   not_opened: () => 'Link is live but has not been opened yet',
   quiet: () => 'Not opened in over 2 weeks',
 };
