@@ -48,3 +48,7 @@ export const disableShare = (workspaceId) => api.delete(`/api/workspaces/${works
 export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComponent(token)}`);
 export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
 export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);
+
+// Every client the caller owns, with the numbers that say who needs attention, most in need
+// first. Numbers, dates and flags only.
+export const getClientsOverview = () => api.get('/api/workspaces/overview');

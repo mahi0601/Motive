@@ -79,7 +79,7 @@ for (const theme of ['light', 'dark']) {
     found['import dialog'] = await violations(page);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: /import tasks/i })).toHaveCount(0);
-    for (const [name, path] of [['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
+    for (const [name, path] of [['clients', '/clients'], ['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
       await page.goto(path);
       found[name] = await violations(page);
     }
