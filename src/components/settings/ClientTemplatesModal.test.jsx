@@ -17,7 +17,9 @@ const setup = async (templates = [T1, T2]) => {
   const onClose = vi.fn();
   const onCreated = vi.fn();
   render(<ClientTemplatesModal onClose={onClose} onCreated={onCreated} />);
-  if (templates) await screen.findByRole('dialog', { name: /client templates/i });
+  await screen.findByRole('dialog', { name: /client templates/i });
+  // The list loads after the dialog opens: wait for it, so nothing below races the request.
+  await waitFor(() => expect(screen.queryByText(/loading templates/i)).toBeNull());
   return { onClose, onCreated };
 };
 const item = (name) => screen.getByRole('listitem', { name });
