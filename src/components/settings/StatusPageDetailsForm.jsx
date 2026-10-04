@@ -28,7 +28,7 @@ const counterClass = 'text-xs font-normal text-light-muted dark:text-dark-muted'
 const StatusPageDetailsForm = () => {
   const { user } = useAuth();
   const { workspace, loadWorkspace } = useWorkspace();
-  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), feedback: useId() };
+  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), feedback: useId(), notify: useId() };
 
   const [form, setForm] = useState(() => ({
     headline: workspace.statusHeadline || '',
@@ -36,6 +36,8 @@ const StatusPageDetailsForm = () => {
     accent: workspace.statusAccent || 'teal',
     hideBranding: !!workspace.statusHideBranding,
     allowFeedback: !!workspace.statusAllowFeedback,
+    // On unless it was switched off (a workspace from before this setting has no value, which means on).
+    notifyViews: workspace.statusNotifyViews !== false,
   }));
   // The milestones are edited as rows, in order. `savedRows` is what the server has
   // (ids included), so unchanged milestones are not sent again. After a save the rows
@@ -84,6 +86,7 @@ const StatusPageDetailsForm = () => {
         accent: form.accent,
         hideBranding: form.hideBranding,
         allowFeedback: form.allowFeedback,
+        notifyViews: form.notifyViews,
       });
       if (!sameRows(rows, savedRows.current)) {
         const { data } = await saveMilestones(workspace.id, toPayload(rows));
@@ -235,6 +238,24 @@ const StatusPageDetailsForm = () => {
         </label>
         <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
           Anyone with the link can send you a message under any name. Messages are shown only to you, never published.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor={ids.notify} className="flex cursor-pointer items-center gap-2 text-sm text-light-text dark:text-dark-text">
+          <input
+            id={ids.notify}
+            type="checkbox"
+            checked={form.notifyViews}
+            onChange={(e) => {
+              setSaved(false);
+              setForm((f) => ({ ...f, notifyViews: e.target.checked }));
+            }}
+          />
+          Tell me when my client opens the page
+        </label>
+        <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+          A notice in the app, at most one notice every 12 hours. It never says who looked, and your own preview and link previews are not counted.
         </p>
       </div>
 
