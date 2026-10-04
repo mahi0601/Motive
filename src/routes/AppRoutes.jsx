@@ -16,6 +16,7 @@ const PageView = lazyWithRetry(() => import('../pages/PageView'));
 const Privacy = lazyWithRetry(() => import('../pages/Privacy'));
 const Terms = lazyWithRetry(() => import('../pages/Terms'));
 const Invite = lazyWithRetry(() => import('../pages/Invite'));
+const Clients = lazyWithRetry(() => import('../pages/Clients'));
 const StatusPage = lazyWithRetry(() => import('../pages/StatusPage'));
 import PageFallback from '../components/ui/PageFallback';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
@@ -55,6 +56,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/clients" element={<Clients />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/momentum" element={<Momentum />} />
           <Route path="/settings" element={<Settings />} />
