@@ -11,6 +11,7 @@ vi.mock('../../services/workspaceService', () => ({
   listFeedback: vi.fn().mockResolvedValue({ data: { items: [], unread: 0, pagination: { total: 0 } } }),
   markFeedbackRead: vi.fn(),
   deleteFeedback: vi.fn(),
+  getEngagement: vi.fn().mockResolvedValue({ data: { lastViewedAt: null, views7d: 0, visits7d: 0 } }),
 }));
 
 const loadWorkspace = vi.fn().mockResolvedValue(undefined);
@@ -115,6 +116,15 @@ describe('StatusPageCard', () => {
     fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
 
     expect(await screen.findByText('Only the workspace owner can do that')).toBeInTheDocument();
+  });
+
+  test('shows client activity once sharing is on, and not before', async () => {
+    const { unmount } = render(<StatusPageCard />);
+    expect(screen.queryByRole('region', { name: /client activity/i })).toBeNull();
+    unmount();
+    mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-29T00:00:00Z' };
+    render(<StatusPageCard />);
+    expect(await screen.findByRole('region', { name: /client activity/i })).toBeInTheDocument();
   });
 
   test('right after a link is created the owner is offered a way to send it, and not when the link is not shown', async () => {

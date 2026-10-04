@@ -6,6 +6,7 @@ import { enableShare, disableShare } from '../../services/workspaceService';
 import StatusPageDetailsForm from './StatusPageDetailsForm';
 import SendLinkPanel from './SendLinkPanel';
 import ClientFeedbackList from './ClientFeedbackList';
+import ClientActivity from './ClientActivity';
 import { CARD_CLASS } from './cardStyles';
 
 // Where the public link points. In the browser that's simply this site; the
@@ -193,6 +194,7 @@ const StatusPageCard = () => {
         )}
       </div>
 
+      {enabled && <ClientActivity workspaceId={workspace.id} />}
       {enabled && <StatusPageDetailsForm />}
       {enabled && <ClientFeedbackList workspaceId={workspace.id} />}
     </div>

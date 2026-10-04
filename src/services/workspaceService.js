@@ -49,11 +49,9 @@ export const getInviteByToken = (token) => api.get(`/api/invites/${encodeURIComp
 export const acceptInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/accept`);
 export const declineInvite = (token) => api.post(`/api/invites/${encodeURIComponent(token)}/decline`);
 
-// Owner-only: copies this workspace's structure into a NEW workspace (tasks reset to To do,
-// pages, milestones, optionally the status page wording; never comments, files, people or
-// sign-offs). `include` says what to copy; `startDate` is where the earliest date lands.
-// Resolves to { workspace: { id, name }, counts }.
-export const duplicateWorkspace = (workspaceId, data) => api.post(`/api/workspaces/${workspaceId}/duplicate`, data);
+// Owner-only: when the client status page was last opened, and its views and visits in the last
+// 7 days (a visit is a distinct visitor on a day). Numbers and a time only.
+export const getEngagement = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/engagement`);
 
 // Every client the caller owns, with the numbers that say who needs attention, most in need
 // first. Numbers, dates and flags only.
