@@ -5,7 +5,7 @@ import MembersCard from './MembersCard';
 
 vi.mock('../../services/workspaceService', () => ({
   createInvite: vi.fn(),
-  listInvites: vi.fn().mockResolvedValue({ data: { items: [] } }),
+  listInvites: vi.fn().mockResolvedValue({ data: { invites: [] } }),
   resendInvite: vi.fn(),
   revokeInvite: vi.fn(),
   updateMemberRole: vi.fn(),
