@@ -163,4 +163,27 @@ describe('ClientFeedbackForm', () => {
       expect(await screen.findByRole('alert')).toHaveTextContent(/no longer on this page/i);
     });
   });
+
+  describe('demo mode (the example page)', () => {
+    test('behaves like the real form but sends nothing, and says so', async () => {
+      render(<ClientFeedbackForm token="demo" demo milestones={[{ id: 'a', title: 'Design', approvedAt: null }]} />);
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Ann' } });
+      fireEvent.click(screen.getByRole('button', { name: /request changes/i }));
+      expect(screen.getByRole('alert')).toHaveTextContent(/message/i); // validation is the same
+      fireEvent.change(screen.getByLabelText(/message/i), { target: { value: 'Bigger logo' } });
+      fireEvent.click(screen.getByRole('button', { name: /request changes/i }));
+      expect(await screen.findByRole('status')).toHaveTextContent(/thanks/i);
+      expect(screen.getByText(/example only/i)).toBeInTheDocument();
+      expect(sendFeedback).not.toHaveBeenCalled();
+    });
+
+    test('the real form does not say example only', async () => {
+      sendFeedback.mockResolvedValue({});
+      render(<ClientFeedbackForm token="tok" milestone={{ title: 'X' }} />);
+      fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Ann' } });
+      fireEvent.click(screen.getByRole('button', { name: /approve/i }));
+      await screen.findByRole('status');
+      expect(screen.queryByText(/example only/i)).toBeNull();
+    });
+  });
 });

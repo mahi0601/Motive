@@ -126,4 +126,19 @@ describe('StatusPageCard', () => {
     render(<StatusPageCard />);
     expect(await screen.findByRole('region', { name: /client activity/i })).toBeInTheDocument();
   });
+
+  test('right after a link is created the owner is offered a way to send it, and not when the link is not shown', async () => {
+    enableShare.mockResolvedValue({ data: { share: { token: 'abc123', shareEnabledAt: '2026-09-30T00:00:00Z' } } });
+    render(<StatusPageCard />);
+    expect(screen.queryByRole('region', { name: /send it to your client/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /create status link/i }));
+    const panel = await screen.findByRole('region', { name: /send it to your client/i });
+    expect(panel.querySelector('textarea').value).toContain(`${window.location.origin}/s/abc123`);
+  });
+
+  test('when sharing is already on and the link is not shown, there is nothing to send', () => {
+    mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-29T00:00:00Z' };
+    render(<StatusPageCard />);
+    expect(screen.queryByRole('region', { name: /send it to your client/i })).toBeNull();
+  });
 });

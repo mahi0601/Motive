@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { enableShare, disableShare } from '../../services/workspaceService';
 import StatusPageDetailsForm from './StatusPageDetailsForm';
+import SendLinkPanel from './SendLinkPanel';
 import ClientFeedbackList from './ClientFeedbackList';
 import ClientActivity from './ClientActivity';
 import { CARD_CLASS } from './cardStyles';
@@ -129,6 +130,8 @@ const StatusPageCard = () => {
           </div>
         </div>
       )}
+
+      {link && <SendLinkPanel link={link} workspaceName={workspace.name} canRespond={!!workspace.statusAllowFeedback} />}
 
       {enabled && !link && (
         <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">

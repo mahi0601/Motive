@@ -52,3 +52,7 @@ export const declineInvite = (token) => api.post(`/api/invites/${encodeURICompon
 // Owner-only: when the client status page was last opened, and its views and visits in the last
 // 7 days (a visit is a distinct visitor on a day). Numbers and a time only.
 export const getEngagement = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/engagement`);
+
+// Every client the caller owns, with the numbers that say who needs attention, most in need
+// first. Numbers, dates and flags only.
+export const getClientsOverview = () => api.get('/api/workspaces/overview');

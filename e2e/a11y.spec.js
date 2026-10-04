@@ -8,7 +8,7 @@ import { API, createUser, signIn } from './helpers';
 // and selects, nested interactive controls, text that is too faint — not the
 // whole of accessibility (that still needs keyboard and screen-reader testing).
 // Only serious and critical findings fail the test.
-const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy'], ['terms', '/terms']];
+const SCREENS_PUBLIC = [['home', '/'], ['login', '/login'], ['register', '/register'], ['forgot password', '/forgot-password'], ['privacy', '/privacy'], ['terms', '/terms'], ['example client page', '/demo']];
 
 async function firstWorkspaceId(request, auth) {
   const res = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
@@ -79,7 +79,7 @@ for (const theme of ['light', 'dark']) {
     found['import dialog'] = await violations(page);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: /import tasks/i })).toHaveCount(0);
-    for (const [name, path] of [['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
+    for (const [name, path] of [['clients', '/clients'], ['calendar', '/calendar'], ['momentum', '/momentum'], ['settings', '/settings'], ['profile', '/profile'], ['templates', '/templates'], ['page editor', `/page/${pageId}`]]) {
       await page.goto(path);
       found[name] = await violations(page);
     }
