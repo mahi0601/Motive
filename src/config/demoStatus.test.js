@@ -8,9 +8,23 @@ const demo = () => buildDemoStatus(NOW);
 describe('buildDemoStatus (the example page on the landing site)', () => {
   test('has the same shape the real public endpoint returns', () => {
     const d = demo();
-    expect(Object.keys(d).sort()).toEqual(['page', 'recent', 'summary', 'tasks', 'throughput', 'truncated', 'workspace']);
-    expect(Object.keys(d.page).sort()).toEqual(['accent', 'allowFeedback', 'headline', 'hideBranding', 'milestone', 'milestones', 'summary']);
+    expect(Object.keys(d).sort()).toEqual(['allowance', 'page', 'recent', 'requests', 'summary', 'tasks', 'throughput', 'truncated', 'workspace']);
+    expect(Object.keys(d.page).sort()).toEqual(['accent', 'allowFeedback', 'allowRequests', 'headline', 'hideBranding', 'milestone', 'milestones', 'summary']);
     expect(d.truncated).toBe(false);
+  });
+
+  test('its sample requests use only what the public endpoint exposes, and show the whole loop', () => {
+    const { requests } = demo();
+    for (const r of requests) expect(Object.keys(r).sort()).toEqual(['createdAt', 'declineNote', 'ref', 'scope', 'state', 'title']);
+    expect(requests.map((r) => r.state)).toEqual(['planned', 'done', 'declined']);
+  });
+
+  test('its sample allowance has the public shape and agrees with its requests', () => {
+    const { allowance, requests } = demo();
+    expect(Object.keys(allowance).sort()).toEqual(['extra', 'limit', 'resetsOn', 'used']);
+    expect(allowance.used).toBeLessThanOrEqual(allowance.limit);
+    expect(new Date(allowance.resetsOn).getTime()).toBeGreaterThan(NOW.getTime());
+    expect(requests.length).toBeGreaterThan(0);
   });
 
   test('is plainly an example, not a real client', () => {

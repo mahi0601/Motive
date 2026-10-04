@@ -18,3 +18,7 @@ export const reportLandingFromStatus = () => api.post('/api/status/landing');
 // comment). Unauthenticated: the link is the credential. See the backend's
 // feedback.service.js for the limits, which the form also shows.
 export const sendFeedback = (token, data) => api.post(`/api/status/${encodeURIComponent(token)}/feedback`, data);
+
+// A client's request ("can you also do X?") from the public page. Unauthenticated, like
+// feedback; the backend's request.service.js has the limits the form also shows.
+export const sendRequest = (token, data) => api.post(`/api/status/${encodeURIComponent(token)}/requests`, data);

@@ -59,11 +59,20 @@ export const buildDemoStatus = (now = new Date()) => {
       accent: 'teal',
       hideBranding: false,
       allowFeedback: true,
+      allowRequests: true,
     },
     summary: { todo: count('todo'), in_progress: count('in_progress'), done, total: tasks.length, percent: Math.round((done / tasks.length) * 100) },
     throughput,
     recent: { days: 7, count: recentDone.length, items: recentDone.map((t) => ({ title: t.title, completedAt: t.completedAt })) },
     tasks,
     truncated: false,
+    // Made-up allowance: 3 of 5 included requests used this month, plus one extra.
+    allowance: { limit: 5, used: 3, extra: 1, resetsOn: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString() },
+    // Made-up requests, so the example shows the whole loop: asked, planned, done, not taken on.
+    requests: [
+      { ref: 'demo-1', title: 'Add a Spanish version of the homepage', state: 'planned', scope: 'extra', declineNote: null, createdAt: new Date(now.getTime() - 2 * 86400000).toISOString() },
+      { ref: 'demo-2', title: 'Swap the footer photo', state: 'done', scope: 'in_scope', declineNote: null, createdAt: new Date(now.getTime() - 6 * 86400000).toISOString() },
+      { ref: 'demo-3', title: 'Build a members-only login area', state: 'declined', scope: null, declineNote: 'This is bigger than this project. Happy to quote it separately.', createdAt: new Date(now.getTime() - 9 * 86400000).toISOString() },
+    ],
   };
 };

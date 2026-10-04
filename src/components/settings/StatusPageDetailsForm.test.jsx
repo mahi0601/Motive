@@ -42,6 +42,8 @@ describe('StatusPageDetailsForm', () => {
       accent: 'violet',
       hideBranding: false,
       allowFeedback: false,
+      allowRequests: false,
+      requestAllowance: null,
       notifyViews: true,
     });
     expect(saveMilestones).not.toHaveBeenCalled(); // nothing about the milestones changed
@@ -84,6 +86,54 @@ describe('StatusPageDetailsForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => expect(updateStatusPage).toHaveBeenCalled());
     expect(updateStatusPage.mock.calls[0][1].allowFeedback).toBe(true);
+  });
+
+  test('lets the owner turn client requests on, with a plain warning about what that opens', async () => {
+    updateStatusPage.mockResolvedValue({ data: { page: {} } });
+    render(<StatusPageDetailsForm />);
+    const toggle = screen.getByRole('checkbox', { name: /let clients ask for work/i });
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText(/anyone with the link can ask for work/i)).toBeInTheDocument();
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(updateStatusPage).toHaveBeenCalled());
+    expect(updateStatusPage.mock.calls[0][1].allowRequests).toBe(true);
+  });
+
+  describe('the monthly request allowance', () => {
+    const open = () => {
+      render(<StatusPageDetailsForm />);
+      fireEvent.click(screen.getByRole('checkbox', { name: /let clients ask for work/i }));
+    };
+
+    test('is only offered once requests are switched on, and starts empty', () => {
+      render(<StatusPageDetailsForm />);
+      expect(screen.queryByLabelText(/requests included each month/i)).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('checkbox', { name: /let clients ask for work/i }));
+      expect(screen.getByLabelText(/requests included each month/i)).toHaveValue(null);
+      expect(screen.getByText(/your client sees how many of these are used/i)).toBeInTheDocument();
+    });
+
+    test('is saved as a number, and empty is saved as null', async () => {
+      updateStatusPage.mockResolvedValue({ data: { page: {} } });
+      open();
+      fireEvent.change(screen.getByLabelText(/requests included each month/i), { target: { value: '5' } });
+      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      await waitFor(() => expect(updateStatusPage).toHaveBeenCalledTimes(1));
+      expect(updateStatusPage.mock.calls[0][1].requestAllowance).toBe(5);
+      fireEvent.change(screen.getByLabelText(/requests included each month/i), { target: { value: '' } });
+      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      await waitFor(() => expect(updateStatusPage).toHaveBeenCalledTimes(2));
+      expect(updateStatusPage.mock.calls[1][1].requestAllowance).toBeNull();
+    });
+
+    test.each(['0', '101', '2.5', '-3'])('refuses %s without calling the server', async (value) => {
+      open();
+      fireEvent.change(screen.getByLabelText(/requests included each month/i), { target: { value } });
+      fireEvent.click(screen.getByRole('button', { name: /save/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/whole number from 1 to 100/i);
+      expect(updateStatusPage).not.toHaveBeenCalled();
+    });
   });
 
   test('a server refusal is shown, not swallowed', async () => {

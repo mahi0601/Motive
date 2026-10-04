@@ -28,7 +28,7 @@ const counterClass = 'text-xs font-normal text-light-muted dark:text-dark-muted'
 const StatusPageDetailsForm = () => {
   const { user } = useAuth();
   const { workspace, loadWorkspace } = useWorkspace();
-  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), feedback: useId(), notify: useId() };
+  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), feedback: useId(), requests: useId(), allowance: useId(), notify: useId() };
 
   const [form, setForm] = useState(() => ({
     headline: workspace.statusHeadline || '',
@@ -36,6 +36,9 @@ const StatusPageDetailsForm = () => {
     accent: workspace.statusAccent || 'teal',
     hideBranding: !!workspace.statusHideBranding,
     allowFeedback: !!workspace.statusAllowFeedback,
+    allowRequests: !!workspace.statusAllowRequests,
+    // Kept as text while typing; '' means no allowance.
+    requestAllowance: workspace.statusRequestAllowance ? String(workspace.statusRequestAllowance) : '',
     // On unless it was switched off (a workspace from before this setting has no value, which means on).
     notifyViews: workspace.statusNotifyViews !== false,
   }));
@@ -67,6 +70,12 @@ const StatusPageDetailsForm = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    const allowance = form.requestAllowance.trim();
+    if (allowance !== '' && !(/^\d+$/.test(allowance) && Number(allowance) >= 1 && Number(allowance) <= 100)) {
+      setSaved(false);
+      setError('The monthly allowance must be a whole number from 1 to 100, or empty for none.');
+      return;
+    }
     const problem = validateRows(rows);
     if (problem) {
       setSaved(false);
@@ -86,6 +95,8 @@ const StatusPageDetailsForm = () => {
         accent: form.accent,
         hideBranding: form.hideBranding,
         allowFeedback: form.allowFeedback,
+        allowRequests: form.allowRequests,
+        requestAllowance: allowance === '' ? null : Number(allowance),
         notifyViews: form.notifyViews,
       });
       if (!sameRows(rows, savedRows.current)) {
@@ -107,7 +118,7 @@ const StatusPageDetailsForm = () => {
   const canHide = !!user?.isPro;
 
   return (
-    <form onSubmit={handleSave} className="mt-5 space-y-4 border-t border-light-border pt-5 dark:border-dark-border">
+    <form onSubmit={handleSave} noValidate className="mt-5 space-y-4 border-t border-light-border pt-5 dark:border-dark-border">
       <div>
         <h5 className="font-semibold text-light-text dark:text-dark-text">What your client sees</h5>
         <p className="mt-1 text-sm text-light-muted dark:text-dark-muted">
@@ -239,6 +250,45 @@ const StatusPageDetailsForm = () => {
         <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
           Anyone with the link can send you a message under any name. Messages are shown only to you, never published.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor={ids.requests} className="flex cursor-pointer items-center gap-2 text-sm text-light-text dark:text-dark-text">
+          <input
+            id={ids.requests}
+            type="checkbox"
+            checked={form.allowRequests}
+            onChange={(e) => {
+              setSaved(false);
+              setForm((f) => ({ ...f, allowRequests: e.target.checked }));
+            }}
+          />
+          Let clients ask for work from the page
+        </label>
+        <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+          Anyone with the link can ask for work under any name. You decide which become tasks. Your client sees each request’s title and where it is, never who sent it.
+        </p>
+        {form.allowRequests && (
+          <div className="mt-3">
+            <label htmlFor={ids.allowance} className="block text-sm font-medium text-light-text dark:text-dark-text">
+              Requests included each month (optional)
+            </label>
+            <input
+              id={ids.allowance}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={100}
+              step={1}
+              value={form.requestAllowance}
+              onChange={set('requestAllowance')}
+              className="mt-1 w-28 rounded-lg border border-light-border bg-light-surface px-3 py-2 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
+            />
+            <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+              Your client sees how many of these are used this month and how many were extra work. Requests you accept as “in scope” count; “extra work” does not. It resets on the 1st (UTC). You can always accept more.
+            </p>
+          </div>
+        )}
       </div>
 
       <div>
