@@ -14,7 +14,7 @@ const Privacy = () => (
       <ul className="list-disc space-y-1 pl-5">
         <li><strong>Account details</strong> — your name and email address. Your password is stored only as a salted bcrypt hash; we never see or store it in plain text. We ask you to confirm your email address, and confirming it is required before you can invite people.</li>
         <li><strong>Sign-in with Google</strong> — if you choose it, your Google account’s name, email address, profile picture, and Google account identifier.</li>
-        <li><strong>Agreement to the terms</strong> — when you sign up with a password, the time you agreed to the Terms and Privacy Policy and which version you saw.</li>
+        <li><strong>Agreement to the terms</strong> — the time you agreed to the Terms and Privacy Policy and which version you saw, recorded when you sign up with a password, or on your first visit after signing up with Google.</li>
         <li><strong>Content you create</strong> — the pages, blocks, tasks, comments, file attachments, workspaces, and templates you add to the app, and the email addresses of people you invite to a workspace. Uploaded files get a public, unguessable link: anyone who has the link can open the file without signing in.</li>
         <li><strong>Client responses</strong> — when someone uses a shared status page to approve a milestone, request changes or leave a comment, we store the name they typed (which we cannot verify), their message and the date. The workspace owner sees these and can export them.</li>
         <li><strong>Payment status</strong> — if you subscribe, Stripe processes your payment. We store only a customer identifier, which plan you are on and whether it is active, never your card details.</li>
