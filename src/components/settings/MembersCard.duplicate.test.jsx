@@ -8,6 +8,8 @@ vi.mock('../../services/workspaceService', () => ({
   updateMemberRole: vi.fn(), removeMember: vi.fn(), transferOwnership: vi.fn(), leaveWorkspace: vi.fn(), createWorkspace: vi.fn(),
   duplicateWorkspace: vi.fn(),
 }));
+vi.mock('./SaveClientTemplateModal', () => ({ default: ({ onClose }) => <div role="dialog" aria-label="SAVE MODAL"><button onClick={onClose}>close save</button></div> }));
+vi.mock('./ClientTemplatesModal', () => ({ default: () => <div role="dialog" aria-label="TEMPLATES MODAL" /> }));
 vi.mock('./DuplicateWorkspaceModal', () => ({ default: ({ onClose }) => <div role="dialog" aria-label="DUPLICATE MODAL"><button onClick={onClose}>close modal</button></div> }));
 
 let mockUser;
@@ -34,5 +36,29 @@ describe('MembersCard: new client from this one', () => {
     mockWorkspace = { ...mockWorkspace, ownerId: 'someone-else' };
     render(<MembersCard />);
     expect(screen.queryByRole('button', { name: /new client from this one/i })).toBeNull();
+  });
+});
+
+describe('MembersCard: client templates', () => {
+  beforeEach(() => {
+    mockUser = { id: 'u0', isPro: false, tier: 'free' };
+    mockWorkspace = { id: 'ws', name: 'Acme', ownerId: 'u0', members: [{ userId: 'u0', role: 'owner', user: { id: 'u0', name: 'Owner', email: 'o@example.invalid' } }] };
+  });
+
+  test('the owner can save this client as a template and open the templates list', () => {
+    render(<MembersCard />);
+    fireEvent.click(screen.getByRole('button', { name: /save as client template/i }));
+    expect(screen.getByRole('dialog', { name: 'SAVE MODAL' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /close save/i }));
+    expect(screen.queryByRole('dialog', { name: 'SAVE MODAL' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^client templates$/i }));
+    expect(screen.getByRole('dialog', { name: 'TEMPLATES MODAL' })).toBeInTheDocument();
+  });
+
+  test('someone who is only a member can use templates but not save this client as one', () => {
+    mockWorkspace = { ...mockWorkspace, ownerId: 'someone-else' };
+    render(<MembersCard />);
+    expect(screen.queryByRole('button', { name: /save as client template/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /^client templates$/i })).toBeInTheDocument();
   });
 });

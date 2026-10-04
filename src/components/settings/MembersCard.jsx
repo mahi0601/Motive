@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, Crown, LogOut as LeaveIcon, Plus, RefreshCw, Users, X } from 'lucide-react';
+import { Copy, Crown, LogOut as LeaveIcon, Plus, RefreshCw, Users, X, Bookmark, BookmarkPlus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import {
@@ -10,6 +10,8 @@ import { PLANS, memberLimit, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
 import DuplicateWorkspaceModal from './DuplicateWorkspaceModal';
+import SaveClientTemplateModal from './SaveClientTemplateModal';
+import ClientTemplatesModal from './ClientTemplatesModal';
 
 // Members — invite lifecycle, role changes, leaving, and creating a workspace.
 const MembersCard = () => {
@@ -155,6 +157,24 @@ const MembersCard = () => {
       message: `Created “${created.name}” from this one: ${part(counts.tasks ?? 0, 'task', 'tasks')}, ${part(counts.pages ?? 0, 'page', 'pages')}, ${part(counts.milestones ?? 0, 'milestone', 'milestones')}.`,
     });
   };
+  // Client templates: keep this client's structure (owner only), or start a new client from a
+  // saved one (anyone who can make a workspace).
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [browsingTemplates, setBrowsingTemplates] = useState(false);
+  const handleTemplateSaved = (template) => {
+    setSavingTemplate(false);
+    setInviteStatus({ type: 'success', message: `Saved “${template.name}” as a client template.` });
+  };
+  const handleFromTemplate = async ({ workspace: created, counts }) => {
+    await loadWorkspace();
+    switchWorkspace(created.id);
+    setBrowsingTemplates(false);
+    const part = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+    setInviteStatus({
+      type: 'success',
+      message: `Created “${created.name}” from a template: ${part(counts.tasks ?? 0, 'task', 'tasks')}, ${part(counts.pages ?? 0, 'page', 'pages')}, ${part(counts.milestones ?? 0, 'milestone', 'milestones')}.`,
+    });
+  };
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [creatingWorkspaceBusy, setCreatingWorkspaceBusy] = useState(false);
@@ -182,7 +202,7 @@ const MembersCard = () => {
 
   return (
     <div className={CARD_CLASS}>
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-2">
         <div className="flex items-center gap-3">
           <Users className="text-brand-500" />
           <h4 className="text-lg font-semibold">Members</h4>
@@ -190,22 +210,40 @@ const MembersCard = () => {
         {/* createWorkspace has existed on the backend (and even in
             this file's own service import) with no UI entry point at
             all — this is the only one. */}
-        {isOwner && !creatingWorkspace && (
-          <button
-            onClick={() => setDuplicating(true)}
-            className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
-          >
-            <Copy className="h-3.5 w-3.5" /> New client from this one
-          </button>
-        )}
-        {!creatingWorkspace && (
-          <button
-            onClick={() => setCreatingWorkspace(true)}
-            className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
-          >
-            <Plus className="h-3.5 w-3.5" /> New workspace
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
+          {isOwner && !creatingWorkspace && (
+            <button
+              onClick={() => setDuplicating(true)}
+              className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+            >
+              <Copy className="h-3.5 w-3.5" /> New client from this one
+            </button>
+          )}
+          {isOwner && !creatingWorkspace && (
+            <button
+              onClick={() => setSavingTemplate(true)}
+              className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+            >
+              <BookmarkPlus className="h-3.5 w-3.5" /> Save as client template
+            </button>
+          )}
+          {!creatingWorkspace && (
+            <button
+              onClick={() => setBrowsingTemplates(true)}
+              className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+            >
+              <Bookmark className="h-3.5 w-3.5" /> Client templates
+            </button>
+          )}
+          {!creatingWorkspace && (
+            <button
+              onClick={() => setCreatingWorkspace(true)}
+              className="flex items-center gap-1 text-xs font-medium text-light-muted transition hover:text-brand-600 dark:text-dark-muted dark:hover:text-brand-400"
+            >
+              <Plus className="h-3.5 w-3.5" /> New workspace
+            </button>
+          )}
+        </div>
       </div>
       {creatingWorkspace && (
         <form onSubmit={handleCreateWorkspace} className="mb-3 flex flex-wrap gap-2">
@@ -397,6 +435,8 @@ const MembersCard = () => {
           </div>
         </div>
       )}
+      {savingTemplate && <SaveClientTemplateModal workspace={workspace} onClose={() => setSavingTemplate(false)} onSaved={handleTemplateSaved} />}
+      {browsingTemplates && <ClientTemplatesModal onClose={() => setBrowsingTemplates(false)} onCreated={handleFromTemplate} />}
       {duplicating && <DuplicateWorkspaceModal workspace={workspace} onClose={() => setDuplicating(false)} onCreated={handleDuplicated} />}
     </div>
   );
