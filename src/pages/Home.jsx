@@ -85,6 +85,12 @@ const Home = () => {
             >
               Get Started <ArrowRight />
             </Link>
+            <Link
+              to="/demo"
+              className="px-6 py-3 rounded-xl text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+            >
+              See an example client page
+            </Link>
           </motion.div>
         </div>
 

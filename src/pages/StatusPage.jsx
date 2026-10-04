@@ -6,6 +6,7 @@ import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
 import { publicMilestones } from '../utils/milestones';
 import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
+import ThroughputChart from '../components/status/ThroughputChart';
 import {
   STATUS,
   getTaskDisplayStatus,
@@ -45,93 +46,30 @@ const Footer = () => (
   </p>
 );
 
-// Public and read-only: no account, no app chrome. A client opens a link and
-// sees where the work stands. Re-polls every minute so a page left open
-// stays current; the link being rotated or turned off shows as "unavailable"
-// on the next refresh.
-const StatusPage = () => {
-  const { token } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  // The owner opens their own link from Settings with ?preview=1 so the look isn't
-  // counted as a client viewing. Remembered here, then removed from the address bar
-  // so that copying the URL from it gives the plain link, never one that would hide
-  // a client's views.
-  const [preview] = useState(() => searchParams.get('preview') === '1');
-  useEffect(() => {
-    if (!searchParams.has('preview')) return;
-    const next = new URLSearchParams(searchParams);
-    next.delete('preview');
-    setSearchParams(next, { replace: true });
-  }, [searchParams, setSearchParams]);
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [unavailable, setUnavailable] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState(null);
-
-  const load = useCallback(async () => {
-    try {
-      const { data } = await getStatus(token, { preview });
-      setStatus(data.status);
-      setUnavailable(false);
-      setUpdatedAt(new Date());
-    } catch (err) {
-      // 404 = unknown, rotated or disabled link. Any other failure (network
-      // blip, cold-starting server) keeps whatever we last showed rather than
-      // replacing a good page with an error.
-      if (err?.response?.status === 404) setUnavailable(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, preview]);
-
-  useEffect(() => {
-    load();
-    const id = setInterval(load, REFRESH_MS);
-    return () => clearInterval(id);
-  }, [load]);
-
+// What a client sees, from the data the public endpoint returns. Kept apart from the
+// loading so the example page (/demo) can show the real thing with made-up data.
+// `demo` keeps the response form from sending anything; `notice` is shown above the page.
+export const StatusPageView = ({ status, token, updatedAt = null, demo = false, notice = null }) => {
   const sections = useMemo(() => {
     const groups = Object.fromEntries(SECTION_ORDER.map((s) => [s, []]));
     for (const task of status?.tasks || []) groups[getTaskDisplayStatus(task)].push(task);
     return SECTION_ORDER.map((s) => ({ key: s, tasks: groups[s] })).filter((g) => g.tasks.length > 0);
   }, [status]);
 
-  if (loading) {
-    return (
-      <Shell>
-        <Loader2 className="mx-auto mt-24 h-6 w-6 animate-spin text-light-muted dark:text-dark-muted" />
-      </Shell>
-    );
-  }
-
-  if (unavailable || !status) {
-    return (
-      <Shell>
-        <div className="mt-24 text-center">
-          <LogoMark size={48} />
-          <div className="mt-6 flex items-center justify-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
-            <AlertCircle size={20} />
-            <h1 className="font-display text-xl font-bold text-light-text dark:text-white">Status page unavailable</h1>
-          </div>
-          <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">
-            This link is no longer active. Ask the person who shared it for a new one.
-          </p>
-        </div>
-        <Footer />
-      </Shell>
-    );
-  }
-
   const { workspace, summary } = status;
   // Owner-written details (an older server may not send them at all). All of it
   // is rendered as text by React, never as HTML.
   const page = status.page || {};
   const milestones = publicMilestones(page);
+  // What finished lately (an older server sends none). The window is 7 days today.
+  const recent = status.recent;
+  const recentLabel = recent?.days && recent.days !== 7 ? `Shipped in the last ${recent.days} days` : 'Shipped this week';
   // On a longer timeline, the first milestone not yet approved is the one coming up.
   const upNextId = milestones.find((m) => !m.approvedAt)?.id;
 
   return (
     <Shell accent={page.accent}>
+      {notice}
       <header className="flex items-center gap-3">
         <span className="text-3xl" aria-hidden="true">{workspace.icon}</span>
         <div>
@@ -201,6 +139,36 @@ const StatusPage = () => {
         </section>
       )}
 
+      {recent?.count > 0 && (
+        <section
+          aria-label={recentLabel}
+          className="mt-4 rounded-xl border border-light-border bg-light-surface px-4 py-3 dark:border-dark-border dark:bg-dark-raised"
+        >
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[color:var(--accent-l)] dark:text-[color:var(--accent-d)]">
+            <CheckCircle2 size={14} aria-hidden="true" />
+            {recentLabel}
+          </p>
+          <p className="mt-0.5 text-sm font-medium text-light-text dark:text-dark-text">
+            {recent.count} {recent.count === 1 ? 'task shipped' : 'tasks shipped'}
+          </p>
+          <ul className="mt-2 space-y-1">
+            {recent.items.map((item, i) => (
+              <li key={`${item.title}-${i}`} className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="text-light-text dark:text-dark-text">{item.title}</span>
+                {formatDate(item.completedAt) && (
+                  <span className="shrink-0 text-xs text-light-muted dark:text-dark-muted">{formatDate(item.completedAt)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          {recent.count > recent.items.length && (
+            <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">and {recent.count - recent.items.length} more</p>
+          )}
+        </section>
+      )}
+
+      <ThroughputChart throughput={status.throughput} />
+
       <section
         aria-label="Overall progress"
         className="mt-6 rounded-xl border border-light-border bg-light-surface p-5 dark:border-dark-border dark:bg-dark-raised"
@@ -261,7 +229,7 @@ const StatusPage = () => {
         );
       })}
 
-      {page.allowFeedback && <ClientFeedbackForm token={token} milestones={milestones} />}
+      {page.allowFeedback && <ClientFeedbackForm token={token} milestones={milestones} demo={demo} />}
 
       {status.truncated && (
         <p className="mt-4 text-center text-xs text-light-muted dark:text-dark-muted">
@@ -277,6 +245,80 @@ const StatusPage = () => {
       {!page.hideBranding && <Footer />}
     </Shell>
   );
+};
+
+// Public and read-only: no account, no app chrome. A client opens a link and
+// sees where the work stands. Re-polls every minute so a page left open
+// stays current; the link being rotated or turned off shows as "unavailable"
+// on the next refresh.
+const StatusPage = () => {
+  const { token } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // The owner opens their own link from Settings with ?preview=1 so the look isn't
+  // counted as a client viewing. Remembered here, then removed from the address bar
+  // so that copying the URL from it gives the plain link, never one that would hide
+  // a client's views.
+  const [preview] = useState(() => searchParams.get('preview') === '1');
+  useEffect(() => {
+    if (!searchParams.has('preview')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('preview');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const { data } = await getStatus(token, { preview });
+      setStatus(data.status);
+      setUnavailable(false);
+      setUpdatedAt(new Date());
+    } catch (err) {
+      // 404 = unknown, rotated or disabled link. Any other failure (network
+      // blip, cold-starting server) keeps whatever we last showed rather than
+      // replacing a good page with an error.
+      if (err?.response?.status === 404) setUnavailable(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, preview]);
+
+  useEffect(() => {
+    load();
+    const id = setInterval(load, REFRESH_MS);
+    return () => clearInterval(id);
+  }, [load]);
+
+  if (loading) {
+    return (
+      <Shell>
+        <Loader2 className="mx-auto mt-24 h-6 w-6 animate-spin text-light-muted dark:text-dark-muted" />
+      </Shell>
+    );
+  }
+
+  if (unavailable || !status) {
+    return (
+      <Shell>
+        <div className="mt-24 text-center">
+          <LogoMark size={48} />
+          <div className="mt-6 flex items-center justify-center gap-2 text-semantic-danger-700 dark:text-semantic-danger-dark">
+            <AlertCircle size={20} />
+            <h1 className="font-display text-xl font-bold text-light-text dark:text-white">Status page unavailable</h1>
+          </div>
+          <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">
+            This link is no longer active. Ask the person who shared it for a new one.
+          </p>
+        </div>
+        <Footer />
+      </Shell>
+    );
+  }
+
+  return <StatusPageView status={status} token={token} updatedAt={updatedAt} />;
 };
 
 export default StatusPage;

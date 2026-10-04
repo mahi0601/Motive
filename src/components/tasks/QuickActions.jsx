@@ -1,17 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, Calendar, Filter, Plus, Search, Upload } from 'lucide-react';
+import { BarChart2, Calendar, FileText, Filter, Plus, Search, Upload } from 'lucide-react';
 
 // Only the primary action (New Task) gets the brand gradient — five
 // gradient buttons in a row was the single worst offender in the "everything
 // looks equally important" design review. The rest are
 // tonal/outlined so New Task actually reads as the primary action.
-const QuickActions = ({ onAddTask, onFilter, onSearch, onCalendar, onMomentum, onImport }) => {
+const QuickActions = ({ onAddTask, onFilter, onSearch, onCalendar, onMomentum, onImport, onWeeklyUpdate }) => {
   const secondaryActions = [
     { icon: <Filter className="w-5 h-5" />, label: 'Filter', onClick: onFilter },
     { icon: <Search className="w-5 h-5" />, label: 'Search', onClick: onSearch },
     { icon: <Calendar className="w-5 h-5" />, label: 'Calendar', onClick: onCalendar },
     { icon: <BarChart2 className="w-5 h-5" />, label: 'Momentum', onClick: onMomentum },
+    ...(onWeeklyUpdate ? [{ icon: <FileText className="w-5 h-5" />, label: 'Weekly update', onClick: onWeeklyUpdate }] : []),
     ...(onImport ? [{ icon: <Upload className="w-5 h-5" />, label: 'Import', onClick: onImport }] : []),
   ];
 
