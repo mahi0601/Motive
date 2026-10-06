@@ -5,7 +5,7 @@
 // breadcrumbs, so without this a bug report would carry a working credential
 // into a third-party system. Mirrors scrubUrl in motive-backend's config/logger.js.
 const TOKEN_PATH = /(\/(?:invite|s|api\/status|api\/invites|api\/payments\/session)\/)([^/?#]+)/gi;
-const SENSITIVE_PARAMS = ['token', 'csrf', 'code', 'state', 'invite', 'session_id', 'error_description'];
+const SENSITIVE_PARAMS = ['token', 'csrf', 'code', 'state', 'invite', 'session_id', 'error_description', 'email'];
 const MASK = '[redacted]';
 
 export function scrubUrl(url) {

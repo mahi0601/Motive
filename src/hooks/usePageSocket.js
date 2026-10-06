@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { getAccessToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { logger } from '../utils/logger';
+import { recoverRejectedSocket } from '../utils/socketRecovery';
 
 // A color per socket, stable for the life of the connection — cheap "who's
 // who" visual distinction without needing per-user color assignment from
@@ -22,12 +22,16 @@ const colorFor = (socketId) => {
 // raw pixels — resolution-independent across different viewers' screens.
 export const usePageSocket = (pageId, containerRef) => {
   const { user } = useAuth();
+  const userId = user?.id;
+  // Read at join time; the name changing must not reconnect the socket.
+  const userNameRef = useRef(user?.name);
+  userNameRef.current = user?.name;
   const [peers, setPeers] = useState({}); // socketId -> { user, x, y }
   const socketRef = useRef(null);
   const throttleRef = useRef(0);
 
   useEffect(() => {
-    if (!pageId || !user) return undefined;
+    if (!pageId || !userId) return undefined;
 
     // No withCredentials — the socket doesn't use cookies (auth is the JWT
     // handed to the server during the handshake below), and pairing it with
@@ -46,14 +50,12 @@ export const usePageSocket = (pageId, containerRef) => {
 
     // Identity is established by the handshake now — this just tells the
     // server which page room to put the (already-authenticated) socket in.
-    const join = () => socket.emit('page:join', { pageId, name: user.name });
+    const join = () => socket.emit('page:join', { pageId, name: userNameRef.current });
     socket.on('connect', join);
     // A rejected handshake (expired/missing token) used to fail silently —
     // presence would just never show up with nothing in the console to say
     // why.
-    socket.on('connect_error', (err) => {
-      logger.warn('Page socket connection rejected', { pageId, error: err.message });
-    });
+    recoverRejectedSocket(socket, 'Page');
 
     socket.on('presence:join', ({ socketId, user: peerUser }) => {
       setPeers((prev) => ({ ...prev, [socketId]: { user: peerUser, x: null, y: null } }));
@@ -74,7 +76,7 @@ export const usePageSocket = (pageId, containerRef) => {
       socket.disconnect();
       setPeers({});
     };
-  }, [pageId, user]);
+  }, [pageId, userId]);
 
   // Call on mousemove over the editor area — throttled to ~20/sec, plenty
   // smooth for a cursor indicator without flooding the socket.

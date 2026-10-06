@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GripVertical, Plus, Link as LinkIcon, ExternalLink } from 'lucide-react';
-import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink, safeUrl, insertPastedContent } from '../../utils/richText';
+import { GripVertical, Plus, Link as LinkIcon } from 'lucide-react';
+import TableBlock from './TableBlock';
+import EmbedBlock from './EmbedBlock';
+import { htmlForContent, sanitizeInlineHtml, toggleMark, toggleLink, insertPastedContent } from '../../utils/richText';
 
 // Markdown prefixes that auto-convert a block on space.
 const MD_SHORTCUTS = [
@@ -41,123 +43,6 @@ const placeholderFor = (type) =>
     code: 'Code',
     callout: 'Callout',
   }[type] || "Type '/' for commands");
-
-// content: { rows: string[][] }
-const TableBlock = ({ content, onChange }) => {
-  const rows = content?.rows?.length ? content.rows : [['', '']];
-
-  const setCell = (r, c, value) => {
-    const next = rows.map((row) => [...row]);
-    next[r][c] = value;
-    onChange({ rows: next });
-  };
-
-  const addRow = () => onChange({ rows: [...rows, rows[0].map(() => '')] });
-  const addColumn = () => onChange({ rows: rows.map((row) => [...row, '']) });
-
-  return (
-    <div className="w-full">
-      <table className="w-full border-collapse text-sm">
-        <tbody>
-          {rows.map((row, r) => (
-            <tr key={r}>
-              {row.map((cell, c) => (
-                <td key={c} className="border border-light-border p-0 dark:border-dark-border">
-                  <div
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={(e) => setCell(r, c, e.currentTarget.textContent)}
-                    className="min-w-[80px] px-2 py-1.5 outline-none focus:bg-brand-soft"
-                  >
-                    {cell}
-                  </div>
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-1 flex gap-3 text-xs text-light-muted dark:text-dark-muted">
-        <button onClick={addRow} className="hover:text-brand-500">+ Row</button>
-        <button onClick={addColumn} className="hover:text-brand-500">+ Column</button>
-      </div>
-    </div>
-  );
-};
-
-// content: { url: string }
-const YOUTUBE_RE = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
-const EmbedBlock = ({ content, onChange }) => {
-  const [draft, setDraft] = useState(content?.url || '');
-  const [draftError, setDraftError] = useState('');
-  // Re-validated on every render, not just at submit time — this is
-  // persisted, collaborator-visible data (unlike toggleLink's live-DOM
-  // write in richText.js), so a bad value written some other way (a direct
-  // API call, or content saved before this check existed) still can't
-  // render as a dangerous href.
-  const url = safeUrl(content?.url) || undefined;
-
-  if (!url) {
-    return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const trimmed = draft.trim();
-          if (!trimmed) return;
-          if (!safeUrl(trimmed)) {
-            setDraftError('Only http:// and https:// links are allowed.');
-            return;
-          }
-          setDraftError('');
-          onChange({ url: trimmed });
-        }}
-        className="flex items-center gap-2 rounded-lg border border-dashed border-light-border p-3 dark:border-dark-border"
-      >
-        <LinkIcon size={16} className="shrink-0 text-light-muted dark:text-dark-muted" />
-        <input
-          value={draft}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            setDraftError('');
-          }}
-          placeholder="Paste a link (YouTube, or any URL)…"
-          className="flex-1 border-none bg-transparent text-sm outline-none"
-        />
-        <button type="submit" className="text-xs font-semibold text-brand-500 hover:text-brand-600">
-          Embed
-        </button>
-        {draftError && <span className="text-xs text-red-500">{draftError}</span>}
-      </form>
-    );
-  }
-
-  const ytMatch = url.match(YOUTUBE_RE);
-  if (ytMatch) {
-    return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg">
-        <iframe
-          src={`https://www.youtube.com/embed/${ytMatch[1]}`}
-          title="Embedded video"
-          className="h-full w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 rounded-lg border border-light-border p-3 text-sm text-brand-600 hover:bg-gray-50 dark:border-dark-border dark:hover:bg-white/5"
-    >
-      <ExternalLink size={16} className="shrink-0" />
-      <span className="truncate">{url}</span>
-    </a>
-  );
-};
 
 const caretAtStart = (el) => {
   const sel = window.getSelection();
@@ -391,6 +276,9 @@ const Block = ({
       ref={ref}
       contentEditable
       suppressContentEditableWarning
+      role="textbox"
+      aria-multiline="true"
+      aria-label={`${block.type === 'paragraph' ? 'Text' : block.type} block`}
       data-placeholder={placeholderFor(block.type)}
       onInput={handleInput}
       onPaste={handlePaste}
@@ -425,7 +313,9 @@ const Block = ({
       ].map((b) => (
         <button
           key={b.tag}
+          type="button"
           title={b.title}
+          aria-label={b.title}
           onMouseDown={(e) => {
             e.preventDefault(); // keep the selection alive through the click
             applyMark(b.tag);
@@ -436,7 +326,9 @@ const Block = ({
         </button>
       ))}
       <button
+        type="button"
         title="Link"
+        aria-label="Link"
         onMouseDown={(e) => {
           e.preventDefault();
           applyLink();
@@ -452,18 +344,21 @@ const Block = ({
     <div className="group relative flex items-start gap-1 rounded px-1 py-0.5 hover:bg-gray-50 dark:hover:bg-white/5">
       {FormatToolbar}
       {/* hover controls */}
-      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity pt-1">
+      {/* Also shown while anything inside the block has keyboard focus, or the buttons would be tabbable but invisible. */}
+      <div className="flex items-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pt-1">
         <button
+          type="button"
           onMouseDown={(e) => {
             e.preventDefault();
             onAddBelow(block.id);
           }}
           className="text-light-muted dark:text-dark-muted hover:text-light-muted dark:hover:text-dark-text"
           title="Add block below"
+          aria-label="Add block below"
         >
           <Plus size={16} />
         </button>
-        <span className="cursor-grab text-light-muted dark:text-dark-muted" title="Drag to reorder">
+        <span className="cursor-grab text-light-muted dark:text-dark-muted" title="Drag to reorder" aria-hidden="true">
           <GripVertical size={16} />
         </span>
       </div>
@@ -475,6 +370,7 @@ const Block = ({
         <input
           type="checkbox"
           checked={!!block.content?.checked}
+          aria-label="Done"
           onChange={() => onToggleCheck(block.id, !block.content?.checked)}
           className="mt-1.5 h-4 w-4 accent-brand-500"
         />

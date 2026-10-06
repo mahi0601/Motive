@@ -25,7 +25,7 @@ export const createPortalSession = () => api.post('/api/payments/portal');
 // Fallback for the success-redirect: confirms (and backfills if needed) isPro
 // directly from Stripe, in case the webhook was delayed or dropped — e.g. a
 // delayed-notification payment method.
-export const reconcileCheckoutSession = (sessionId) => api.get(`/api/payments/session/${sessionId}`);
+export const reconcileCheckoutSession = (sessionId) => api.get(`/api/payments/session/${encodeURIComponent(sessionId)}`);
 
 // The payment gateways that can take each currency right now, in the order to offer them:
 // { options: { usd: [{ id, label, needsPhone, handoff }], inr: [...] } }. An empty list means

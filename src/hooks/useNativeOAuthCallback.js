@@ -1,3 +1,4 @@
+import { invitePath } from '../utils/returnTo';
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
@@ -48,7 +49,7 @@ export const useNativeOAuthCallback = () => {
       try {
         const { data } = await nativeExchange(code, codeVerifier);
         login(data.user, data.accessToken);
-        navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard');
+        navigate(invitePath(inviteToken) || '/dashboard');
       } catch {
         notify('error', 'Google sign-in failed', 'Please try again.');
         navigate('/login');

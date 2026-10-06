@@ -4,7 +4,7 @@ import { getAccessToken } from '../services/api';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { getNotifications } from '../services/notificationService';
-import { logger } from '../utils/logger';
+import { recoverRejectedSocket } from '../utils/socketRecovery';
 
 const NotificationSocketContext = createContext();
 
@@ -16,6 +16,9 @@ export const NotificationSocketProvider = ({ children }) => {
   const toast = useToast();
   const [unreadCount, setUnreadCount] = useState(0);
   const socketRef = useRef(null);
+  // The effect keys on the id, not the user object: a profile refresh makes a new object every time
+  // and would otherwise tear down and reopen the socket (losing notifications in the gap).
+  const userId = user?.id;
 
   // Initial unread count on login — the socket only carries *new*
   // notifications from here on, it doesn't replay history.
@@ -34,7 +37,7 @@ export const NotificationSocketProvider = ({ children }) => {
   }, [bootstrapping, isAuthenticated]);
 
   useEffect(() => {
-    if (bootstrapping || !isAuthenticated || !user) return undefined;
+    if (bootstrapping || !isAuthenticated || !userId) return undefined;
 
     // `auth` as a function so socket.io re-reads the access token on every
     // (re)connect attempt instead of freezing in whatever was live when
@@ -47,9 +50,7 @@ export const NotificationSocketProvider = ({ children }) => {
     });
     socketRef.current = socket;
 
-    socket.on('connect_error', (err) => {
-      logger.warn('Notification socket connection rejected', { error: err.message });
-    });
+    recoverRejectedSocket(socket, 'Notification');
 
     socket.on('notification:new', (notification) => {
       setUnreadCount((c) => c + 1);
@@ -67,7 +68,7 @@ export const NotificationSocketProvider = ({ children }) => {
       socketRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bootstrapping, isAuthenticated, user]);
+  }, [bootstrapping, isAuthenticated, userId]);
 
   return (
     <NotificationSocketContext.Provider value={{ unreadCount, setUnreadCount }}>

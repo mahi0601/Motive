@@ -13,6 +13,17 @@ const ROLE_LABEL = { editor: 'an editor', viewer: 'a viewer' };
 // (see workspace.service.js's note on why inviteMember used to fail here).
 // Branches into three states below rather than three separate routes, since
 // they all start from the same "look up this token" step.
+// Module-level, not inside Invite: a component defined during render is a new type every render, so
+// React remounts everything under it and the page loses focus on each state change.
+const Shell = ({ children }) => (
+  <div className="flex min-h-screen items-center justify-center bg-light-background px-6 dark:bg-dark-background">
+    <div className="w-full max-w-md text-center">
+      <LogoMark size={48} />
+      <div className="mt-6">{children}</div>
+    </div>
+  </div>
+);
+
 const Invite = () => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -60,15 +71,6 @@ const Invite = () => {
       setResponding(false);
     }
   };
-
-  const Shell = ({ children }) => (
-    <div className="flex min-h-screen items-center justify-center bg-light-background px-6 dark:bg-dark-background">
-      <div className="w-full max-w-md text-center">
-        <LogoMark size={48} />
-        <div className="mt-6">{children}</div>
-      </div>
-    </div>
-  );
 
   if (loading || bootstrapping) {
     return (
