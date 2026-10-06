@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { motion } from 'framer-motion';
@@ -224,19 +224,34 @@ const Dashboard = () => {
     }
   };
 
+  // Deletes wait out a grace window so "Undo" can cancel them. If the page is closed or left inside
+  // that window the delete would never be sent and the task would come back, so every pending one is
+  // sent at once on pagehide and on unmount (best effort: the browser may still cancel a request).
+  const pendingDeletes = useRef(new Set());
+  const scheduleDelete = (run) => {
+    const entry = { run: () => { pendingDeletes.current.delete(entry); clearTimeout(entry.timer); run(); } };
+    entry.timer = setTimeout(entry.run, 5000);
+    pendingDeletes.current.add(entry);
+    return { cancel: () => { clearTimeout(entry.timer); pendingDeletes.current.delete(entry); } };
+  };
+  useEffect(() => {
+    const flush = () => [...pendingDeletes.current].forEach((entry) => entry.run());
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, []);
+
   // Optimistically hide the task, then actually delete it after a grace
   // window — long enough for the "Undo" toast action to cancel it.
   const removeTask = (task) => {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
-    let undone = false;
-    const timer = setTimeout(() => {
-      if (!undone) remove(task.id).catch((e) => logger.warn('Task delete failed', { taskId: task.id, error: e.message }));
-    }, 5000);
+    const pending = scheduleDelete(() => remove(task.id).catch((e) => logger.warn('Task delete failed', { taskId: task.id, error: e.message })));
     notify('info', 'Task deleted', task.title, {
       label: 'Undo',
       onAction: () => {
-        undone = true;
-        clearTimeout(timer);
+        pending.cancel();
         setTasks((prev) => [...prev, task]);
       },
     });
@@ -268,8 +283,20 @@ const Dashboard = () => {
     // hook), rather than one blanket optimistic pass with no rollback —
     // a task whose update actually fails no longer silently drifts out of
     // sync with the server.
-    await Promise.all(ids.map((id) => patch(id, { status: 'done' }).catch((e) => logger.warn('Bulk complete failed for a task', { taskId: id, error: e.message }))));
-    notify('success', `Completed ${ids.length} task${ids.length === 1 ? '' : 's'}`);
+    const results = await Promise.all(
+      ids.map((id) =>
+        patch(id, { status: 'done' }).then(
+          () => true,
+          (e) => {
+            logger.warn('Bulk complete failed for a task', { taskId: id, error: e.message });
+            return false;
+          }
+        )
+      )
+    );
+    const done = results.filter(Boolean).length;
+    const failed = ids.length - done;
+    notify(failed ? 'error' : 'success', `Completed ${done} task${done === 1 ? '' : 's'}`, failed ? `${failed} could not be updated and were put back.` : '');
   };
 
   // Same undo pattern as single-task delete, just for the whole batch.
@@ -278,15 +305,11 @@ const Dashboard = () => {
     const removed = tasks.filter((t) => ids.includes(t.id));
     setTasks((prev) => prev.filter((t) => !ids.includes(t.id)));
     exitSelectMode();
-    let undone = false;
-    const timer = setTimeout(() => {
-      if (!undone) ids.forEach((id) => remove(id).catch((e) => logger.warn('Bulk delete failed for a task', { taskId: id, error: e.message })));
-    }, 5000);
+    const pending = scheduleDelete(() => ids.forEach((id) => remove(id).catch((e) => logger.warn('Bulk delete failed for a task', { taskId: id, error: e.message }))));
     notify('info', `Deleted ${ids.length} task${ids.length === 1 ? '' : 's'}`, '', {
       label: 'Undo',
       onAction: () => {
-        undone = true;
-        clearTimeout(timer);
+        pending.cancel();
         setTasks((prev) => [...prev, ...removed]);
       },
     });
@@ -307,7 +330,7 @@ const Dashboard = () => {
     return BOARD_COLUMNS.reduce((acc, col) => {
       acc[col.key] = tasks
         .filter((t) => (t.status || 'todo') === col.key)
-        .filter((t) => t.title.toLowerCase().includes(q))
+        .filter((t) => (t.title || '').toLowerCase().includes(q))
         .filter((t) => matchesHighlight(t, highlight, highlightSince))
         .map(toView);
       return acc;
@@ -327,7 +350,7 @@ const Dashboard = () => {
             <QuickActions
               onAddTask={() => { setEditingTask(null); setShowTaskForm(true); }}
               onFilter={() => notify('info', 'Use the search box to filter')}
-              onSearch={() => document.querySelector('input[type="text"]')?.focus()}
+              onSearch={() => document.getElementById('board-search')?.focus()}
               onCalendar={() => navigate('/calendar')}
               onMomentum={() => navigate('/momentum')}
               onImport={workspace ? () => setShowImport(true) : undefined}
@@ -363,7 +386,9 @@ const Dashboard = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3.5 text-light-muted dark:text-dark-muted" />
             <input
+              id="board-search"
               type="text"
+              aria-label="Filter tasks by title"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
               placeholder="Filter tasks by title…"
@@ -388,7 +413,7 @@ const Dashboard = () => {
           <div className="flex justify-center py-20 text-light-muted dark:text-dark-muted"><Loader2 className="animate-spin" size={28} /></div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {BOARD_COLUMNS.map((column) => (
                 <Droppable key={column.key} droppableId={column.key}>
                   {(provided) => (
@@ -415,6 +440,7 @@ const Dashboard = () => {
                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-4 space-y-2">
                           <input
                             type="text"
+                            aria-label={`New task title in ${getStatusLabel(column.status)}`}
                             placeholder='Title — try "tomorrow" or "high priority"'
                             value={drafts[column.key].title}
                             onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], title: e.target.value } }))}
@@ -422,6 +448,7 @@ const Dashboard = () => {
                           />
                           <input
                             type="text"
+                            aria-label={`New task description in ${getStatusLabel(column.status)}`}
                             placeholder="Description"
                             value={drafts[column.key].description}
                             onChange={(e) => setDrafts((d) => ({ ...d, [column.key]: { ...d[column.key], description: e.target.value } }))}

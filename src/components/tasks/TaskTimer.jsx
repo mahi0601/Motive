@@ -6,30 +6,37 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const [savedTime, setSavedTime] = useState(() => {
-    const stored = localStorage.getItem(`timer_${taskId}`);
-    return stored ? parseInt(stored) : 0;
+    try {
+      const stored = localStorage.getItem(`timer_${taskId}`);
+      return stored ? parseInt(stored, 10) : 0;
+    } catch {
+      return 0; // storage blocked: the timer still works, it just is not remembered
+    }
   });
 
   useEffect(() => {
     setTime(savedTime);
   }, [savedTime]);
 
+  // One interval for as long as the timer runs (it used to be rebuilt every second, because the
+  // time was a dependency), and the side effects live in their own effect, not in a state updater.
   useEffect(() => {
-    let interval = null;
-    if (isRunning) {
-      interval = setInterval(() => {
-        setTime(prevTime => {
-          const newTime = prevTime + 1;
-          localStorage.setItem(`timer_${taskId}`, newTime.toString());
-          if (onTimeUpdate) onTimeUpdate(newTime);
-          return newTime;
-        });
-      }, 1000);
-    } else if (!isRunning && time !== 0) {
-      clearInterval(interval);
-    }
+    if (!isRunning) return undefined;
+    const interval = setInterval(() => setTime((t) => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [isRunning, time, taskId, onTimeUpdate]);
+  }, [isRunning]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+    try {
+      localStorage.setItem(`timer_${taskId}`, time.toString());
+    } catch {
+      /* not remembered */
+    }
+    if (onTimeUpdate) onTimeUpdate(time);
+    // Only when the second ticks; a new onTimeUpdate function must not re-report the same time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [time]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -42,7 +49,11 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
     setTime(0);
     setSavedTime(0);
     setIsRunning(false);
-    localStorage.removeItem(`timer_${taskId}`);
+    try {
+      localStorage.removeItem(`timer_${taskId}`);
+    } catch {
+      /* nothing to remove */
+    }
     if (onTimeUpdate) onTimeUpdate(0);
   };
 

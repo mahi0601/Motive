@@ -43,7 +43,7 @@ describe('insertPastedContent', () => {
     insertPastedContent(el, {
       html: '<meta charset="utf-8"><b>bold</b> <span style="color:red;font-size:40px">plain</span> <script>window.__x=1</script><img src=x onerror="window.__y=1"><a href="https://example.com" onclick="evil()">link</a>',
     });
-    expect(el.innerHTML).toBe('hello<b>bold</b> plain <a href="https://example.com">link</a>');
+    expect(el.innerHTML).toBe('hello<b>bold</b> plain <a href="https://example.com" rel="noopener noreferrer">link</a>');
     expect(window.__x).toBeUndefined();
     expect(window.__y).toBeUndefined();
   });

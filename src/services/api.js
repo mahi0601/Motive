@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { loginUrlFor } from '../utils/returnTo';
 import { logger } from '../utils/logger';
 import { requestStarted, requestSettled } from './serverStatus';
 
@@ -91,7 +92,8 @@ api.interceptors.response.use(
         });
         clearAccessToken();
         if (window.location.pathname !== '/login') {
-          window.location.assign('/login');
+          // Back to where they were (an invite link, a page) once they sign in again.
+          window.location.assign(loginUrlFor(`${window.location.pathname}${window.location.search}`));
         }
       }
     }
@@ -99,11 +101,11 @@ api.interceptors.response.use(
     // network/timeout/CORS) — previously logged nowhere. This is what
     // covers the overwhelming majority of what used to be ~40 individual
     // per-call-site console.error calls scattered across the app.
-    logger.error('API request failed', error, {
-      method: original?.method,
-      url: original?.url,
-      status,
-    });
+    // Expected answers (wrong password, validation, not found, rate limited) are the app working, not
+    // bugs: they stay in the logs as warnings and do not become Sentry errors. Server failures and
+    // network errors (no status) still do.
+    const expected = status >= 400 && status < 500 && status !== 408;
+    (expected ? logger.warn : logger.error)('API request failed', ...(expected ? [{ method: original?.method, url: original?.url, status }] : [error, { method: original?.method, url: original?.url, status }]));
     return Promise.reject(error);
   }
 );

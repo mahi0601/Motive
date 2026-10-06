@@ -1,3 +1,4 @@
+import { goToGateway } from '../../utils/paymentRedirect';
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, Star } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -14,54 +15,8 @@ import {
 import { PLANS, PAID_PLAN_KEYS, planBenefits, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
+import { PHONE_PATTERN, formatDate, openCashfreeCheckout, readPending, setPending } from './billingHelpers';
 
-// Set when someone is sent to Razorpay to pay, so that on coming back the card knows to ask
-// whether the payment went through (Razorpay has no redirect back). Forgotten after 30 minutes.
-const PENDING_KEY = 'cg-pending-payment';
-const PENDING_MAX_MS = 30 * 60 * 1000;
-const readPending = () => {
-  try {
-    const at = Number(localStorage.getItem(PENDING_KEY));
-    return at > 0 && Date.now() - at < PENDING_MAX_MS;
-  } catch {
-    return false;
-  }
-};
-const setPending = (on) => {
-  try {
-    if (on) localStorage.setItem(PENDING_KEY, String(Date.now()));
-    else localStorage.removeItem(PENDING_KEY);
-  } catch {
-    // Storage can be blocked; the card then simply does not auto-check.
-  }
-};
-
-// An Indian mobile number: ten digits starting 6 to 9, optionally with +91, 91 or 0 in front (the same
-// rule the server applies; the server is what decides).
-const PHONE_PATTERN = /^(?:\+?91|0)?[6-9]\d{9}$/;
-
-// Cashfree opens its checkout with its own script from a session id. Loaded on demand, once, from
-// Cashfree's host (which a Content-Security-Policy must allow; see the README). A blocked or failed
-// load becomes a plain message, never a hung button.
-const CASHFREE_SDK = 'https://sdk.cashfree.com/js/v3/cashfree.js';
-const loadCashfree = () =>
-  new Promise((resolve, reject) => {
-    if (window.Cashfree) return resolve(window.Cashfree);
-    const script = document.createElement('script');
-    script.src = CASHFREE_SDK;
-    script.async = true;
-    script.onload = () => (window.Cashfree ? resolve(window.Cashfree) : reject(new Error('The payment window did not load.')));
-    script.onerror = () => reject(new Error('Could not load the payment window. Check your connection or ad blocker, then try again.'));
-    document.head.appendChild(script);
-  });
-const openCashfreeCheckout = async ({ sessionId, mode }) => {
-  const Cashfree = await loadCashfree();
-  // Same tab, so Cashfree sends the buyer back to the billing card when it is done.
-  await Cashfree({ mode: mode === 'production' ? 'production' : 'sandbox' }).subscriptionsCheckout({ subsSessionId: sessionId, redirectTarget: '_self' });
-};
-
-const formatDate = (iso) =>
-  iso ? new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : null;
 
 // Plan and billing. Three plans (Free, Studio, Agency), priced by active client;
 // see config/plans.js. Three states: lifetime (bought the old one-time upgrade,
@@ -112,7 +67,7 @@ const BillingCard = () => {
 
   // Back from paying on Razorpay: ask whether it went through, now, whenever the tab regains
   // focus, and every few seconds for a couple of minutes. Stops once the plan is on.
-  const [awaitingPayment, setAwaitingPayment] = useState(() => readPending());
+  const [awaitingPayment, setAwaitingPayment] = useState(() => readPending(user?.id));
   const [checkingPayment, setCheckingPayment] = useState(false);
   const checkPayment = useCallback(async () => {
     setCheckingPayment(true);
@@ -133,7 +88,7 @@ const BillingCard = () => {
       return undefined;
     }
     if (!awaitingPayment) return undefined;
-    if (!readPending()) {
+    if (!readPending(user?.id)) {
       setAwaitingPayment(false);
       return undefined;
     }
@@ -154,7 +109,7 @@ const BillingCard = () => {
       window.removeEventListener('focus', onVisible);
       clearInterval(timer);
     };
-  }, [awaitingPayment, user?.isPro, checkPayment]);
+  }, [awaitingPayment, user?.isPro, user?.id, checkPayment]);
 
   // Ask the server which provider takes each currency, so an unavailable one is said up front.
   useEffect(() => {
@@ -180,7 +135,7 @@ const BillingCard = () => {
     (sessionId ? reconcileCheckoutSession(sessionId) : Promise.resolve())
       .catch((e) => logger.warn('Failed to reconcile checkout session', { error: e.message }))
       .finally(() => {
-        refreshUser().finally(() => {
+        refreshUser().catch((e) => logger.warn('Could not refresh the profile after checkout', { error: e.message })).finally(() => {
           setSearchParams({}, { replace: true });
         });
       });
@@ -191,10 +146,10 @@ const BillingCard = () => {
   // confirming the payment, which is what the "Confirming your payment…" notice and the checks do.
   useEffect(() => {
     if (upgradeStatus !== 'pending') return;
-    setPending(true);
+    setPending(true, user?.id);
     setAwaitingPayment(true);
     setSearchParams({}, { replace: true });
-  }, [upgradeStatus, setSearchParams]);
+  }, [upgradeStatus, user?.id, setSearchParams]);
 
   // Back from the Customer Portal (card changed, plan cancelled, …): the
   // webhook may already have updated the subscription — re-read the profile.
@@ -210,7 +165,7 @@ const BillingCard = () => {
     setPortalError('');
     try {
       const { data } = await createPortalSession();
-      window.location.href = data.url; // hand off to Stripe's Customer Portal
+      goToGateway(data.url); // hand off to Stripe's Customer Portal
     } catch (err) {
       setPortalError(err?.response?.data?.message || 'Could not open billing. Try again.');
       setOpeningPortal(false);
@@ -259,13 +214,13 @@ const BillingCard = () => {
       const { data } = await createCheckoutSession(currency, plan, { provider: selected?.id, phone: selected?.needsPhone ? phone.trim() : undefined });
       // Everything but Stripe has no result in the address on return, so remember to check.
       if (data.provider && data.provider !== 'stripe') {
-        setPending(true);
+        setPending(true, user?.id);
         setAwaitingPayment(true);
       }
       if (data.sessionId) {
         await openCashfreeCheckout(data);
       } else {
-        window.location.href = data.url; // hand off to the provider's checkout
+        goToGateway(data.url); // hand off to the provider's checkout
       }
     } catch (err) {
       setPending(false);

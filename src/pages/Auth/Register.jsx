@@ -1,3 +1,4 @@
+import { invitePath } from '../../utils/returnTo';
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { User, Mail, Lock, AlertCircle } from 'lucide-react';
@@ -63,7 +64,7 @@ const Register = () => {
       // Same hand-off as Login.jsx: let Invite.jsx do the actual accept once
       // this person is authenticated, rather than duplicating that here.
       const inviteToken = searchParams.get('invite');
-      navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard', { replace: true });
+      navigate(invitePath(inviteToken) || '/dashboard', { replace: true });
     } catch (err) {
       setServerError(err?.response?.data?.message || 'Could not create your account.');
     } finally {

@@ -6,12 +6,13 @@ import { logger } from '../utils/logger';
 
 const AuthContext = createContext();
 
-// Mirror the (non-sensitive) user profile to localStorage for instant UI hydration.
-// The access token is NEVER stored here — only this profile object.
-const persistUser = (u) => {
-  if (u) localStorage.setItem('user', JSON.stringify(u));
-  else localStorage.removeItem('user');
-};
+// The profile (name, email, plan) is kept in memory only. An older version also copied it to
+// localStorage, where nothing read it back but any injected script could; that copy is removed.
+try {
+  localStorage.removeItem('user');
+} catch {
+  /* storage blocked: nothing to remove */
+}
 
 export const AuthProvider = ({ children }) => {
   // Start unauthenticated; the real state is established by the bootstrap
@@ -19,7 +20,6 @@ export const AuthProvider = ({ children }) => {
   // isAuthenticated briefly true and fire premature, unauthenticated API calls.)
   const [user, setUserState] = useState(null);
   const setUser = (u) => {
-    persistUser(u);
     setUserState(u);
   };
   // `bootstrapping` is true until we've tried to restore the session on load,

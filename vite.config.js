@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
@@ -31,7 +32,48 @@ function resolveRelease() {
 }
 const release = resolveRelease();
 
-export default defineConfig({
+
+// The static hosts send the Content-Security-Policy as a header, but the Android app serves dist/
+// from local files with no host in front, so it had none. A <meta> copy goes into the production
+// HTML for it. connect-src is narrowed to the API this build talks to (the header cannot know it).
+// Skipped when VITE_API_BASE_URL is unset, rather than guess and block the API.
+const inlineScriptHashes = (html) =>
+  [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)]
+    .map((m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`)
+    .join(' ')
+
+function cspMeta(mode) {
+  const apiBase = loadEnv(mode, process.cwd(), '').VITE_API_BASE_URL
+  return {
+    name: 'csp-meta',
+    apply: 'build',
+    transformIndexHtml(html) {
+      let api
+      try {
+        api = new URL(apiBase)
+      } catch {
+        return html
+      }
+      const ws = `${api.protocol === 'https:' ? 'wss' : 'ws'}://${api.host}`
+      const csp = [
+        "default-src 'self'",
+        `script-src 'self' ${inlineScriptHashes(html)} https://sdk.cashfree.com`,
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob:",
+        `connect-src 'self' ${api.origin} ${ws} https://*.ingest.sentry.io https://*.ingest.us.sentry.io`,
+        'frame-src https://www.youtube.com https://*.cashfree.com',
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self' https://*.cashfree.com",
+        "worker-src 'self'",
+      ].join('; ')
+      return html.replace('<meta charset="UTF-8" />', `<meta charset="UTF-8" />\n    <meta http-equiv="Content-Security-Policy" content="${csp}" />`)
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => ({
   // Inlined into the client bundle (see src/sentry.js) — deliberately NOT a
   // real .env var, since it has to be exactly the same string this file
   // hands the Sentry plugin below, not something set independently.
@@ -40,6 +82,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    cspMeta(mode),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
@@ -128,4 +171,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

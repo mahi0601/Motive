@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import { getComments, addComment } from '../../services/commentService';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useToast } from '../../context/ToastContext';
 import { logger } from '../../utils/logger';
 
 // Mentions are authored inline as @[Display Name](userId) and rendered back
@@ -29,26 +30,35 @@ const renderWithMentions = (text) => {
 
 const CommentSection = ({ taskId }) => {
   const { user } = useAuth();
+  const toast = useToast();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [members, setMembers] = useState([]);
   const [mentionQuery, setMentionQuery] = useState(null); // string while the picker is open, else null
   const [mentionStart, setMentionStart] = useState(null); // index of the '@' that triggered it
+  const [mentionIndex, setMentionIndex] = useState(0); // highlighted candidate, for the keyboard
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    if (!taskId) return;
+    if (!taskId) return undefined;
+    // Another task (or closing the panel) must not be overwritten by a slower answer for this one.
+    let current = true;
+    setLoading(true);
+    setComments([]);
     (async () => {
       try {
         const { data } = await getComments(taskId);
-        setComments(data.comments || []);
+        if (current) setComments(data.comments || []);
       } catch (e) {
         logger.warn('Failed to load comments', { taskId, error: e.message });
       } finally {
-        setLoading(false);
+        if (current) setLoading(false);
       }
     })();
+    return () => {
+      current = false;
+    };
   }, [taskId]);
 
   // Workspace members are the mention candidates — there's no per-task
@@ -64,7 +74,7 @@ const CommentSection = ({ taskId }) => {
   const filteredMembers = useMemo(() => {
     if (mentionQuery == null) return [];
     const q = mentionQuery.toLowerCase();
-    return members.filter((m) => m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)).slice(0, 5);
+    return members.filter((m) => (m.name || '').toLowerCase().includes(q) || (m.email || '').toLowerCase().includes(q)).slice(0, 5);
   }, [mentionQuery, members]);
 
   const handleTextChange = (e) => {
@@ -79,6 +89,25 @@ const CommentSection = ({ taskId }) => {
     }
     setMentionStart(atIndex);
     setMentionQuery(upToCaret.slice(atIndex + 1));
+    setMentionIndex(0);
+  };
+
+  // Keyboard for the mention picker: arrows move, Enter/Tab choose, Escape closes. Without this the
+  // picker could only be used with a mouse.
+  const handleTextKeyDown = (e) => {
+    if (mentionQuery == null || filteredMembers.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMentionIndex((i) => (i + 1) % filteredMembers.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMentionIndex((i) => (i - 1 + filteredMembers.length) % filteredMembers.length);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      selectMention(filteredMembers[Math.min(mentionIndex, filteredMembers.length - 1)]);
+    } else if (e.key === 'Escape') {
+      setMentionQuery(null);
+    }
   };
 
   const selectMention = (member) => {
@@ -99,6 +128,8 @@ const CommentSection = ({ taskId }) => {
       setText('');
     } catch (e) {
       logger.warn('Failed to add comment', { taskId, error: e.message });
+      // The text stays in the box; say so, or it looks like nothing happened.
+      toast?.notify('error', 'Comment not sent', 'Your comment could not be posted. Check your connection and try again.');
     }
   };
 
@@ -120,23 +151,27 @@ const CommentSection = ({ taskId }) => {
           <div className="flex-1">
             <textarea
               ref={textareaRef}
+              aria-label="Add a comment"
               value={text}
               onChange={handleTextChange}
+              onKeyDown={handleTextKeyDown}
               placeholder="Add a comment… use @ to mention someone"
               rows={3}
               className="w-full resize-none rounded-xl border border-light-border bg-light-surface px-4 py-3 text-light-text outline-none transition focus:ring-2 focus:ring-brand-500 dark:border-dark-border dark:bg-dark-raised dark:text-white"
             />
             {mentionQuery != null && filteredMembers.length > 0 && (
-              <div className="absolute z-10 mt-1 w-64 rounded-lg border border-light-border bg-light-surface py-1 shadow-lg dark:border-dark-border dark:bg-dark-raised">
-                {filteredMembers.map((m) => (
+              <div role="listbox" aria-label="Mention someone" className="absolute z-10 mt-1 w-64 rounded-lg border border-light-border bg-light-surface py-1 shadow-lg dark:border-dark-border dark:bg-dark-raised">
+                {filteredMembers.map((m, i) => (
                   <button
                     key={m.id}
                     type="button"
+                    role="option"
+                    aria-selected={i === mentionIndex}
                     onMouseDown={(e) => {
                       e.preventDefault();
                       selectMention(m);
                     }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-light-border/40 dark:hover:bg-white/5"
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-light-border/40 dark:hover:bg-white/5 ${i === mentionIndex ? 'bg-light-border/40 dark:bg-white/5' : ''}`}
                   >
                     <span className="font-medium text-light-text dark:text-white">{m.name}</span>
                     <span className="text-xs text-light-muted dark:text-dark-muted">{m.email}</span>

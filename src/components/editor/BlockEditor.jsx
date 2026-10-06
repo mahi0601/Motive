@@ -15,20 +15,29 @@ const BlockEditor = ({ pageId }) => {
   const [blocks, setBlocks] = useState([]);
   const [focusId, setFocusId] = useState(null);
   const [slash, setSlash] = useState(null); // { blockId, position, query }
+  const [loadError, setLoadError] = useState(false);
   const saveTimers = useRef({});
 
   // Load blocks for the page; seed an empty paragraph if none exist.
   useEffect(() => {
     let mounted = true;
+    setLoadError(false);
     (async () => {
-      const { data } = await getBlocks(pageId);
-      if (!mounted) return;
-      if (data.blocks.length === 0) {
-        const { data: created } = await createBlock(pageId, { type: 'paragraph', content: { text: '' } });
-        setBlocks([created.block]);
-        setFocusId(created.block.id);
-      } else {
-        setBlocks(data.blocks);
+      try {
+        const { data } = await getBlocks(pageId);
+        if (!mounted) return;
+        if (data.blocks.length === 0) {
+          const { data: created } = await createBlock(pageId, { type: 'paragraph', content: { text: '' } });
+          if (!mounted) return;
+          setBlocks([created.block]);
+          setFocusId(created.block.id);
+        } else {
+          setBlocks(data.blocks);
+        }
+      } catch (e) {
+        // A 403/404 (no access, or the page is gone) must not leave the editor on "Loading…" forever.
+        logger.warn('Could not load blocks', { pageId, error: e.message });
+        if (mounted) setLoadError(true);
       }
     })();
     return () => {
@@ -49,6 +58,13 @@ const BlockEditor = ({ pageId }) => {
     }, 500);
   }, []);
 
+  // A structural change (convert, check, collapse) saves the block's whole current content itself,
+  // so any typing save still waiting would land AFTER it and overwrite it with stale text.
+  const cancelPendingSave = (id) => {
+    clearTimeout(saveTimers.current[id]);
+    delete saveTimers.current[id];
+  };
+
   const handleChange = (id, content) => {
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content } : b)));
     scheduleSave(id, { content });
@@ -64,10 +80,14 @@ const BlockEditor = ({ pageId }) => {
   // Renumbers just one sibling group (either the top-level list, or one
   // toggle's children) — never touches positions outside that scope.
   const persistOrderFor = (parentBlockId, list) => {
+    // The list is sorted by `position`, so the local copies must carry the new order too, or the
+    // editor snaps back to the old one while the server already has the new one.
+    const order = new Map(list.map((b, i) => [b.id, i]));
+    setBlocks((prev) => prev.map((b) => (order.has(b.id) ? { ...b, position: order.get(b.id) } : b)));
     reorderBlocks(
       pageId,
       list.map((b, i) => ({ id: b.id, position: i }))
-    ).catch(() => {});
+    ).catch((e) => logger.warn('Block reorder failed', { pageId, error: e.message }));
     void parentBlockId; // scope is implicit in `list`; kept for readability at call sites
   };
 
@@ -119,12 +139,14 @@ const BlockEditor = ({ pageId }) => {
 
   const handleConvert = (id, type) => {
     const content = defaultContentFor(type);
+    cancelPendingSave(id);
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, type, content } : b)));
     updateBlock(id, { type, content }).catch((e) => logger.warn('Block type-convert failed', { blockId: id, type, error: e.message }));
     setFocusId(id);
   };
 
   const handleToggleCheck = (id, checked) => {
+    cancelPendingSave(id);
     setBlocks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, checked } } : b))
     );
@@ -137,6 +159,7 @@ const BlockEditor = ({ pageId }) => {
     const block = blocks.find((b) => b.id === id);
     if (!block) return;
     const collapsed = !block.content?.collapsed;
+    cancelPendingSave(id);
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content: { ...b.content, collapsed } } : b)));
     updateBlock(id, { content: { ...block.content, collapsed } }).catch((e) => logger.warn('Toggle collapse-state save failed', { blockId: id, error: e.message }));
   };
@@ -213,6 +236,10 @@ const BlockEditor = ({ pageId }) => {
       renderChild={renderBlock}
     />
   );
+
+  if (loadError) {
+    return <div role="alert" className="p-4 text-light-muted dark:text-dark-muted">This page could not be loaded. It may have been removed, or you may no longer have access.</div>;
+  }
 
   return (
     <div className="relative">

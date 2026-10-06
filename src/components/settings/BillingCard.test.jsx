@@ -75,13 +75,13 @@ describe('BillingCard', () => {
 
   test('a subscriber sees the renewal date and can open the billing portal', async () => {
     mockUser = { isPro: true, proLifetime: false, subscriptionStatus: 'active', proPeriodEnd: FUTURE };
-    createPortalSession.mockResolvedValue({ data: { url: 'https://billing.stripe.test/p' } });
+    createPortalSession.mockResolvedValue({ data: { url: 'https://billing.stripe.com/p' } });
     renderCard();
 
     expect(screen.getByText(/renews on/i)).toHaveTextContent('2026');
     fireEvent.click(screen.getByRole('button', { name: /manage billing/i }));
 
-    await waitFor(() => expect(window.location.href).toBe('https://billing.stripe.test/p'));
+    await waitFor(() => expect(window.location.href).toBe('https://billing.stripe.com/p'));
   });
 
   test('a cancelled-but-still-active subscriber is told when Pro ends', () => {
@@ -117,7 +117,7 @@ describe('BillingCard', () => {
 
   test('a free user sees both paid plans with every benefit, no UPI promise, and subscribes to the chosen plan in the chosen currency', async () => {
     mockUser = { isPro: false, tier: 'free' };
-    createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.test/s' } });
+    createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.com/s' } });
     renderCard();
 
     expect(screen.getByText(/monthly subscription/i)).toBeInTheDocument();
@@ -146,12 +146,12 @@ describe('BillingCard', () => {
     fireEvent.click(screen.getByRole('button', { name: /subscribe to agency/i }));
 
     await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledWith('inr', 'agency', { provider: undefined, phone: undefined })); // options not loaded yet: the server picks
-    expect(window.location.href).toBe('https://checkout.stripe.test/s');
+    expect(window.location.href).toBe('https://checkout.stripe.com/s');
   });
 
   test('subscribing to Studio in USD sends studio', async () => {
     mockUser = { isPro: false, tier: 'free' };
-    createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.test/s' } });
+    createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.com/s' } });
     renderCard();
     fireEvent.click(screen.getByRole('button', { name: /subscribe to studio/i }));
     await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledWith('usd', 'studio', { provider: undefined, phone: undefined }));
@@ -351,19 +351,19 @@ describe('BillingCard', () => {
     test('the chosen gateway is what checkout is asked for, and the footer names it', async () => {
       mockUser = { isPro: false };
       withOptions({ usd: [STRIPE, PAYPAL], inr: [STRIPE] });
-      createCheckoutSession.mockResolvedValue({ data: { provider: 'paypal', url: 'https://www.paypal.test/approve' } });
+      createCheckoutSession.mockResolvedValue({ data: { provider: 'paypal', url: 'https://www.paypal.com/approve' } });
       renderCard();
       fireEvent.click(await screen.findByRole('radio', { name: 'PayPal' }));
       expect(screen.getByText(/pay on paypal's secure checkout/i)).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: /subscribe to studio/i }));
       await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledWith('usd', 'studio', { provider: 'paypal', phone: undefined }));
-      await waitFor(() => expect(window.location.href).toBe('https://www.paypal.test/approve'));
+      await waitFor(() => expect(window.location.href).toBe('https://www.paypal.com/approve'));
     });
 
     test('with no choice made, the first gateway is the one asked for', async () => {
       mockUser = { isPro: false };
       withOptions({ usd: [STRIPE, PAYPAL], inr: [STRIPE] });
-      createCheckoutSession.mockResolvedValue({ data: { provider: 'stripe', url: 'https://checkout.stripe.test/x' } });
+      createCheckoutSession.mockResolvedValue({ data: { provider: 'stripe', url: 'https://checkout.stripe.com/x' } });
       renderCard();
       await screen.findByRole('radiogroup', { name: /pay with/i });
       fireEvent.click(screen.getByRole('button', { name: /subscribe to agency/i }));
@@ -471,10 +471,10 @@ describe('BillingCard', () => {
     test('a redirect-style gateway other than Stripe remembers to confirm on return', async () => {
       mockUser = { isPro: false };
       withOptions({ usd: [PAYPAL], inr: [STRIPE] });
-      createCheckoutSession.mockResolvedValue({ data: { provider: 'paypal', url: 'https://www.paypal.test/a' } });
+      createCheckoutSession.mockResolvedValue({ data: { provider: 'paypal', url: 'https://www.paypal.com/a' } });
       renderCard();
       fireEvent.click(await screen.findByRole('button', { name: /subscribe to studio/i }));
-      await waitFor(() => expect(window.location.href).toBe('https://www.paypal.test/a'));
+      await waitFor(() => expect(window.location.href).toBe('https://www.paypal.com/a'));
       expect(Number(localStorage.getItem('cg-pending-payment'))).toBeGreaterThan(0);
     });
   });
@@ -493,10 +493,10 @@ describe('BillingCard', () => {
 
     test('a Stripe checkout does not set the flag', async () => {
       mockUser = { isPro: false };
-      createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.test/x', provider: 'stripe' } });
+      createCheckoutSession.mockResolvedValue({ data: { url: 'https://checkout.stripe.com/x', provider: 'stripe' } });
       renderCard();
       fireEvent.click(screen.getByRole('button', { name: /subscribe to studio/i }));
-      await waitFor(() => expect(window.location.href).toBe('https://checkout.stripe.test/x'));
+      await waitFor(() => expect(window.location.href).toBe('https://checkout.stripe.com/x'));
       expect(localStorage.getItem('cg-pending-payment')).toBeNull();
     });
 

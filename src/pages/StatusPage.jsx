@@ -297,8 +297,19 @@ const StatusPage = () => {
 
   useEffect(() => {
     load();
-    const id = setInterval(load, REFRESH_MS);
-    return () => clearInterval(id);
+    // Poll only while the tab is on screen (a hidden tab refreshes nothing anyone sees), and catch up
+    // the moment it comes back.
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') load();
+    }, REFRESH_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [load]);
 
   if (loading) {

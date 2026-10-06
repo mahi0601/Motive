@@ -1,3 +1,4 @@
+import { safeUrl } from '../../utils/richText';
 import React, { useState, useEffect } from 'react';
 import { File, Paperclip, X } from 'lucide-react';
 import AttachmentUploader from './AttachmentUploader';
@@ -11,17 +12,23 @@ const AttachmentList = ({ taskId }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!taskId) return;
+    if (!taskId) return undefined;
+    let current = true;
+    setLoading(true);
+    setFiles([]);
     (async () => {
       try {
         const { data } = await getTaskFiles(taskId);
-        setFiles(data.files || []);
+        if (current) setFiles(data.files || []);
       } catch (e) {
         logger.warn('Failed to load attachments', { taskId, error: e.message });
       } finally {
-        setLoading(false);
+        if (current) setLoading(false);
       }
     })();
+    return () => {
+      current = false;
+    };
   }, [taskId]);
 
   const handleUpload = async (file) => {
@@ -63,7 +70,7 @@ const AttachmentList = ({ taskId }) => {
             >
               <File className="h-4 w-4 shrink-0 text-light-muted dark:text-dark-muted" />
               <a
-                href={f.url}
+                href={safeUrl(f.url) || undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 truncate text-brand-600 hover:underline dark:text-brand-400"
