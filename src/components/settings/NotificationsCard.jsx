@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Bell, CheckCircle, Mail } from 'lucide-react';
 import { CARD_CLASS } from './cardStyles';
+import { useAuth } from '../../context/AuthContext';
+import { updateProfile } from '../../services/userService';
 
 // Previously a bare `alert('Email notifications enabled successfully!')`
 // that did nothing — no request, no persisted setting. There's no email
@@ -10,6 +12,24 @@ import { CARD_CLASS } from './cardStyles';
 // `notification:new` socket push can also show as a native browser
 // notification.
 const NotificationsCard = () => {
+  const { user, refreshUser } = useAuth();
+  const emailId = useId();
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  // On unless switched off: an account from before this setting has no value, which means on.
+  const emailOn = user?.notifyClientResponsesByEmail !== false;
+  const handleEmailToggle = async (e) => {
+    setEmailBusy(true);
+    setEmailError('');
+    try {
+      await updateProfile({ notifyClientResponsesByEmail: e.target.checked });
+      await refreshUser();
+    } catch {
+      setEmailError('Could not save. Try again.');
+    } finally {
+      setEmailBusy(false);
+    }
+  };
   const [notifPermission, setNotifPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
@@ -48,6 +68,14 @@ const NotificationsCard = () => {
           ? 'Not supported in this browser.'
           : 'Show a desktop notification when Clientglass notifies you (comments, mentions).'}
       </p>
+      <label htmlFor={emailId} className="mt-4 flex items-center gap-2 text-sm text-light-text dark:text-dark-text">
+        <input id={emailId} type="checkbox" checked={emailOn} disabled={emailBusy} onChange={handleEmailToggle} />
+        Email me when a client responds
+      </label>
+      <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+        Approvals arrive straight away. Comments and requests are grouped, at most one email per client every 12 hours.
+      </p>
+      {emailError && <p role="alert" className="mt-1 text-sm text-semantic-danger-700 dark:text-semantic-danger-dark">{emailError}</p>}
     </div>
   );
 };

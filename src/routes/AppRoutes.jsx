@@ -18,6 +18,7 @@ const Terms = lazyWithRetry(() => import('../pages/Terms'));
 const Invite = lazyWithRetry(() => import('../pages/Invite'));
 const Clients = lazyWithRetry(() => import('../pages/Clients'));
 const StatusPage = lazyWithRetry(() => import('../pages/StatusPage'));
+const Unsubscribe = lazyWithRetry(() => import('../pages/Unsubscribe'));
 const Demo = lazyWithRetry(() => import('../pages/Demo'));
 import PageFallback from '../components/ui/PageFallback';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
@@ -47,6 +48,8 @@ const AppRoutes = () => {
       {/* Public, read-only client status page — the share token in the URL
           is the only credential (see StatusPage.jsx). */}
       <Route path="/s/:token" element={<StatusPage />} />
+      {/* Public: the personal link in a client's weekly email (see Unsubscribe.jsx). */}
+      <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
       {/* A public example page with made-up data, linked from the home page. */}
       <Route path="/demo" element={<Demo />} />
       {/* Permanent alias: "Statistics" was renamed to "Momentum" (see

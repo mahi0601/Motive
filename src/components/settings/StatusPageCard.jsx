@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { enableShare, disableShare } from '../../services/workspaceService';
 import StatusPageDetailsForm from './StatusPageDetailsForm';
+import WeeklyEmailCard from './WeeklyEmailCard';
 import SendLinkPanel from './SendLinkPanel';
 import ClientFeedbackList from './ClientFeedbackList';
 import ClientRequestInbox from './ClientRequestInbox';
@@ -197,6 +198,7 @@ const StatusPageCard = () => {
 
       {enabled && <ClientActivity workspaceId={workspace.id} />}
       {enabled && <StatusPageDetailsForm />}
+      {enabled && <WeeklyEmailCard />}
       {enabled && <ClientFeedbackList workspaceId={workspace.id} />}
       {enabled && workspace.statusAllowRequests && <ClientRequestInbox workspaceId={workspace.id} />}
     </div>
