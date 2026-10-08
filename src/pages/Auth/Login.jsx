@@ -1,3 +1,4 @@
+import { invitePath, safeReturnTo } from '../../utils/returnTo';
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
@@ -47,7 +48,7 @@ const Login = () => {
       // (and its wrong-email handling) takes over, instead of duplicating
       // that logic here.
       const inviteToken = searchParams.get('invite');
-      navigate(inviteToken ? `/invite/${inviteToken}` : '/dashboard', { replace: true });
+      navigate(invitePath(inviteToken) || safeReturnTo(searchParams.get('returnTo')) || '/dashboard', { replace: true });
     } catch (err) {
       setServerError(err?.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {

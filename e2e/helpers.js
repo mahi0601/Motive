@@ -34,3 +34,11 @@ export async function backendSupportsImport(request, user) {
   const res = await request.post(`${API}/api/tasks/import`, { headers: { Authorization: `Bearer ${user.accessToken}` }, data: { tasks: [] } });
   return res.status() !== 404;
 }
+
+// Client requests need a backend that has them; see backendSupportsMilestones.
+export async function backendSupportsRequests(request, user) {
+  const auth = { Authorization: `Bearer ${user.accessToken}` };
+  const list = await (await request.get(`${API}/api/workspaces`, { headers: auth })).json();
+  const res = await request.get(`${API}/api/workspaces/${list.workspaces[0].id}/requests`, { headers: auth });
+  return res.status() !== 404;
+}

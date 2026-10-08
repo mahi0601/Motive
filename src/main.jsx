@@ -11,7 +11,11 @@ warmUpApi();
 
 // One-time cleanup of legacy client-side data from the old mock-based app.
 // Tasks/activity now live in the backend, so these stale keys are removed.
-['tasks', 'taskActivities'].forEach((k) => localStorage.removeItem(k));
+try {
+  ['tasks', 'taskActivities'].forEach((k) => localStorage.removeItem(k));
+} catch {
+  // Storage can be blocked (some WebViews, strict privacy settings); the app must still start.
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

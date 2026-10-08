@@ -86,3 +86,10 @@ describe('sanitizeInlineHtml — XSS', () => {
     expect(sanitizeInlineHtml(undefined)).toBe('');
   });
 });
+
+describe('sanitizeInlineHtml — links', () => {
+  test('every link that survives opens safely, even when the stored HTML had a target and no rel', () => {
+    const out = sanitizeInlineHtml('<a href="https://example.com" target="_blank">x</a>');
+    expect(out).toContain('rel="noopener noreferrer"');
+  });
+});

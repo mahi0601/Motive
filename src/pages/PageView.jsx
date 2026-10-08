@@ -13,6 +13,7 @@ const PageView = () => {
   const { editPage, addPage } = useWorkspace();
   const [page, setPage] = useState(null);
   const [savedTpl, setSavedTpl] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const titleRef = useRef(null);
   const saveTimer = useRef(null);
   const contentRef = useRef(null);
@@ -20,9 +21,16 @@ const PageView = () => {
 
   useEffect(() => {
     let mounted = true;
+    setLoadError(false);
     (async () => {
-      const { data } = await getPage(id);
-      if (mounted) setPage(data.page);
+      try {
+        const { data } = await getPage(id);
+        if (mounted) setPage(data.page);
+      } catch (e) {
+        // No access or gone (403/404): say so instead of showing "Loading…" forever.
+        logger.warn('Could not load page', { pageId: id, error: e.message });
+        if (mounted) setLoadError(true);
+      }
     })();
     return () => {
       mounted = false;
@@ -62,6 +70,10 @@ const PageView = () => {
       logger.warn('Failed to save template', { pageId: id, error: e.message });
     }
   };
+
+  if (loadError) {
+    return <div role="alert" className="p-10 text-light-muted dark:text-dark-muted">This page could not be found, or you no longer have access to it.</div>;
+  }
 
   if (!page) {
     return <div className="p-10 text-light-muted dark:text-dark-muted">Loading…</div>;

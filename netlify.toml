@@ -37,8 +37,9 @@
 # VITE_API_BASE_URL is set per-environment in Netlify's dashboard, so this
 # file can't name it, and guessing wrong would break every API/socket call.
 # If you know your API origin, replace `https: wss:` with it (see the README's
-# "Tightening the CSP" section). The inline theme-flash script in index.html
-# is why `script-src` still allows 'unsafe-inline'.
+# "Tightening the CSP" section). `script-src` allows the one inline theme-flash
+# script in index.html by its hash (src/csp.test.js fails if the script changes
+# and this hash does not), so scripts need no inline allowance.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -47,4 +48,4 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), camera=(), microphone=()"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss:; frame-src https://www.youtube.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-7czY2k/Mlp64qFhes3OkzxRwIG6Idw67R4W+Rny2qHM=' https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https: wss:; frame-src https://www.youtube.com https://*.cashfree.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://*.cashfree.com; worker-src 'self'"

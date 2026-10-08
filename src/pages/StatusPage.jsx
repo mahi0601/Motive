@@ -6,6 +6,8 @@ import { getStatus } from '../services/statusService';
 import { accentFor } from '../config/statusAccents';
 import { publicMilestones } from '../utils/milestones';
 import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
+import ClientRequestForm from '../components/status/ClientRequestForm';
+import ClientRequestList from '../components/status/ClientRequestList';
 import ThroughputChart from '../components/status/ThroughputChart';
 import {
   STATUS,
@@ -229,6 +231,13 @@ export const StatusPageView = ({ status, token, updatedAt = null, demo = false, 
         );
       })}
 
+      {page.allowRequests && (
+        <>
+          <ClientRequestList requests={status.requests || []} allowance={status.allowance || null} />
+          <ClientRequestForm token={token} demo={demo} />
+        </>
+      )}
+
       {page.allowFeedback && <ClientFeedbackForm token={token} milestones={milestones} demo={demo} />}
 
       {status.truncated && (
@@ -288,8 +297,19 @@ const StatusPage = () => {
 
   useEffect(() => {
     load();
-    const id = setInterval(load, REFRESH_MS);
-    return () => clearInterval(id);
+    // Poll only while the tab is on screen (a hidden tab refreshes nothing anyone sees), and catch up
+    // the moment it comes back.
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') load();
+    }, REFRESH_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [load]);
 
   if (loading) {

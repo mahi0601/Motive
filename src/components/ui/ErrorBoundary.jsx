@@ -24,13 +24,29 @@ class ErrorBoundary extends React.Component {
     logger.error('Uncaught UI error', error, { componentStack: info?.componentStack });
   }
 
+  // Reloads the screen the person is on (not the home page, which lost their place).
   handleReload = () => {
     this.setState({ hasError: false });
-    window.location.assign('/');
+    window.location.reload();
   };
 
   render() {
     if (!this.state.hasError) return this.props.children;
+
+    if (this.props.inline) {
+      return (
+        <div role="alert" className="mx-auto flex max-w-md flex-col items-center gap-3 px-6 py-16 text-center">
+          <h2 className="font-display text-xl font-semibold text-light-text dark:text-white">This screen hit a problem</h2>
+          <p className="text-light-muted dark:text-dark-muted">Your data is safe. Try again, or open another page from the menu.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="rounded-lg bg-brand-gradient px-5 py-2 font-semibold text-white shadow-brand-sm transition hover:shadow-brand"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-light-background px-6 text-center dark:bg-dark-background">
@@ -45,7 +61,7 @@ class ErrorBoundary extends React.Component {
           onClick={this.handleReload}
           className="rounded-lg bg-brand-gradient px-6 py-2.5 font-semibold text-white shadow-brand-sm transition hover:shadow-brand"
         >
-          Reload Clientglass
+          Reload this page
         </button>
       </div>
     );

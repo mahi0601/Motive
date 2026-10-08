@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import { goToGateway } from '../../utils/paymentRedirect';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle, Star } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { changePlan, createCheckoutSession, createPortalSession, reconcileCheckoutSession } from '../../services/paymentService';
+import {
+  cancelSubscription,
+  changePlan,
+  createCheckoutSession,
+  createPortalSession,
+  getPaymentOptions,
+  reconcileCheckoutSession,
+  syncPayment,
+} from '../../services/paymentService';
 import { PLANS, PAID_PLAN_KEYS, planBenefits, tierOf } from '../../config/plans';
 import { logger } from '../../utils/logger';
 import { CARD_CLASS } from './cardStyles';
+import { PHONE_PATTERN, formatDate, openCashfreeCheckout, readPending, setPending } from './billingHelpers';
 
-const formatDate = (iso) =>
-  iso ? new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : null;
 
 // Plan and billing. Three plans (Free, Studio, Agency), priced by active client;
 // see config/plans.js. Three states: lifetime (bought the old one-time upgrade,
@@ -27,6 +35,13 @@ const BillingCard = () => {
     { code: 'inr', label: 'INR' },
   ];
   const [currency, setCurrency] = useState('usd');
+  // The gateways that take each currency ({ usd: [...], inr: [...] }). null = not known yet, in which
+  // case checkout is allowed and the server decides. An empty list = nothing takes that currency.
+  const [options, setOptions] = useState(null);
+  // The buyer's pick from "Pay with" (the first available is used until they choose) and, for a
+  // gateway that needs one, their phone number (sent to it, never kept here beyond this form).
+  const [providerChoice, setProviderChoice] = useState(null);
+  const [phone, setPhone] = useState('');
   const [upgrading, setUpgrading] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
   const upgradeStatus = searchParams.get('upgrade'); // 'success' | 'cancelled' | null
@@ -42,6 +57,73 @@ const BillingCard = () => {
   const [switchError, setSwitchError] = useState('');
   const [switched, setSwitched] = useState(false);
 
+  // Razorpay subscribers cancel here (there is no customer portal). It ends at the end of the
+  // paid period and cannot be undone, so it asks first.
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState('');
+  // Subscriptions held by a gateway with no hosted billing page: cancelled here, at the period end.
+  const inAppBilling = ['razorpay', 'paypal', 'cashfree'].includes(user?.paymentProvider);
+
+  // Back from paying on Razorpay: ask whether it went through, now, whenever the tab regains
+  // focus, and every few seconds for a couple of minutes. Stops once the plan is on.
+  const [awaitingPayment, setAwaitingPayment] = useState(() => readPending(user?.id));
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const checkPayment = useCallback(async () => {
+    setCheckingPayment(true);
+    try {
+      await syncPayment();
+      await refreshUser();
+    } catch (e) {
+      logger.warn('Could not confirm the payment yet', { error: e?.message });
+    } finally {
+      setCheckingPayment(false);
+    }
+  }, [refreshUser]);
+
+  useEffect(() => {
+    if (user?.isPro) {
+      setPending(false);
+      setAwaitingPayment(false);
+      return undefined;
+    }
+    if (!awaitingPayment) return undefined;
+    if (!readPending(user?.id)) {
+      setAwaitingPayment(false);
+      return undefined;
+    }
+    checkPayment();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') checkPayment();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (tries > 24) clearInterval(timer);
+      else checkPayment();
+    }, 5000);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+      clearInterval(timer);
+    };
+  }, [awaitingPayment, user?.isPro, user?.id, checkPayment]);
+
+  // Ask the server which provider takes each currency, so an unavailable one is said up front.
+  useEffect(() => {
+    if (user?.isPro) return;
+    getPaymentOptions()
+      .then(({ data }) => setOptions(data?.options ?? null))
+      .catch((e) => logger.warn('Could not read payment options', { error: e?.message }));
+  }, [user?.isPro]);
+
+  const list = options ? options[currency] || [] : null; // null = unknown yet
+  const selected = list ? list.find((g) => g.id === providerChoice) || list[0] || null : null;
+  const unavailable = list !== null && list.length === 0;
+  const otherCurrencyOffered = !!options && (options.usd?.length > 0 || options.inr?.length > 0);
+
   // Coming back from Stripe Checkout — reconcile directly against Stripe first
   // (covers UPI/delayed-notification methods, and a webhook that was ever
   // delayed or dropped: without this, isPro could stay false forever even
@@ -53,12 +135,21 @@ const BillingCard = () => {
     (sessionId ? reconcileCheckoutSession(sessionId) : Promise.resolve())
       .catch((e) => logger.warn('Failed to reconcile checkout session', { error: e.message }))
       .finally(() => {
-        refreshUser().finally(() => {
+        refreshUser().catch((e) => logger.warn('Could not refresh the profile after checkout', { error: e.message })).finally(() => {
           setSearchParams({}, { replace: true });
         });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [upgradeStatus, refreshUser, setSearchParams]);
+
+  // Back from a gateway whose checkout has no result in the address (PayPal, Cashfree): start
+  // confirming the payment, which is what the "Confirming your payment…" notice and the checks do.
+  useEffect(() => {
+    if (upgradeStatus !== 'pending') return;
+    setPending(true, user?.id);
+    setAwaitingPayment(true);
+    setSearchParams({}, { replace: true });
+  }, [upgradeStatus, user?.id, setSearchParams]);
 
   // Back from the Customer Portal (card changed, plan cancelled, …): the
   // webhook may already have updated the subscription — re-read the profile.
@@ -74,7 +165,7 @@ const BillingCard = () => {
     setPortalError('');
     try {
       const { data } = await createPortalSession();
-      window.location.href = data.url; // hand off to Stripe's Customer Portal
+      goToGateway(data.url); // hand off to Stripe's Customer Portal
     } catch (err) {
       setPortalError(err?.response?.data?.message || 'Could not open billing. Try again.');
       setOpeningPortal(false);
@@ -97,14 +188,44 @@ const BillingCard = () => {
     }
   };
 
-  const handleUpgrade = async (plan) => {
-    setUpgrading(true);
-    setUpgradeError('');
+  const handleCancel = async () => {
+    if (cancelling) return;
+    setCancelling(true);
+    setCancelError('');
     try {
-      const { data } = await createCheckoutSession(currency, plan);
-      window.location.href = data.url; // hand off to Stripe Checkout
+      await cancelSubscription();
+      await refreshUser();
+      setConfirmingCancel(false);
     } catch (err) {
-      setUpgradeError(err?.response?.data?.message || 'Could not start checkout. Try again.');
+      setCancelError(err?.response?.data?.message || 'Could not cancel. Try again, or contact support.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleUpgrade = async (plan) => {
+    setUpgradeError('');
+    if (selected?.needsPhone && !PHONE_PATTERN.test(phone.replace(/[\s-]/g, ''))) {
+      setUpgradeError('Enter a valid 10-digit Indian mobile number to continue.');
+      return;
+    }
+    setUpgrading(true);
+    try {
+      const { data } = await createCheckoutSession(currency, plan, { provider: selected?.id, phone: selected?.needsPhone ? phone.trim() : undefined });
+      // Everything but Stripe has no result in the address on return, so remember to check.
+      if (data.provider && data.provider !== 'stripe') {
+        setPending(true, user?.id);
+        setAwaitingPayment(true);
+      }
+      if (data.sessionId) {
+        await openCashfreeCheckout(data);
+      } else {
+        goToGateway(data.url); // hand off to the provider's checkout
+      }
+    } catch (err) {
+      setPending(false);
+      setAwaitingPayment(false);
+      setUpgradeError(err?.response?.data?.message || err?.message || 'Could not start checkout. Try again.');
       setUpgrading(false);
     }
   };
@@ -138,18 +259,67 @@ const BillingCard = () => {
           </p>
           {user.subscriptionStatus === 'past_due' && (
             <p className="text-sm rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
-              Your last payment didn't go through. Update your payment method to keep your plan.
+              {inAppBilling
+                ? "Your last payment didn't go through. It will be tried again; make sure your card or UPI account can cover it to keep your plan."
+                : "Your last payment didn't go through. Update your payment method to keep your plan."}
             </p>
           )}
-          <button
-            onClick={handleManageBilling}
-            disabled={openingPortal}
-            className="px-4 py-2 text-sm rounded-lg font-medium border border-brand-600 text-brand-600 transition hover:bg-brand-600 hover:text-white dark:border-white dark:text-white disabled:opacity-60"
-          >
-            {openingPortal ? 'Opening…' : 'Manage billing'}
-          </button>
-          {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
-          {tier === 'studio' && (
+          {inAppBilling ? (
+            <div className="space-y-2">
+              {user.subscriptionCancelAtPeriodEnd ? (
+                <p className="text-xs text-light-muted dark:text-dark-muted">
+                  To continue after {formatDate(user.proPeriodEnd) || 'then'}, subscribe again once this period ends.
+                </p>
+              ) : confirmingCancel ? (
+                <div role="group" aria-label="Confirm cancel subscription" className="rounded-lg border border-light-border dark:border-dark-border p-3 space-y-2">
+                  <p className="text-sm text-light-text dark:text-dark-text">
+                    Cancel at the end of this billing period? You keep {PLANS[tier].name} until {formatDate(user.proPeriodEnd) || 'then'} and are not charged again. A cancelled subscription can't be resumed: you would subscribe again afterwards.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCancel}
+                      disabled={cancelling}
+                      className="px-4 py-2 text-sm rounded-lg font-medium border border-semantic-danger-500 text-semantic-danger-700 transition hover:bg-semantic-danger-50 dark:text-semantic-danger-dark disabled:opacity-60"
+                    >
+                      {cancelling ? 'Cancelling…' : 'Yes, cancel at period end'}
+                    </button>
+                    <button
+                      onClick={() => { setConfirmingCancel(false); setCancelError(''); }}
+                      disabled={cancelling}
+                      className="px-4 py-2 text-sm rounded-lg font-medium border border-light-border dark:border-dark-border text-light-text dark:text-dark-text disabled:opacity-60"
+                    >
+                      Keep my plan
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmingCancel(true)}
+                  className="px-4 py-2 text-sm rounded-lg font-medium border border-brand-600 text-brand-600 transition hover:bg-brand-600 hover:text-white dark:border-white dark:text-white"
+                >
+                  Cancel subscription
+                </button>
+              )}
+              {cancelError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{cancelError}</p>}
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={handleManageBilling}
+                disabled={openingPortal}
+                className="px-4 py-2 text-sm rounded-lg font-medium border border-brand-600 text-brand-600 transition hover:bg-brand-600 hover:text-white dark:border-white dark:text-white disabled:opacity-60"
+              >
+                {openingPortal ? 'Opening…' : 'Manage billing'}
+              </button>
+              {portalError && <p className="text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{portalError}</p>}
+            </>
+          )}
+          {tier === 'studio' && inAppBilling && !user.subscriptionCancelAtPeriodEnd && (
+            <p className="text-xs text-light-muted dark:text-dark-muted">
+              To move to Agency, cancel at the end of this period and subscribe to Agency, or contact support.
+            </p>
+          )}
+          {tier === 'studio' && !inAppBilling && (
             <div className="pt-1 space-y-2">
               {switched && (
                 <p role="status" className="text-sm text-semantic-success-700 dark:text-semantic-success-dark">
@@ -227,6 +397,74 @@ const BillingCard = () => {
             ))}
           </div>
 
+          {awaitingPayment && (
+            <div role="status" className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20 px-3 py-2 text-sm text-light-text dark:text-dark-text">
+              <span>Confirming your payment… this can take a minute after you pay. Your plan switches on as soon as it is confirmed.</span>
+              <button
+                type="button"
+                onClick={checkPayment}
+                disabled={checkingPayment}
+                className="rounded-lg border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600 dark:border-white dark:text-white disabled:opacity-60"
+              >
+                {checkingPayment ? 'Checking…' : 'Check again'}
+              </button>
+            </div>
+          )}
+          {unavailable && (
+            <p role="alert" className="mt-3 rounded-lg border border-semantic-warning-200 bg-semantic-warning-50 px-3 py-2 text-sm text-semantic-warning-700 dark:border-semantic-warning-500/30 dark:bg-semantic-warning-500/10 dark:text-semantic-warning-dark">
+              Payments in {currency.toUpperCase()} aren't available yet. Please try again later{otherCurrencyOffered ? ' or choose the other currency' : ''}.
+            </p>
+          )}
+
+          {list && list.length > 1 && (
+            <fieldset className="mt-3">
+              <legend className="text-sm font-medium text-light-text dark:text-dark-text">Pay with</legend>
+              <div role="radiogroup" aria-label="Pay with" className="mt-1.5 flex flex-wrap gap-2">
+                {list.map((g) => (
+                  <label
+                    key={g.id}
+                    className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-all duration-200 ${
+                      selected?.id === g.id
+                        ? 'border-brand-500 ring-1 ring-brand-500 bg-brand-50 dark:bg-brand-900/20 text-light-text dark:text-dark-text'
+                        : 'border-light-border dark:border-dark-border text-light-muted dark:text-dark-muted hover:border-brand-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-provider"
+                      value={g.id}
+                      checked={selected?.id === g.id}
+                      onChange={() => setProviderChoice(g.id)}
+                      className="accent-brand-600"
+                    />
+                    {g.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
+          {selected?.needsPhone && (
+            <div className="mt-3">
+              <label htmlFor="billing-phone" className="block text-sm font-medium text-light-text dark:text-dark-text">
+                Mobile number
+              </label>
+              <input
+                id="billing-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={20}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="98765 43210"
+                className="mt-1 w-56 rounded-lg border border-light-border bg-light-surface px-3 py-2 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text"
+              />
+              <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+                {selected.label} needs it to set up your subscription. It is sent to {selected.label} only and is not saved by Clientglass.
+              </p>
+            </div>
+          )}
+
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {PAID_PLAN_KEYS.map((key) => {
               const plan = PLANS[key];
@@ -247,7 +485,7 @@ const BillingCard = () => {
                       here, so it keeps the spotlight; the rest are tonal. */}
                   <button
                     onClick={() => handleUpgrade(key)}
-                    disabled={upgrading}
+                    disabled={upgrading || unavailable}
                     className="mt-4 px-4 py-2 text-sm rounded-lg font-medium bg-brand-gradient text-white transition-all duration-300 shadow-brand-sm hover:shadow-brand disabled:opacity-60"
                   >
                     {upgrading ? 'Redirecting…' : `Subscribe to ${plan.name}`}
@@ -257,7 +495,11 @@ const BillingCard = () => {
             })}
           </div>
           <p className="text-xs text-light-muted dark:text-dark-muted mt-2">
-            You'll pick how to pay on Stripe's secure checkout — the methods offered depend on your currency and region.
+            {selected && selected.id !== 'stripe'
+              ? `You'll pay on ${selected.label}'s secure checkout. The methods offered depend on what your bank and account support.`
+              : selected?.id === 'stripe'
+                ? "You'll pick how to pay on Stripe's secure checkout — the methods offered depend on your currency and region."
+                : "You'll pick how to pay on our payment provider's secure checkout — the methods offered depend on your currency and region."}
           </p>
         </>
       )}

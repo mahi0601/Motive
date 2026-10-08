@@ -7,6 +7,7 @@ import StatusPageDetailsForm from './StatusPageDetailsForm';
 import WeeklyEmailCard from './WeeklyEmailCard';
 import SendLinkPanel from './SendLinkPanel';
 import ClientFeedbackList from './ClientFeedbackList';
+import ClientRequestInbox from './ClientRequestInbox';
 import ClientActivity from './ClientActivity';
 import { CARD_CLASS } from './cardStyles';
 
@@ -199,6 +200,7 @@ const StatusPageCard = () => {
       {enabled && <StatusPageDetailsForm />}
       {enabled && <WeeklyEmailCard />}
       {enabled && <ClientFeedbackList workspaceId={workspace.id} />}
+      {enabled && workspace.statusAllowRequests && <ClientRequestInbox workspaceId={workspace.id} />}
     </div>
   );
 };

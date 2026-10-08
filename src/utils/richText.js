@@ -12,6 +12,12 @@ const SANITIZE_CONFIG = {
   ALLOWED_ATTR: ['href', 'rel', 'target'],
 };
 
+// Every link that survives sanitising opens safely, whatever the pasted or stored HTML said: a
+// `target` without `rel` lets the opened page reach back through window.opener.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A') node.setAttribute('rel', 'noopener noreferrer');
+});
+
 // macOS Chrome/Safari intercept Cmd+B/Cmd+I as a native OS-level text-editing
 // shortcut for ANY editable control — it never reaches page JS as a keydown
 // event at all, so our own handler (toggleMark, below) can't prevent it. The
