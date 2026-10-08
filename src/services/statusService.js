@@ -18,3 +18,7 @@ export const reportLandingFromStatus = () => api.post('/api/status/landing');
 // comment). Unauthenticated: the link is the credential. See the backend's
 // feedback.service.js for the limits, which the form also shows.
 export const sendFeedback = (token, data) => api.post(`/api/status/${encodeURIComponent(token)}/feedback`, data);
+
+// The unsubscribe link in a client's weekly email. The personal token in the URL is the credential.
+export const getUnsubscribeInfo = (token) => api.get(`/api/status/unsubscribe/${encodeURIComponent(token)}`);
+export const unsubscribeFromUpdates = (token) => api.post(`/api/status/unsubscribe/${encodeURIComponent(token)}`);

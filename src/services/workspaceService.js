@@ -62,3 +62,10 @@ export const duplicateWorkspace = (workspaceId, data) => api.post(`/api/workspac
 // Every client the caller owns, with the numbers that say who needs attention, most in need
 // first. Numbers, dates and flags only.
 export const getClientsOverview = () => api.get('/api/workspaces/overview');
+
+// Weekly update email to a client: who gets it, and a preview sent to the owner. The people are
+// added by the owner (the client never signs up); each email carries a personal unsubscribe link.
+export const listSubscribers = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/subscribers`);
+export const addSubscriber = (workspaceId, data) => api.post(`/api/workspaces/${workspaceId}/subscribers`, data);
+export const removeSubscriber = (workspaceId, subscriberId) => api.delete(`/api/workspaces/${workspaceId}/subscribers/${subscriberId}`);
+export const sendWeeklyEmailPreview = (workspaceId) => api.post(`/api/workspaces/${workspaceId}/weekly-email/preview`);
