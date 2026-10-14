@@ -16,12 +16,12 @@
     "brand:android": "npx --yes @capacitor/assets@3.0.5 generate --android --assetPath assets --iconBackgroundColor '#0E4C5C' --iconBackgroundColorDark '#0E4C5C' --splashBackgroundColor '#0E4C5C' --splashBackgroundColorDark '#0B1418'"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.2",
+    "@capacitor/android": "^8.5.3",
     "@capacitor/app": "^8.1.2",
     "@capacitor/browser": "^8.0.5",
-    "@capacitor/core": "^8.4.0",
+    "@capacitor/core": "^8.5.3",
     "@hello-pangea/dnd": "^18.0.1",
-    "@sentry/react": "^11.4.0",
+    "@sentry/react": "^11.6.0",
     "axios": "^1.8.4",
     "chrono-node": "^2.10.2",
     "date-fns": "^4.4.0",
