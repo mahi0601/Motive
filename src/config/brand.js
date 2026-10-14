@@ -9,22 +9,22 @@
 
 export const BRAND = {
   name: 'Clientglass',
-  tagline: 'Client-ready project delivery for small agencies.',
-  subhead: 'Run your work on a board. Your client gets a live status page. Stop writing update emails.',
+  tagline: 'Stop answering "status?" on WhatsApp.',
+  subhead: 'One live link per client, built from the board your studio already works on. No login, no update to write, and every sign-off dated on record.',
   eyebrow: 'Built for agencies and studios',
 };
 
 export const VALUE_PROPS = [
   {
-    title: 'Your clients see progress, not silence.',
-    body: 'One link per client. Always current. No login friction, no WhatsApp chasing.',
-  },
-  {
-    title: 'Know what\'s slipping before the client does.',
-    body: 'Momentum flags at-risk and overdue work across every project, automatically.',
+    title: 'The update writes itself.',
+    body: 'Your client\'s page is built from your own task board, so there is nothing to type each week.',
   },
   {
     title: 'Your clients never need an account.',
-    body: 'They open one link — no sign-up, no seat to buy. Your plan counts your team and your active client pages, never the people you\'re accountable to.',
+    body: 'They open one link on their phone: no sign-up, no seat to buy. Your plan counts your team and your active client pages, never the people you\'re accountable to.',
+  },
+  {
+    title: 'Sign-offs on record, not lost in chat.',
+    body: 'Approvals are dated and comments stay on the same link, so "I never approved that" has an answer.',
   },
 ];
