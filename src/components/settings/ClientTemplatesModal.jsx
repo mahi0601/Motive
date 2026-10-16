@@ -76,6 +76,31 @@ const ClientTemplatesModal = ({ onClose, onCreated }) => {
       setConfirming(null);
     }, 'Could not delete that template. Please try again.');
 
+  const startersId = useId();
+  const ownId = useId();
+  const starters = (templates || []).filter((t) => t.builtin);
+  const own = (templates || []).filter((t) => !t.builtin);
+
+  const row = (t) => (
+    <li key={t.id} aria-label={t.name} className="rounded-lg border border-light-border p-3 dark:border-dark-border">
+      <p className="font-medium">{t.name}</p>
+      {t.description && <p className="text-light-muted dark:text-dark-muted">{t.description}</p>}
+      <p className="text-xs text-light-muted dark:text-dark-muted">{summary(t.counts)}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button type="button" disabled={busy} onClick={() => { setUsing(t); setName(''); setError(''); }} className={BTN} aria-label={`Use ${t.name}`}>Use template</button>
+        {t.builtin ? null : confirming === t.id ? (
+          <>
+            <span className="text-xs">Delete this template? Clients already made from it are not affected.</span>
+            <button type="button" disabled={busy} onClick={() => remove(t)} className={`${BTN} text-semantic-danger-700`} aria-label={`Confirm delete ${t.name}`}>Delete</button>
+            <button type="button" disabled={busy} onClick={() => setConfirming(null)} className={BTN}>Keep</button>
+          </>
+        ) : (
+          <button type="button" disabled={busy} onClick={() => { setConfirming(t.id); setError(''); }} className={BTN} aria-label={`Delete ${t.name}`}>Delete</button>
+        )}
+      </div>
+    </li>
+  );
+
   const errorBox = error && (
     <p role="alert" className="rounded-lg border border-semantic-danger-200 bg-semantic-danger-50 px-3 py-2 text-sm text-semantic-danger-700 dark:border-semantic-danger-500/30 dark:bg-semantic-danger-500/10 dark:text-semantic-danger-dark">
       {error}
@@ -122,27 +147,24 @@ const ClientTemplatesModal = ({ onClose, onCreated }) => {
               No templates yet. Open a client, then choose “Save as client template” on the Members card to keep it for next time.
             </p>
           ) : (
-            <ul aria-label="Client templates" className="space-y-2">
-              {templates.map((t) => (
-                <li key={t.id} aria-label={t.name} className="rounded-lg border border-light-border p-3 dark:border-dark-border">
-                  <p className="font-medium">{t.name}</p>
-                  {t.description && <p className="text-light-muted dark:text-dark-muted">{t.description}</p>}
-                  <p className="text-xs text-light-muted dark:text-dark-muted">{summary(t.counts)}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <button type="button" disabled={busy} onClick={() => { setUsing(t); setName(''); setError(''); }} className={BTN} aria-label={`Use ${t.name}`}>Use template</button>
-                    {confirming === t.id ? (
-                      <>
-                        <span className="text-xs">Delete this template? Clients already made from it are not affected.</span>
-                        <button type="button" disabled={busy} onClick={() => remove(t)} className={`${BTN} text-semantic-danger-700`} aria-label={`Confirm delete ${t.name}`}>Delete</button>
-                        <button type="button" disabled={busy} onClick={() => setConfirming(null)} className={BTN}>Keep</button>
-                      </>
-                    ) : (
-                      <button type="button" disabled={busy} onClick={() => { setConfirming(t.id); setError(''); }} className={BTN} aria-label={`Delete ${t.name}`}>Delete</button>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              {starters.length > 0 && (
+                <section aria-labelledby={startersId} className="space-y-2">
+                  <h3 id={startersId} className="font-medium">Starter templates</h3>
+                  <ul aria-label="Starter templates" className="space-y-2">{starters.map((t) => row(t))}</ul>
+                </section>
+              )}
+              <section aria-labelledby={ownId} className="space-y-2">
+                <h3 id={ownId} className="font-medium">Your templates</h3>
+                {own.length === 0 ? (
+                  <p className="text-light-muted dark:text-dark-muted">
+                    None saved yet. Open a client, then choose “Save as client template” on the Members card to keep it for next time.
+                  </p>
+                ) : (
+                  <ul aria-label="Your templates" className="space-y-2">{own.map((t) => row(t))}</ul>
+                )}
+              </section>
+            </>
           )}
           {errorBox}
         </div>

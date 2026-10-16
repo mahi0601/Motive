@@ -170,4 +170,33 @@ describe('ClientTemplatesModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  describe('starter templates', () => {
+    const S1 = { id: 'builtin:website-project', name: 'Starter website', description: 'Brief to launch', builtin: true, counts: { tasks: 10, pages: 0, milestones: 3 } };
+
+    test('starters sit under their own heading and can be used but never deleted', async () => {
+      await setup([S1, T1]);
+      expect(screen.getByRole('heading', { name: /starter templates/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /your templates/i })).toBeInTheDocument();
+      const starter = within(screen.getByRole('list', { name: /starter templates/i })).getByRole('listitem', { name: 'Starter website' });
+      expect(within(starter).getByRole('button', { name: /use starter website/i })).toBeInTheDocument();
+      expect(within(starter).queryByRole('button', { name: /delete/i })).toBeNull();
+      expect(within(item('Website project')).getByRole('button', { name: /delete website project/i })).toBeInTheDocument();
+    });
+
+    test('with only starters it still explains how to save your own', async () => {
+      await setup([S1]);
+      expect(screen.getByText(/none saved yet/i)).toHaveTextContent(/save as client template/i);
+    });
+
+    test('using a starter creates a client from its id', async () => {
+      createClientFromTemplate.mockResolvedValue({ data: { workspace: { id: 'w1', name: 'Acme' }, counts: { tasks: 10 } } });
+      const { onCreated } = await setup([S1]);
+      fireEvent.click(screen.getByRole('button', { name: /use starter website/i }));
+      fireEvent.change(screen.getByLabelText(/name of the new client/i), { target: { value: 'Acme' } });
+      fireEvent.click(screen.getByRole('button', { name: /create client/i }));
+      await waitFor(() => expect(onCreated).toHaveBeenCalled());
+      expect(createClientFromTemplate).toHaveBeenCalledWith('builtin:website-project', expect.objectContaining({ name: 'Acme' }));
+    });
+  });
 });
