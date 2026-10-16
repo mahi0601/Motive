@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Tailwind 4 breaks `vite build` with this config (PostCSS plugin moved
+    # out of the main package); migrate on purpose, not through a bump.
+    ignore:
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
     groups:
       # One PR per week for routine patch/minor bumps instead of one per
       # package.
