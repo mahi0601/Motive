@@ -6,6 +6,7 @@ import { enableShare, disableShare } from '../../services/workspaceService';
 import StatusPageDetailsForm from './StatusPageDetailsForm';
 import WeeklyEmailCard from './WeeklyEmailCard';
 import SendLinkPanel from './SendLinkPanel';
+import ProgressUpdatePanel from './ProgressUpdatePanel';
 import ClientFeedbackList from './ClientFeedbackList';
 import ClientRequestInbox from './ClientRequestInbox';
 import ClientActivity from './ClientActivity';
@@ -29,6 +30,7 @@ const StatusPageCard = () => {
   const [limitHit, setLimitHit] = useState(false); // the plan's active-client limit (402)
   const [copied, setCopied] = useState(false);
   const [confirmingOff, setConfirmingOff] = useState(false);
+  const [writingUpdate, setWritingUpdate] = useState(false);
 
   const isOwner = !!workspace && workspace.ownerId === user?.id;
   if (!isOwner) return null;
@@ -134,6 +136,18 @@ const StatusPageCard = () => {
       )}
 
       {link && <SendLinkPanel link={link} workspaceName={workspace.name} canRespond={!!workspace.statusAllowFeedback} />}
+
+      {enabled && (writingUpdate ? (
+        <ProgressUpdatePanel workspaceId={workspace.id} workspaceName={workspace.name} link={link} onClose={() => setWritingUpdate(false)} />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setWritingUpdate(true)}
+          className="mt-3 rounded-lg border border-brand-600 px-3 py-2 text-sm font-medium text-brand-600 transition hover:bg-brand-600 hover:text-white dark:border-white dark:text-white"
+        >
+          Send a progress update
+        </button>
+      ))}
 
       {enabled && !link && (
         <p className="mt-3 text-sm text-light-muted dark:text-dark-muted">

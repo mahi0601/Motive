@@ -2,11 +2,12 @@ import React from 'react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import StatusPageCard from './StatusPageCard';
-import { enableShare, disableShare } from '../../services/workspaceService';
+import { enableShare, disableShare, getUpdateSummary } from '../../services/workspaceService';
 
 vi.mock('../../services/workspaceService', () => ({
   enableShare: vi.fn(),
   disableShare: vi.fn(),
+  getUpdateSummary: vi.fn(),
   updateStatusPage: vi.fn(),
   listFeedback: vi.fn().mockResolvedValue({ data: { items: [], unread: 0, pagination: { total: 0 } } }),
   markFeedbackRead: vi.fn(),
@@ -140,5 +141,20 @@ describe('StatusPageCard', () => {
     mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-29T00:00:00Z' };
     render(<StatusPageCard />);
     expect(screen.queryByRole('region', { name: /send it to your client/i })).toBeNull();
+  });
+
+  test('once the link is on, "Send a progress update" opens the update panel; before that it is not offered', async () => {
+    const { unmount } = render(<StatusPageCard />);
+    expect(screen.queryByRole('button', { name: /send a progress update/i })).toBeNull();
+    unmount();
+
+    mockWorkspace = { ...mockWorkspace, shareEnabledAt: '2026-09-30T00:00:00Z' };
+    getUpdateSummary.mockResolvedValue({ data: { summary: { windowDays: 7, shipped: ['Homepage design'], inProgress: [], upcoming: [], milestone: null } } });
+    render(<StatusPageCard />);
+    fireEvent.click(screen.getByRole('button', { name: /send a progress update/i }));
+    expect(await screen.findByLabelText(/update for your client/i)).toBeInTheDocument();
+    expect(getUpdateSummary).toHaveBeenCalledWith('ws-1');
+    fireEvent.click(screen.getByRole('button', { name: /^close$/i }));
+    expect(screen.getByRole('button', { name: /send a progress update/i })).toBeInTheDocument();
   });
 });
