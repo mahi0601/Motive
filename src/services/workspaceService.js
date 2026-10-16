@@ -31,6 +31,13 @@ export const enableShare = (workspaceId) => api.post(`/api/workspaces/${workspac
 // Owner-only: what the public status page says about the project. See
 // StatusPageDetailsForm and the backend's updateStatusPage for the fields.
 export const updateStatusPage = (workspaceId, data) => api.patch(`/api/workspaces/${workspaceId}/status-page`, data);
+// Owner-only (Pro): the studio's own logo for the public page. PNG or JPEG up to 256 KB.
+export const uploadStatusLogo = (workspaceId, file) => {
+  const form = new FormData();
+  form.append('logo', file);
+  return api.put(`/api/workspaces/${workspaceId}/status-logo`, form);
+};
+export const removeStatusLogo = (workspaceId) => api.delete(`/api/workspaces/${workspaceId}/status-logo`);
 // Owner-only: replaces the status page's whole ordered list of milestones. An item
 // with an `id` keeps its row (and its sign-off unless its name or date changed);
 // without one it is new; any milestone left out is removed. Resolves to the saved
