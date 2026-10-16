@@ -1,8 +1,8 @@
-import React, { useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { saveMilestones, updateStatusPage } from '../../services/workspaceService';
+import { saveMilestones, updateStatusPage, uploadStatusLogo, removeStatusLogo } from '../../services/workspaceService';
 import { ACCENT_KEYS, STATUS_ACCENTS } from '../../config/statusAccents';
 import {
   MAX_MILESTONES,
@@ -16,6 +16,8 @@ import {
 } from '../../utils/milestones';
 
 const LIMITS = { headline: 120, summary: 600 };
+const LOGO_MAX_BYTES = 256 * 1024;
+const LOGO_TYPES = ['image/png', 'image/jpeg'];
 const inputClass =
   'w-full rounded-lg border border-light-border bg-light-surface px-3 py-2 text-sm text-light-text dark:border-dark-border dark:bg-dark-raised dark:text-dark-text';
 const labelClass = 'mb-1 flex items-baseline justify-between text-sm font-medium text-light-text dark:text-dark-text';
@@ -28,7 +30,7 @@ const counterClass = 'text-xs font-normal text-light-muted dark:text-dark-muted'
 const StatusPageDetailsForm = () => {
   const { user } = useAuth();
   const { workspace, loadWorkspace } = useWorkspace();
-  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), feedback: useId(), requests: useId(), allowance: useId(), notify: useId() };
+  const ids = { headline: useId(), summary: useId(), rows: useId(), hide: useId(), logo: useId(), feedback: useId(), requests: useId(), allowance: useId(), notify: useId() };
 
   const [form, setForm] = useState(() => ({
     headline: workspace.statusHeadline || '',
@@ -116,6 +118,46 @@ const StatusPageDetailsForm = () => {
   };
 
   const canHide = !!user?.isPro;
+
+  // The logo is its own action (not part of Save): picking a file uploads it at once.
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [logoError, setLogoError] = useState('');
+  const [logoPreview, setLogoPreview] = useState(null); // blob: URL of the file just uploaded
+  const hasLogo = !!workspace.statusLogoUpdatedAt;
+  useEffect(() => () => logoPreview && URL.revokeObjectURL(logoPreview), [logoPreview]);
+
+  const pickLogo = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setLogoError('');
+    if (!LOGO_TYPES.includes(file.type)) return setLogoError('Use a PNG or JPEG image.');
+    if (file.size > LOGO_MAX_BYTES) return setLogoError('That image is too large. Use one under 256 KB.');
+    setLogoBusy(true);
+    try {
+      await uploadStatusLogo(workspace.id, file);
+      setLogoPreview(URL.createObjectURL(file));
+      await loadWorkspace();
+    } catch (err) {
+      setLogoError(err?.response?.data?.message || 'Could not upload the logo. Try again.');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const dropLogo = async () => {
+    setLogoError('');
+    setLogoBusy(true);
+    try {
+      await removeStatusLogo(workspace.id);
+      setLogoPreview(null);
+      await loadWorkspace();
+    } catch (err) {
+      setLogoError(err?.response?.data?.message || 'Could not remove the logo. Try again.');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSave} noValidate className="mt-5 space-y-4 border-t border-light-border pt-5 dark:border-dark-border">
@@ -214,6 +256,31 @@ const StatusPageDetailsForm = () => {
           ))}
         </div>
       </fieldset>
+
+      <div>
+        <p id={ids.logo} className="text-sm font-medium text-light-text dark:text-dark-text">Your logo</p>
+        <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">
+          Shown at the top of your client’s page in place of the icon. PNG or JPEG, up to 256 KB. Pro only.
+        </p>
+        {canHide ? (
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            {logoPreview && <img src={logoPreview} alt="Your logo preview" className="h-10 max-w-[8rem] rounded object-contain" />}
+            {hasLogo && !logoPreview && <span className="text-sm text-light-muted dark:text-dark-muted">A logo is set.</span>}
+            <label className={`cursor-pointer rounded-lg border border-light-border px-3 py-1.5 text-sm font-medium text-light-text hover:border-brand-500 dark:border-dark-border dark:text-dark-text ${logoBusy ? 'pointer-events-none opacity-60' : ''}`}>
+              {logoBusy ? 'Working…' : hasLogo ? 'Replace logo' : 'Upload logo'}
+              <input type="file" accept="image/png,image/jpeg" aria-labelledby={ids.logo} className="sr-only" disabled={logoBusy} onChange={pickLogo} />
+            </label>
+            {hasLogo && (
+              <button type="button" disabled={logoBusy} onClick={dropLogo} className="rounded-lg border border-light-border px-3 py-1.5 text-sm text-light-muted hover:border-semantic-danger-300 hover:text-semantic-danger-700 disabled:opacity-60 dark:border-dark-border dark:text-dark-muted">
+                Remove logo
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="mt-1 text-xs text-light-muted dark:text-dark-muted">Upgrade to Pro to show your own logo.</p>
+        )}
+        {logoError && <p role="alert" className="mt-1 text-xs text-semantic-danger-700 dark:text-semantic-danger-dark">{logoError}</p>}
+      </div>
 
       <div>
         <label htmlFor={ids.hide} className={`flex items-center gap-2 text-sm ${canHide ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'} text-light-text dark:text-dark-text`}>

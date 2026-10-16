@@ -10,6 +10,10 @@ import api from './api';
 export const getStatus = (token, { preview = false } = {}) =>
   api.get(`/api/status/${encodeURIComponent(token)}`, preview ? { params: { preview: 1 } } : undefined);
 
+// The studio's logo for the page, as an image blob. Fetched through the API client and shown from a
+// blob: URL, so the page's image policy (own origin, data:, blob:) needs no foreign origin.
+export const getStatusLogo = (token) => api.get(`/api/status/${encodeURIComponent(token)}/logo`, { responseType: 'blob' });
+
 // The marketing page reports that a visitor arrived through a status page's
 // "Powered by" link. Body-less on purpose: the server stores only a daily hash.
 export const reportLandingFromStatus = () => api.post('/api/status/landing');

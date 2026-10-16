@@ -9,6 +9,7 @@ import ClientFeedbackForm from '../components/status/ClientFeedbackForm';
 import ClientRequestForm from '../components/status/ClientRequestForm';
 import ClientRequestList from '../components/status/ClientRequestList';
 import ThroughputChart from '../components/status/ThroughputChart';
+import useStatusLogo from '../hooks/useStatusLogo';
 import {
   STATUS,
   getTaskDisplayStatus,
@@ -59,6 +60,7 @@ export const StatusPageView = ({ status, token, updatedAt = null, demo = false, 
   }, [status]);
 
   const { workspace, summary } = status;
+  const logoUrl = useStatusLogo(token, !demo && !!status.page?.hasLogo, status.page?.logoVersion);
   // Owner-written details (an older server may not send them at all). All of it
   // is rendered as text by React, never as HTML.
   const page = status.page || {};
@@ -73,7 +75,11 @@ export const StatusPageView = ({ status, token, updatedAt = null, demo = false, 
     <Shell accent={page.accent}>
       {notice}
       <header className="flex items-center gap-3">
-        <span className="text-3xl" aria-hidden="true">{workspace.icon}</span>
+        {logoUrl ? (
+          <img src={logoUrl} alt={`${workspace.name} logo`} className="h-12 max-w-[8rem] shrink-0 rounded object-contain" />
+        ) : (
+          <span className="text-3xl" aria-hidden="true">{workspace.icon}</span>
+        )}
         <div>
           <h1 className="font-display text-2xl font-bold text-light-text dark:text-white">{workspace.name}</h1>
           <p className="text-sm text-light-muted dark:text-dark-muted">{page.headline || 'Project status'}</p>
