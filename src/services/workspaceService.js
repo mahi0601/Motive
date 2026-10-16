@@ -75,3 +75,6 @@ export const listSubscribers = (workspaceId) => api.get(`/api/workspaces/${works
 export const addSubscriber = (workspaceId, data) => api.post(`/api/workspaces/${workspaceId}/subscribers`, data);
 export const removeSubscriber = (workspaceId, subscriberId) => api.delete(`/api/workspaces/${workspaceId}/subscribers/${subscriberId}`);
 export const sendWeeklyEmailPreview = (workspaceId) => api.post(`/api/workspaces/${workspaceId}/weekly-email/preview`);
+
+// Facts for a short progress note the owner sends by hand (WhatsApp, email). Sends nothing.
+export const getUpdateSummary = (workspaceId) => api.get(`/api/workspaces/${workspaceId}/update-summary`);

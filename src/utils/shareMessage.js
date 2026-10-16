@@ -41,6 +41,52 @@ export const buildShareMessage = ({ clientName, workspaceName, link, canRespond 
   return { subject: `${project}: your project status page`, body: lines.join('\n') };
 };
 
+const MAX_ITEM = 80;
+const MAX_ITEMS = 5;
+const dateLabel = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+};
+const bullets = (title, items) => {
+  const clean = items.map((t) => oneLine(t, MAX_ITEM)).filter(Boolean);
+  if (!clean.length) return [];
+  const shown = clean.slice(0, MAX_ITEMS).map((t) => `• ${t}`);
+  if (clean.length > MAX_ITEMS) shown.push(`• and ${clean.length - MAX_ITEMS} more`);
+  return [`*${title}*`, ...shown, ''];
+};
+
+// A short progress note from the owner's own facts (see the update-summary endpoint): what
+// finished, what is under way, what is due soon and the next milestone, in plain text that reads
+// well in WhatsApp (*bold*, bullets). The link is optional because the server cannot show it again
+// after it is created; pass it only when the owner has it. Names and titles are cleaned like the
+// share message, and each section is capped so the note stays short.
+export const buildUpdateMessage = ({ clientName, workspaceName, summary, link }) => {
+  const s = summary || {};
+  const name = cleanName(clientName);
+  const project = oneLine(workspaceName, MAX_PROJECT) || 'your project';
+  const days = Number.isInteger(s.windowDays) && s.windowDays > 0 ? s.windowDays : 7;
+  const lines = [`Hi${name ? ` ${name}` : ''},`, '', `Here is a quick update on ${project}.`, ''];
+  lines.push(...bullets(`Done in the last ${days} days`, Array.isArray(s.shipped) ? s.shipped : []));
+  lines.push(...bullets('In progress', Array.isArray(s.inProgress) ? s.inProgress : []));
+  lines.push(
+    ...bullets(
+      'Coming up',
+      (Array.isArray(s.upcoming) ? s.upcoming : []).map((t) => {
+        const when = dateLabel(t?.due);
+        return `${oneLine(t?.title, MAX_ITEM)}${when ? ` (${when})` : ''}`;
+      }),
+    ),
+  );
+  const next = s.milestone && oneLine(s.milestone.title, MAX_ITEM);
+  if (next) {
+    const when = dateLabel(s.milestone.date);
+    lines.push(`Next milestone: ${next}${when ? `, ${when}` : ''}`, '');
+  }
+  if (typeof link === 'string' && /^https?:\/\//i.test(link)) lines.push('You can see it live any time, no login needed:', link);
+  else lines.push('Let me know if you have any questions.');
+  return { subject: `${project}: progress update`, body: lines.join('\n').trim() };
+};
+
 // A new email with the subject and body filled in and no recipient (the owner picks it).
 // encodeURIComponent turns line breaks, & and # into escapes, so the text cannot start a new
 // parameter or end a header.

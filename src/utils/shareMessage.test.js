@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { buildShareMessage, mailtoUrl, whatsappUrl, cleanName } from './shareMessage';
+import { buildShareMessage, buildUpdateMessage, mailtoUrl, whatsappUrl, cleanName } from './shareMessage';
 
 const LINK = 'https://app.example.test/s/' + 'a'.repeat(64);
 const base = { workspaceName: 'Acme Redesign', link: LINK, canRespond: false };
@@ -87,5 +87,47 @@ describe('whatsappUrl', () => {
     const url = whatsappUrl({ body: 'Hi Ann,\n\nhttps://x.test/s/abc' });
     expect(url.startsWith('https://wa.me/?text=')).toBe(true);
     expect(decodeURIComponent(url.slice('https://wa.me/?text='.length))).toBe('Hi Ann,\n\nhttps://x.test/s/abc');
+  });
+});
+
+describe('buildUpdateMessage', () => {
+  const summary = {
+    windowDays: 7,
+    shipped: ['Homepage design', 'Logo files'],
+    inProgress: ['Build pages'],
+    upcoming: [{ title: 'Mobile testing', due: '2026-10-12T00:00:00.000Z' }],
+    milestone: { title: 'Launch', date: '2026-10-20T00:00:00.000Z' },
+  };
+
+  test('lists each section with bullets, the next milestone and WhatsApp bold headings', () => {
+    const { body, subject } = buildUpdateMessage({ clientName: 'Ann', workspaceName: 'Acme site', summary });
+    expect(subject).toBe('Acme site: progress update');
+    expect(body).toContain('Hi Ann,');
+    expect(body).toContain('*Done in the last 7 days*\n• Homepage design\n• Logo files');
+    expect(body).toContain('*In progress*\n• Build pages');
+    expect(body).toContain('*Coming up*\n• Mobile testing (Oct 12)');
+    expect(body).toContain('Next milestone: Launch, Oct 20');
+    expect(body).toContain('Let me know if you have any questions.');
+  });
+
+  test('adds the live link only when it is a web address', () => {
+    expect(buildUpdateMessage({ workspaceName: 'Acme', summary, link: 'https://app.test/s/abc' }).body).toMatch(/no login needed:\nhttps:\/\/app\.test\/s\/abc$/);
+    expect(buildUpdateMessage({ workspaceName: 'Acme', summary, link: 'javascript:alert(1)' }).body).not.toContain('javascript');
+  });
+
+  test('leaves out empty sections, caps long lists and cleans line breaks in titles', () => {
+    const many = Array.from({ length: 8 }, (_, i) => `Task ${i + 1}`);
+    const { body } = buildUpdateMessage({ workspaceName: 'Acme', summary: { shipped: many, inProgress: [], upcoming: [], milestone: null } });
+    expect(body).toContain('• Task 5\n• and 3 more');
+    expect(body).not.toContain('Task 6');
+    expect(body).not.toContain('*In progress*');
+    expect(body).not.toContain('Next milestone');
+    expect(buildUpdateMessage({ workspaceName: 'Acme', summary: { shipped: ['Line one\nline two'] } }).body).toContain('• Line one line two');
+  });
+
+  test('falls back when the project or name is missing', () => {
+    const { body } = buildUpdateMessage({ clientName: '  \n ', workspaceName: '', summary });
+    expect(body.startsWith('Hi,\n')).toBe(true);
+    expect(body).toContain('update on your project.');
   });
 });
